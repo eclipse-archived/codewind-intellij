@@ -14,6 +14,7 @@ package org.eclipse.codewind.intellij.core;
 import com.intellij.openapi.progress.ProgressIndicator;
 import org.eclipse.codewind.intellij.core.PlatformUtil.OperatingSystem;
 import org.eclipse.codewind.intellij.core.ProcessHelper.ProcessResult;
+import org.eclipse.codewind.intellij.core.constants.CoreConstants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -72,17 +73,29 @@ public class InstallUtil {
     private static final String REMOVE_CMD = "remove";
     private static final String PROJECT_CMD = "project";
 
-    public static final String DEFAULT_INSTALL_VERSION = "0.4.0";
+
+    private static final String INSTALL_VERSION_PROPERTIES = "install-version.properties";
+    private static final String INSTALL_VERSION_KEY = "install-version";
+    private static final String INSTALL_VERSION;
+    static {
+        String version;
+        try (InputStream stream = InstallUtil.class.getClassLoader().getResourceAsStream(INSTALL_VERSION_PROPERTIES)) {
+            Properties properties = new Properties();
+            properties.load(stream);
+            version = properties.getProperty(INSTALL_VERSION_KEY);
+        } catch (Exception e) {
+            Logger.logError("Reading version from \"" + INSTALL_VERSION_PROPERTIES + " file failed, defaulting to \"latest\": ", e);
+            version = CoreConstants.VERSION_LATEST;
+        }
+        INSTALL_VERSION = version;
+    }
 
     private static final String TAG_OPTION = "-t";
     private static final String JSON_OPTION = "-j";
     private static final String URL_OPTION = "--url";
-    private static final String CW_TAG_VAR = "CW_TAG";
 
     public static final String STATUS_KEY = "status";
     public static final String URL_KEY = "url";
-
-    private static String installVersion = null;
 
     public static InstallStatus getInstallStatus() throws IOException, JSONException, TimeoutException {
         ProcessResult result = statusCodewind();
@@ -241,22 +254,7 @@ public class InstallUtil {
         return path.toString();
     }
 
-    // Check for dev-time tag override.
-    public static String getVersionOverride() {
-        String version = System.getenv(CW_TAG_VAR);
-        if (version != null && !version.isEmpty()) {
-            return version;
-        }
-        return null;
-    }
-
     public static String getVersion() {
-        if (installVersion == null) {
-            installVersion = getVersionOverride();
-            if (installVersion == null) {
-                installVersion = DEFAULT_INSTALL_VERSION;
-            }
-        }
-        return installVersion;
+        return INSTALL_VERSION;
     }
 }

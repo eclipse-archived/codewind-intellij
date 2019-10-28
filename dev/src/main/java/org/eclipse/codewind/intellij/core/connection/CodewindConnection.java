@@ -11,10 +11,6 @@
 
 package org.eclipse.codewind.intellij.core.connection;
 
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toList;
-import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
-
 import org.eclipse.codewind.intellij.core.*;
 import org.eclipse.codewind.intellij.core.HttpUtil.HttpResult;
 import org.eclipse.codewind.intellij.core.console.ProjectLogInfo;
@@ -34,14 +30,16 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
+import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
+
 /**
  * Represents a connection to a Codewind instance
  */
 public class CodewindConnection {
 
-    public static final String CODEWIND_WORKSPACE_PROPERTY = "org.eclipse.codewind.internal.workspace"; //$NON-NLS-1$
-    private static final String BRANCH_VERSION = "\\d{4}_M\\d{1,2}_\\D";
-    private static final Pattern pattern = Pattern.compile(BRANCH_VERSION);
+    private static final Pattern RELEASE_PATTERN = Pattern.compile("^\\d+\\.\\d+\\.\\d+$");
 
     public final URI baseUrl;
     private ConnectionEnv env;
@@ -174,18 +172,13 @@ public class CodewindConnection {
             return false;
         }
 
-        if (CoreConstants.VERSION_LATEST.equals(versionStr)) {
-            // Development build - possible other values to check for?
-            return true;
-        }
-
-        Matcher matcher = pattern.matcher(versionStr);
-        if (matcher.matches()) {
+        if (!RELEASE_PATTERN.matcher(versionStr).matches()) {
+            // Development build
             return true;
         }
 
         try {
-            String[] expectedDigits = InstallUtil.DEFAULT_INSTALL_VERSION.split("\\.");
+            String[] expectedDigits = InstallUtil.getVersion().split("\\.");
             String[] actualDigits = versionStr.split("\\.");
 
             for (int i = 0; i < expectedDigits.length; i++) {
@@ -228,7 +221,8 @@ public class CodewindConnection {
             return true;
         }
 
-        Matcher matcher = pattern.matcher(versionStr);
+        // TODO fix this
+        Matcher matcher = RELEASE_PATTERN.matcher(versionStr);
         if (matcher.matches()) {
             String actualYear = versionStr.substring(0, 4);
             String requiredYear = requiredVersionBr.substring(0, 4);
@@ -542,25 +536,13 @@ public class CodewindConnection {
     }
 
     public void requestValidate(CodewindApplication app) throws JSONException, IOException {
-        boolean projectIdInPath = checkVersion(1901, "2019_M1_E");
-
-        String endpoint;
-        if (projectIdInPath) {
-            endpoint = CoreConstants.APIPATH_PROJECT_LIST + "/"    //$NON-NLS-1$
-                    + app.projectID + "/"    //$NON-NLS-1$
-                    + CoreConstants.APIPATH_VALIDATE;
-        } else {
-            endpoint = CoreConstants.APIPATH_BASE + "/"    //$NON-NLS-1$
-                    + CoreConstants.APIPATH_VALIDATE;
-
-        }
+        String endpoint = CoreConstants.APIPATH_PROJECT_LIST + "/"    //$NON-NLS-1$
+                + app.projectID + "/"    //$NON-NLS-1$
+                + CoreConstants.APIPATH_VALIDATE;
 
         URI url = baseUrl.resolve(endpoint);
 
         JSONObject buildPayload = new JSONObject();
-        if (!projectIdInPath) {
-            buildPayload.put(CoreConstants.KEY_PROJECT_ID, app.projectID);
-        }
         buildPayload.put(CoreConstants.KEY_PROJECT_TYPE, app.projectType.getId());
 
         HttpResult result = HttpUtil.post(url, buildPayload);
@@ -572,25 +554,13 @@ public class CodewindConnection {
     }
 
     public void requestValidateGenerate(CodewindApplication app) throws JSONException, IOException {
-        boolean projectIdInPath = checkVersion(1901, "2019_M1_E");
-
-        String endpoint;
-        if (projectIdInPath) {
-            endpoint = CoreConstants.APIPATH_PROJECT_LIST + "/"    //$NON-NLS-1$
-                    + app.projectID + "/"    //$NON-NLS-1$
-                    + CoreConstants.APIPATH_VALIDATE_GENERATE;
-        } else {
-            endpoint = CoreConstants.APIPATH_BASE + "/"    //$NON-NLS-1$
-                    + CoreConstants.APIPATH_VALIDATE_GENERATE;
-
-        }
+        String endpoint = CoreConstants.APIPATH_PROJECT_LIST + "/"    //$NON-NLS-1$
+                + app.projectID + "/"    //$NON-NLS-1$
+                + CoreConstants.APIPATH_VALIDATE_GENERATE;
 
         URI url = baseUrl.resolve(endpoint);
 
         JSONObject buildPayload = new JSONObject();
-        if (!projectIdInPath) {
-            buildPayload.put(CoreConstants.KEY_PROJECT_ID, app.projectID);
-        }
         buildPayload.put(CoreConstants.KEY_PROJECT_TYPE, app.projectType.getId());
         buildPayload.put(CoreConstants.KEY_AUTO_GENERATE, true);
 
@@ -896,7 +866,7 @@ public class CodewindConnection {
             return true;
         if (!(object instanceof CodewindConnection))
             return false;
-        CodewindConnection other = (CodewindConnection)object;
+        CodewindConnection other = (CodewindConnection) object;
         return baseUrl.toString().equals(other.baseUrl);
     }
 

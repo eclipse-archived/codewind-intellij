@@ -3,8 +3,15 @@ plugins {
     id 'org.jetbrains.intellij' version '0.4.10'
 }
 
+final BUILD_TIME = "${new Date().format('yyyyMMddHHmm')}"
+
+def versionProperties = new Properties()
+file('src/main/resources/install-version.properties').withInputStream {
+    stream -> versionProperties.load(stream)
+}
+
 group 'org.eclipse.codewind.intellij'
-version '0.5.0'
+version versionProperties.getProperty('install-version') + '-' + BUILD_TIME
 
 sourceCompatibility = 1.8
 
