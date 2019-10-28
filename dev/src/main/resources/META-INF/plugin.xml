@@ -1,0 +1,37 @@
+<idea-plugin>
+    <!--
+    Copyright (c) 2019 IBM Corporation and others.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v2.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v20.html
+    Contributors:
+        IBM Corporation - initial API and implementation
+    -->
+
+    <id>org.eclipse.codewind.intellij</id>
+    <name>Codewind for IntelliJ IDEA</name>
+    <vendor email="codewind-dev@eclipse.org" url="https://www.eclipse.org/codewind/">Codewind</vendor>
+
+    <description><![CDATA[
+        Adds support for developing cloud-native, containerized web applications.
+    ]]></description>
+
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="192.0"/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.lang</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Codewind"
+                    anchor="left"
+                    secondary="true"
+                    factoryClass="org.eclipse.codewind.intellij.ui.WindowToolFactory"/>
+    </extensions>
+
+    <actions>
+    </actions>
+</idea-plugin>

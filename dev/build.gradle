@@ -1,0 +1,72 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.4.10'
+}
+
+group 'org.eclipse.codewind.intellij'
+version '0.5.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    corelibs
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    corelibs "io.socket:engine.io-client:1.0.0"
+    corelibs "com.squareup.okhttp3:okhttp:3.8.1"
+    corelibs "com.squareup.okio:okio:1.13.0"
+    corelibs "io.socket:socket.io-client:1.0.0"
+
+    implementation fileTree(dir: 'src/main/lib', include: ['*.jar'])
+}
+
+class Download extends DefaultTask {
+    @Input
+    String sourceUrl
+
+    @OutputFile
+    File target
+
+    @TaskAction
+    void download() {
+        if (!target.exists()) {
+            println("Downloading json jar")
+            ant.get(src: sourceUrl, dest: target)
+        }
+    }
+}
+
+def excludeJson = 'json-20090211.jar'
+
+task copyDependencies(type: Copy) {
+    from configurations.corelibs {
+        exclude excludeJson
+    }
+    into 'src/main/lib'
+}
+
+task downloadJson(type: Download) {
+    sourceUrl = 'https://download.eclipse.org/tools/orbit/downloads/drops/R20190726180751/repository/plugins/org.json_1.0.0.v201011060100.jar'
+    target = file('src/main/lib/org.json_1.0.0.v201011060100.jar')
+}
+
+copyDependencies.finalizedBy downloadJson
+
+defaultTasks 'copyDependencies', 'compileJava'
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version '2019.2'
+}
+patchPluginXml {
+    changeNotes """
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>"""
+}

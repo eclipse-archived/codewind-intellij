@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 50.52 51.44">
+    <defs>
+        <style>
+            .cls-1 {
+                fill: url(#linear-gradient);
+            }
+
+            .cls-2 {
+                font-size: 29px;
+                font-family: IBMPlexMono-Bold, IBM Plex Mono;
+                font-weight: 700;
+            }
+
+            .cls-3 {
+                fill: none;
+            }
+        </style>
+        <linearGradient id="linear-gradient" y1="26.44" x2="50" y2="26.44" gradientUnits="userSpaceOnUse">
+            <stop offset="0.03" stop-color="#24d754" />
+            <stop offset="0.23" stop-color="#22d450" />
+            <stop offset="0.45" stop-color="#1dcd43" />
+            <stop offset="0.67" stop-color="#14c02f" />
+            <stop offset="0.89" stop-color="#08af12" />
+            <stop offset="1" stop-color="#00a400" />
+        </linearGradient>
+    </defs>
+    <title>Project_Icon</title>
+    <g id="Layer_2" data-name="Layer 2">
+        <g id="Objects">
+            <path class="cls-1" d="M50,26.44a25,25,0,1,1-25-25,25,25,0,0,1,25,25" /><text class="cls-2"
+                transform="translate(7.6 36.85)">AB</text>
+            <rect class="cls-3" x="0.52" width="50" height="50" />
+        </g>
+    </g>
+</svg>
