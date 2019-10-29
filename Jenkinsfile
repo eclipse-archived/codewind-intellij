@@ -80,6 +80,7 @@ pipeline {
                             echo "build_info.url=$BUILD_URL" >> $OUTPUT_DIR/$BUILD_INFO
                             SHA1=$(sha1sum ${OUTPUT_DIR}/${OUTPUT_NAME}.zip | cut -d ' ' -f 1)
                             echo "build_info.SHA-1=${SHA1}" >> $OUTPUT_DIR/$BUILD_INFO
+                            scp $OUTPUT_DIR/$BUILD_INFO $sshHost:$deployDir/$GIT_BRANCH/$LATEST_DIR/$BUILD_INFO
                 
                             rm $OUTPUT_DIR/$BUILD_INFO
                             rm $OUTPUT_DIR/$OUTPUT_NAME.zip
