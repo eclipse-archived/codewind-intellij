@@ -22,7 +22,7 @@ pipeline {
             steps {
                 dir("dev") {
                     sh """#!/usr/bin/env bash
-                        println("Downloading codewind-intellij dependency binaries ...")
+                        echo "Downloading codewind-intellij dependency binaries ..."
                         export APPSODY_VERSION=${params.APPSODY_VERSION}
                         ./src/main/resources/cwctl/meta-pull.sh 
                         ./src/main/resources/cwctl/pull.sh
