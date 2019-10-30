@@ -12,6 +12,10 @@ pipeline {
         skipStagesAfterUnstable()
     }
 
+    triggers {
+        upstream(upstreamProjects: "Codewind/codewind-installer/${env.BRANCH_NAME}", threshold: hudson.model.Result.SUCCESS)
+    }
+
     parameters {
         string(name: "APPSODY_VERSION", defaultValue: "0.4.6", description: "Appsody executable version to download")
     }
@@ -20,12 +24,37 @@ pipeline {
 
         stage("Download dependency binaries") {
             steps {
+                dir("dev/src/main/resources/cwctl") {
+                    sh """#!/usr/bin/env bash
+                        export VSCODE_REPO="https://github.com/eclipse/codewind-vscode.git"
+                        export CW_VSCODE_BRANCH=master
+
+                        # the command below will echo the head commit if the branch exists, else it just exits
+                        if [[ -n \$(git ls-remote --heads \$VSCODE_REPO ${env.BRANCH_NAME}) ]]; then
+                            echo "Will pull scripts from  matching ${env.BRANCH_NAME} branch on \$VSCODE_REPO"
+                            export CW_VSCODE_BRANCH=${env.BRANCH_NAME}
+                        else
+                            echo "Will pull scripts from \$CW_VSCODE_BRANCH branch on \$VSCODE_REPO - no matching branch"
+                        fi
+
+                        export INSTALLER_REPO="https://github.com/eclipse/codewind-installer.git"
+                        export CW_CLI_BRANCH=master
+
+                        # the command below will echo the head commit if the branch exists, else it just exits
+                        if [[ -n \$(git ls-remote --heads \$INSTALLER_REPO ${env.BRANCH_NAME}) ]]; then
+                            echo "Will pull binaries from  matching ${env.BRANCH_NAME} branch on \$INSTALLER_REPO"
+                            export CW_CLI_BRANCH=${env.BRANCH_NAME}
+                        else
+                            echo "Will pull binaries from \$CW_CLI_BRANCH branch on \$INSTALLER_REPO - no matching branch"
+                        fi
+
+                        export APPSODY_VERSION=${params.APPSODY_VERSION}
+                        ./meta-pull.sh 
+                        ./pull.sh
+                    """
+                }
                 dir("dev") {
                     sh """#!/usr/bin/env bash
-                        echo "Downloading codewind-intellij dependency binaries ..."
-                        export APPSODY_VERSION=${params.APPSODY_VERSION}
-                        ./src/main/resources/cwctl/meta-pull.sh 
-                        ./src/main/resources/cwctl/pull.sh
                         ./gradlew copyDependencies --stacktrace
                     """
                 }
