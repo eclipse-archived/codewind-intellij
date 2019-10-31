@@ -106,7 +106,7 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
                 break;
             }
             default: {
-                Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_CLOUD_SVG);
+                Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_GENERIC_SVG);
                 setIcons(icon);
                 break;
             }
