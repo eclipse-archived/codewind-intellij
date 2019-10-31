@@ -61,6 +61,14 @@ pipeline {
             }
         }
 
+        stage("Create install-version.properties") {
+            steps {
+                sh """
+                   cli-scripts/set-install-version.sh ${env.BRANCH_NAME} dev/src/main/resources
+                """
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
