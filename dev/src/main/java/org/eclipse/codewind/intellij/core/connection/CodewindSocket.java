@@ -11,12 +11,9 @@
 
 package org.eclipse.codewind.intellij.core.connection;
 
-import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CodewindApplicationFactory;
 import org.eclipse.codewind.intellij.core.CoreUtil;
@@ -30,9 +27,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import io.socket.client.IO;
-import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
+import java.net.URI;
+import java.util.List;
+
+import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
 
 /**
  * Wrapper for a SocketIO client socket, which connects to Codewind and listens for project state changes,
@@ -71,10 +69,10 @@ public class CodewindSocket {
             EVENT_PROJECT_LOGS_LIST_CHANGED = "projectLogsListChanged",
             EVENT_PROJECT_SETTINGS_CHANGED = "projectSettingsChanged";
 
-    public CodewindSocket(CodewindConnection connection) throws URISyntaxException {
+    public CodewindSocket(CodewindConnection connection) {
         this.connection = connection;
 
-        URI uri = connection.baseUrl;
+        URI uri = connection.getBaseUri();
         if (connection.getSocketNamespace() != null) {
             uri = uri.resolve(connection.getSocketNamespace());
         }
@@ -95,171 +93,157 @@ public class CodewindSocket {
                     previousException = null;
                 }
             }
-        })
-                .on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        if (arg0[0] instanceof Exception) {
-                            Exception e = (Exception) arg0[0];
-                            if (previousException == null || !e.getMessage().equals(previousException.getMessage())) {
-                                previousException = e;
-                                Logger.logError("SocketIO Connect Error @ " + socketUri, e); //$NON-NLS-1$
-                            }
-                        }
-                        connection.onConnectionError();
-                        hasLostConnection = true;
+        }).on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                if (arg0[0] instanceof Exception) {
+                    Exception e = (Exception) arg0[0];
+                    if (previousException == null || !e.getMessage().equals(previousException.getMessage())) {
+                        previousException = e;
+                        Logger.logError("SocketIO Connect Error @ " + socketUri, e); //$NON-NLS-1$
                     }
-                })
-                .on(Socket.EVENT_ERROR, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        if (arg0[0] instanceof Exception) {
+                }
+                connection.onConnectionError();
+                hasLostConnection = true;
+            }
+        }).on(Socket.EVENT_ERROR, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                if (arg0[0] instanceof Exception) {
 //					Exception e = (Exception) arg0[0];
 //					Logger.logError("SocketIO Error @ " + socketUri, e); //$NON-NLS-1$
-                        }
-                    }
-                })
-                .on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        // Don't think this is ever used
-                        Logger.log("SocketIO EVENT_MESSAGE " + arg0[0].toString()); //$NON-NLS-1$
-                    }
-                })
-                .on(EVENT_PROJECT_CREATION, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        Logger.log(EVENT_PROJECT_CREATION + ": " + arg0[0].toString()); //$NON-NLS-1$
+                }
+            }
+        }).on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                // Don't think this is ever used
+                Logger.log("SocketIO EVENT_MESSAGE " + arg0[0].toString()); //$NON-NLS-1$
+            }
+        }).on(EVENT_PROJECT_CREATION, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                Logger.log(EVENT_PROJECT_CREATION + ": " + arg0[0].toString()); //$NON-NLS-1$
 
-                        try {
-                            JSONObject event = new JSONObject(arg0[0].toString());
-                            onProjectCreation(event);
-                        } catch (JSONException e) {
-                            Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
-                        }
-                    }
-                })
-                .on(EVENT_PROJECT_CHANGED, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        Logger.log(EVENT_PROJECT_CHANGED + ": " + arg0[0].toString()); //$NON-NLS-1$
+                try {
+                    JSONObject event = new JSONObject(arg0[0].toString());
+                    onProjectCreation(event);
+                } catch (JSONException e) {
+                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                }
+            }
+        }).on(EVENT_PROJECT_CHANGED, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                Logger.log(EVENT_PROJECT_CHANGED + ": " + arg0[0].toString()); //$NON-NLS-1$
 
-                        try {
-                            JSONObject event = new JSONObject(arg0[0].toString());
-                            onProjectChanged(event);
-                        } catch (JSONException e) {
-                            Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
-                        }
-                    }
-                })
-                .on(EVENT_PROJECT_SETTINGS_CHANGED, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        Logger.log(EVENT_PROJECT_SETTINGS_CHANGED + ": " + arg0[0].toString()); //$NON-NLS-1$
+                try {
+                    JSONObject event = new JSONObject(arg0[0].toString());
+                    onProjectChanged(event);
+                } catch (JSONException e) {
+                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                }
+            }
+        }).on(EVENT_PROJECT_SETTINGS_CHANGED, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                Logger.log(EVENT_PROJECT_SETTINGS_CHANGED + ": " + arg0[0].toString()); //$NON-NLS-1$
 
-                        try {
-                            JSONObject event = new JSONObject(arg0[0].toString());
-                            onProjectSettingsChanged(event);
-                        } catch (JSONException e) {
-                            Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
-                        }
-                    }
-                })
-                .on(EVENT_PROJECT_STATUS_CHANGE, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        Logger.log(EVENT_PROJECT_STATUS_CHANGE + ": " + arg0[0].toString()); //$NON-NLS-1$
+                try {
+                    JSONObject event = new JSONObject(arg0[0].toString());
+                    onProjectSettingsChanged(event);
+                } catch (JSONException e) {
+                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                }
+            }
+        }).on(EVENT_PROJECT_STATUS_CHANGE, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                Logger.log(EVENT_PROJECT_STATUS_CHANGE + ": " + arg0[0].toString()); //$NON-NLS-1$
 
-                        try {
-                            JSONObject event = new JSONObject(arg0[0].toString());
-                            onProjectStatusChanged(event);
-                        } catch (JSONException e) {
-                            Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
-                        }
-                    }
-                })
-                .on(EVENT_PROJECT_RESTART, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        Logger.log(EVENT_PROJECT_RESTART + ": " + arg0[0].toString()); //$NON-NLS-1$
+                try {
+                    JSONObject event = new JSONObject(arg0[0].toString());
+                    onProjectStatusChanged(event);
+                } catch (JSONException e) {
+                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                }
+            }
+        }).on(EVENT_PROJECT_RESTART, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                Logger.log(EVENT_PROJECT_RESTART + ": " + arg0[0].toString()); //$NON-NLS-1$
 
-                        try {
-                            JSONObject event = new JSONObject(arg0[0].toString());
-                            onProjectRestart(event);
-                        } catch (JSONException e) {
-                            Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
-                        }
-                    }
-                })
-                .on(EVENT_PROJECT_CLOSED, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        Logger.log(EVENT_PROJECT_CLOSED + ": " + arg0[0].toString()); //$NON-NLS-1$
+                try {
+                    JSONObject event = new JSONObject(arg0[0].toString());
+                    onProjectRestart(event);
+                } catch (JSONException e) {
+                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                }
+            }
+        }).on(EVENT_PROJECT_CLOSED, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                Logger.log(EVENT_PROJECT_CLOSED + ": " + arg0[0].toString()); //$NON-NLS-1$
 
-                        try {
-                            JSONObject event = new JSONObject(arg0[0].toString());
-                            onProjectClosed(event);
-                        } catch (JSONException e) {
-                            Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
-                        }
-                    }
-                })
-                .on(EVENT_PROJECT_DELETION, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        Logger.log(EVENT_PROJECT_DELETION + ": " + arg0[0].toString()); //$NON-NLS-1$
+                try {
+                    JSONObject event = new JSONObject(arg0[0].toString());
+                    onProjectClosed(event);
+                } catch (JSONException e) {
+                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                }
+            }
+        }).on(EVENT_PROJECT_DELETION, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                Logger.log(EVENT_PROJECT_DELETION + ": " + arg0[0].toString()); //$NON-NLS-1$
 
-                        try {
-                            JSONObject event = new JSONObject(arg0[0].toString());
-                            onProjectDeletion(event);
-                        } catch (JSONException e) {
-                            Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
-                        }
-                    }
-                })
-                .on(EVENT_PROJECT_LOGS_LIST_CHANGED, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        Logger.log(EVENT_PROJECT_LOGS_LIST_CHANGED + ": " + arg0[0].toString()); //$NON-NLS-1$
+                try {
+                    JSONObject event = new JSONObject(arg0[0].toString());
+                    onProjectDeletion(event);
+                } catch (JSONException e) {
+                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                }
+            }
+        }).on(EVENT_PROJECT_LOGS_LIST_CHANGED, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                Logger.log(EVENT_PROJECT_LOGS_LIST_CHANGED + ": " + arg0[0].toString()); //$NON-NLS-1$
 
-                        try {
-                            JSONObject event = new JSONObject(arg0[0].toString());
-                            onProjectLogsListChanged(event);
-                        } catch (JSONException e) {
-                            Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
-                        }
-                    }
-                })
-                .on(EVENT_LOG_UPDATE, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        // can't print this whole thing because the logs strings flood the output
-                        Logger.log(EVENT_LOG_UPDATE);
+                try {
+                    JSONObject event = new JSONObject(arg0[0].toString());
+                    onProjectLogsListChanged(event);
+                } catch (JSONException e) {
+                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                }
+            }
+        }).on(EVENT_LOG_UPDATE, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                // can't print this whole thing because the logs strings flood the output
+                Logger.log(EVENT_LOG_UPDATE);
 
-                        try {
-                            JSONObject event = new JSONObject(arg0[0].toString());
-                            onLogUpdate(event);
-                        } catch (JSONException e) {
-                            Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
-                        }
-                    }
-                })
-                .on(EVENT_PROJECT_VALIDATED, new Emitter.Listener() {
-                    @Override
-                    public void call(Object... arg0) {
-                        Logger.log(EVENT_PROJECT_VALIDATED + ": " + arg0[0].toString()); //$NON-NLS-1$
+                try {
+                    JSONObject event = new JSONObject(arg0[0].toString());
+                    onLogUpdate(event);
+                } catch (JSONException e) {
+                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                }
+            }
+        }).on(EVENT_PROJECT_VALIDATED, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                Logger.log(EVENT_PROJECT_VALIDATED + ": " + arg0[0].toString()); //$NON-NLS-1$
 
-                        try {
-                            JSONObject event = new JSONObject(arg0[0].toString());
-                            onValidationEvent(event);
-                        } catch (JSONException e) {
-                            Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
-                        }
-                    }
-                });
+                try {
+                    JSONObject event = new JSONObject(arg0[0].toString());
+                    onValidationEvent(event);
+                } catch (JSONException e) {
+                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                }
+            }
+        });
 
         socket.connect();
-
         Logger.log("Created CodewindSocket connected to " + socketUri); //$NON-NLS-1$
     }
 

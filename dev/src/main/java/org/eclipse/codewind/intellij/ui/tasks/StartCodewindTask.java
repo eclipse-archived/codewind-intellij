@@ -12,10 +12,10 @@
 package org.eclipse.codewind.intellij.ui.tasks;
 
 import com.intellij.openapi.progress.ProgressIndicator;
-import org.eclipse.codewind.intellij.core.CodewindManager;
 import org.eclipse.codewind.intellij.core.InstallStatus;
 import org.eclipse.codewind.intellij.core.InstallUtil;
 import org.eclipse.codewind.intellij.core.ProcessHelper;
+import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.jetbrains.annotations.NotNull;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
@@ -28,8 +28,8 @@ public class StartCodewindTask extends CodewindProcessTask {
 
     @Override
     protected ProcessHelper.ProcessResult runProcess(@NotNull ProgressIndicator indicator) throws Exception {
-        CodewindManager manager = CodewindManager.getManager();
-        InstallStatus status = manager.getInstallStatus();
+        ConnectionManager manager = ConnectionManager.getManager();
+        InstallStatus status = manager.getLocalConnection().getInstallStatus();
         return InstallUtil.startCodewind(status.getVersion(), indicator);
     }
 

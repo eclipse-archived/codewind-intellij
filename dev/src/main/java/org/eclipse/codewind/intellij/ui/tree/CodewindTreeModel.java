@@ -13,10 +13,9 @@ package org.eclipse.codewind.intellij.ui.tree;
 
 import com.intellij.ui.tree.BaseTreeModel;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
-import org.eclipse.codewind.intellij.core.CodewindManager;
 import org.eclipse.codewind.intellij.core.IUpdateHandler;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
-import org.eclipse.codewind.intellij.core.connection.CodewindConnectionManager;
+import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 
 import javax.swing.tree.TreePath;
 import java.util.Collections;
@@ -24,12 +23,12 @@ import java.util.List;
 
 public class CodewindTreeModel extends BaseTreeModel<Object> implements IUpdateHandler {
 
-    private Object root = "Codewind";
+    private Object root = ConnectionManager.getManager();
 
     @Override
     public List<? extends Object> getChildren(Object parent) {
-        if (parent instanceof CodewindManager) {
-            return getChildren((CodewindManager) parent);
+        if (parent instanceof ConnectionManager) {
+            return getChildren((ConnectionManager) parent);
         }
         if (parent instanceof CodewindConnection) {
             return getChildren((CodewindConnection) parent);
@@ -37,15 +36,15 @@ public class CodewindTreeModel extends BaseTreeModel<Object> implements IUpdateH
         return Collections.emptyList();
     }
 
-    private List<CodewindConnection> getChildren(CodewindManager manager) {
-        return CodewindConnectionManager.activeConnections();
+    private List<CodewindConnection> getChildren(ConnectionManager manager) {
+        return manager.activeConnections();
     }
 
     private List<CodewindApplication> getChildren(CodewindConnection connection) {
         return connection.getSortedApps();
     }
 
-    public void setRoot(CodewindManager root) {
+    public void setRoot(ConnectionManager root) {
         this.root = root;
     }
 
@@ -56,6 +55,7 @@ public class CodewindTreeModel extends BaseTreeModel<Object> implements IUpdateH
 
     @Override
     public void updateAll() {
+        System.out.println("*** tree model root updateAll");
         this.treeStructureChanged(new TreePath(getRoot()), new int[0], new Object[0]);
     }
 

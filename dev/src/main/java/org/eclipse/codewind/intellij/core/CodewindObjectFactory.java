@@ -12,6 +12,7 @@
 package org.eclipse.codewind.intellij.core;
 
 import java.net.URI;
+import java.nio.file.Path;
 
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
@@ -27,8 +28,8 @@ import org.eclipse.codewind.intellij.core.constants.ProjectType;
 public class CodewindObjectFactory  {
 
 	public static CodewindApplication createCodewindApplication(CodewindConnection connection,
-			String id, String name, ProjectType projectType, ProjectLanguage language, String pathInWorkspace) throws Exception {
-		return new CodewindIntellijApplication(connection, id, name, projectType, language, pathInWorkspace);
+			String id, String name, ProjectType projectType, ProjectLanguage language, Path localPath) throws Exception {
+		return new CodewindIntellijApplication(connection, id, name, projectType, language, localPath);
 	}
 
 }

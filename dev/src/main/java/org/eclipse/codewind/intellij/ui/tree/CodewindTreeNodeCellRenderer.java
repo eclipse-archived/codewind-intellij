@@ -19,11 +19,11 @@ import java.awt.Component;
 
 import static org.eclipse.codewind.intellij.ui.IconCache.*;
 
-import org.eclipse.codewind.intellij.core.CodewindApplication;
-import org.eclipse.codewind.intellij.core.CodewindManager;
-import org.eclipse.codewind.intellij.core.InstallStatus;
-import org.eclipse.codewind.intellij.core.InstallUtil;
+import org.eclipse.codewind.intellij.core.*;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
+import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
+import org.eclipse.codewind.intellij.core.connection.LocalConnection;
+import org.eclipse.codewind.intellij.core.connection.RemoteConnection;
 import org.eclipse.codewind.intellij.core.constants.AppStatus;
 import org.eclipse.codewind.intellij.core.constants.BuildStatus;
 import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
@@ -41,7 +41,7 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
     }
 
     private void setIcons(Object value) {
-        if (value instanceof CodewindManager || value instanceof String) {
+        if (value instanceof ConnectionManager || value instanceof String) {
             Icon icon = getCachedIcon(ICONS_THEMELESS_CODEWIND_SVG);
             setIcons(icon);
             return;
@@ -121,8 +121,8 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
 
     @NotNull
     private String getText(Object element) {
-        if (element instanceof CodewindManager) {
-            return getText((CodewindManager) element);
+        if (element instanceof ConnectionManager) {
+            return getText((ConnectionManager) element);
         }
 
         if (element instanceof CodewindConnection) {
@@ -164,61 +164,58 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
 
     @NotNull
     private String getText(CodewindConnection connection) {
-        String text;
-        if (connection.baseUrl.equals(CodewindManager.getManager().getLocalURI())) {
-            text = message("CodewindLocalProjects");
-        } else {
-            text = message("CodewindConnectionLabel") + " " + connection.baseUrl;
+        if (connection instanceof LocalConnection) {
+            return getText((LocalConnection) connection);
         }
+        return getText((RemoteConnection)connection);
+    }
 
-        if (!connection.isConnected()) {
-            String errorMsg = connection.getConnectionErrorMsg();
-            if (errorMsg == null) {
-                errorMsg = message("CodewindDisconnected");
+    @NotNull
+    private String getText(LocalConnection connection) {
+        String text = connection.getName();
+        if (connection.getInstallerStatus() != null) {
+            switch (connection.getInstallerStatus()) {
+                case INSTALLING:
+                    return text + " [" + message("CodewindInstallingQualifier") + "]";
+                case UNINSTALLING:
+                    return text + " [" + message("CodewindUninstallingQualifier") + "]";
+                case STARTING:
+                    return text + " [" + message("CodewindStartingQualifier") + "]";
+                case STOPPING:
+                    return text + " [" + message("CodewindStoppingQualifier") + "]";
             }
-            text = text + " (" + errorMsg + ")";
-        } else if (connection.getApps().size() == 0) {
-            text = text + " (" + message("CodewindConnectionNoProjects") + ")";
+        } else {
+            InstallStatus status = connection.getInstallStatus();
+            if (status.isStarted()) {
+                return text + " [" + message("CodewindRunningQualifier") + "]";
+            } else if (status.isInstalled()) {
+                if (status.hasStartedVersions()) {
+                    // An older version is running
+                    return text + " [" + message("CodewindWrongVersionQualifier", status.getStartedVersions()) + "] (" +
+                            message("CodewindWrongVersionMsg", InstallUtil.getVersion());
+                }
+                return text + " [" + message("CodewindNotStartedQualifier") + "] (" + message("CodewindNotStartedMsg") + ")";
+            } else if (status.hasInstalledVersions()) {
+                // An older version is installed
+                return text + " [" + message("CodewindWrongVersionQualifier", status.getInstalledVersions()) + "] (" +
+                        message("CodewindWrongVersionMsg", InstallUtil.getVersion());
+            } else if (status.isUnknown()) {
+                return text + " [" + message("CodewindErrorQualifier") + "] (" + message("CodewindErrorMsg") + ")";
+            } else {
+                return text + " [" + message("CodewindErrorQualifier") + "] (" + message("CodewindErrorMsg") + ")";
+            }
         }
-
         return text;
     }
 
     @NotNull
-    private String getText(CodewindManager manager) {
-        String codewindLabel = message("CodewindLabel");
-        if (manager.getInstallerStatus() != null) {
-            switch (manager.getInstallerStatus()) {
-                case INSTALLING:
-                    return codewindLabel + "[" + message("CodewindInstallingQualifier") + "]";
-                case UNINSTALLING:
-                    return codewindLabel + "[" + message("CodewindUninstallingQualifier") + "]";
-                case STARTING:
-                    return codewindLabel + "[" + message("CodewindStartingQualifier") + "]";
-                case STOPPING:
-                    return codewindLabel + "[" + message("CodewindStoppingQualifier") + "]";
-            }
-        } else {
-            InstallStatus status = manager.getInstallStatus();
-            if (status.isStarted()) {
-                return codewindLabel + " [" + message("CodewindRunningQualifier") + "]";
-            } else if (status.isInstalled()) {
-                if (status.hasStartedVersions()) {
-                    // An older version is running
-                    return codewindLabel + "[" + message("CodewindWrongVersionQualifier", status.getStartedVersions()) + "] (" +
-                            message("CodewindWrongVersionMsg", InstallUtil.getVersion());
-                }
-                return codewindLabel + " [" + message("CodewindNotStartedQualifier") + "] (" + message("CodewindNotStartedMsg") + ")";
-            } else if (status.hasInstalledVersions()) {
-                // An older version is installed
-                return codewindLabel + "[" + message("CodewindWrongVersionQualifier", status.getInstalledVersions()) + "] (" +
-                        message("CodewindWrongVersionMsg", InstallUtil.getVersion());
-            } else if (status.isUnknown()) {
-                return codewindLabel + " [" + message("CodewindErrorQualifier") + "] (" + message("CodewindErrorMsg") + ")";
-            } else {
-                return codewindLabel + " [" + message("CodewindErrorQualifier") + "] (" + message("CodewindErrorMsg") + ")";
-            }
-        }
-        return codewindLabel;
+    private String getText(RemoteConnection connection) {
+        // TODO implement this
+        return "";
+    }
+
+    @NotNull
+    private String getText(ConnectionManager manager) {
+        return message("CodewindLabel");
     }
 }

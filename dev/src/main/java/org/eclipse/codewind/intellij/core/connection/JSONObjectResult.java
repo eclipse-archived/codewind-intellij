@@ -20,15 +20,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public abstract class JSONObjectResult {
-	
+
 	protected final JSONObject result;
 	protected final String type;
-	
+
 	public JSONObjectResult(JSONObject result, String type) {
 		this.result = result;
 		this.type = type;
 	}
-	
+
 	protected String getString(String key) {
 		String value = null;
 		if (result.has(key)) {
@@ -42,7 +42,7 @@ public abstract class JSONObjectResult {
 		}
 		return value;
 	}
-	
+
 	protected boolean getBoolean(String key) {
 		boolean value = false;
 		if (result.has(key)) {
@@ -56,7 +56,7 @@ public abstract class JSONObjectResult {
 		}
 		return value;
 	}
-	
+
 	protected List<String> getStringArray(String key) {
 		List<String> list = new ArrayList<String>();
 		if (result.has(key)) {
@@ -72,6 +72,20 @@ public abstract class JSONObjectResult {
 			Logger.logError("The " + type + " object did not have the expected key: " + key);
 		}
 		return list;
+	}
+
+	protected JSONObject getObject(String key) {
+		JSONObject value = null;
+		if (result.has(key)) {
+			try {
+				value = result.getJSONObject(key);
+			} catch (JSONException e) {
+				Logger.logError("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
+			}
+		} else {
+			Logger.logError("The " + type + " object did not have the expected key: " + key);
+		}
+		return value;
 	}
 
 	@Override

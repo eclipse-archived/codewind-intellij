@@ -11,6 +11,7 @@
 
 package org.eclipse.codewind.intellij.core;
 
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,33 +27,33 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class CodewindApplicationFactory {
-	
+
 	/**
 	 * Process the json for all projects, create or update applications as needed.
 	 */
 	public static void getAppsFromProjectsJson(CodewindConnection connection, String projectsJson) {
 		getAppsFromProjectsJson(connection, projectsJson, null);
 	}
-	
+
 	/**
 	 * Process the json for the given projectID or all projects if projectID is null.
 	 */
 	public static void getAppsFromProjectsJson(CodewindConnection connection,
-			String projectsJson, String projectID) {
+											   String projectsJson, String projectID) {
 
 		try {
 			Logger.log(projectsJson);
 			JSONArray appArray = new JSONArray(projectsJson);
 			Set<String> idSet = new HashSet<String>();
-	
-			for(int i = 0; i < appArray.length(); i++) {
+
+			for (int i = 0; i < appArray.length(); i++) {
 				JSONObject appJso = appArray.getJSONObject(i);
 				try {
 					String id = appJso.getString(CoreConstants.KEY_PROJECT_ID);
 					idSet.add(id);
 					// If a project id was passed in then only process the JSON object for that project
 					if (projectID == null || projectID.equals(id)) {
-						synchronized(CodewindApplicationFactory.class) {
+						synchronized (CodewindApplicationFactory.class) {
 							CodewindApplication app = connection.getAppByID(id);
 							if (app != null) {
 								updateApp(app, appJso);
@@ -72,7 +73,7 @@ public class CodewindApplicationFactory {
 					Logger.logError("Error parsing project json: " + appJso, e); //$NON-NLS-1$
 				}
 			}
-			
+
 			// If refreshing all of the projects, remove any projects that are not in the list returned by Codewind.
 			// This will only happen if something goes wrong and no delete event is received from Codewind for a
 			// project.
@@ -88,7 +89,7 @@ public class CodewindApplicationFactory {
 			Logger.logError("Error parsing json for project array.", e); //$NON-NLS-1$
 		}
 	}
-	
+
 	/**
 	 * Use the static information in the JSON object to create the application.
 	 */
@@ -109,24 +110,26 @@ public class CodewindApplicationFactory {
 				String languageStr = appJso.getString(CoreConstants.KEY_LANGUAGE);
 				type = ProjectType.getType(typeStr, extension);
 				language = ProjectLanguage.getLanguage(languageStr);
-			} catch(JSONException e) {
+			} catch (JSONException e) {
 				Logger.logError(e.getMessage() + " in: " + appJso); //$NON-NLS-1$
 			}
 
-			String loc = appJso.getString(CoreConstants.KEY_LOC_DISK);
-			
-			CodewindApplication app = CodewindObjectFactory.createCodewindApplication(connection, id, name, type, language, loc);
-			
+			String localPath = appJso.getString(CoreConstants.KEY_LOC_DISK);
+			localPath = CoreUtil.getHostPath(localPath);
+
+			CodewindApplication app = CodewindObjectFactory.createCodewindApplication(connection, id, name, type,
+					language, Paths.get(localPath));
+
 			updateApp(app, appJso);
 			return app;
-		} catch(JSONException e) {
+		} catch (JSONException e) {
 			Logger.logError("Error parsing project json: " + appJso, e); //$NON-NLS-1$
 		} catch (Exception e) {
 			Logger.logError("Error creating new application for project.", e); //$NON-NLS-1$
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Update the application with the dynamic information in the JSON object.
 	 */
@@ -143,7 +146,7 @@ public class CodewindApplicationFactory {
 			} else {
 				app.setAction(null);
 			}
-			
+
 			// Set the app state
 			if (appJso.has(CoreConstants.KEY_OPEN_STATE)) {
 				String state = appJso.getString(CoreConstants.KEY_OPEN_STATE);
@@ -153,7 +156,7 @@ public class CodewindApplicationFactory {
 				}
 			}
 			app.setEnabled(true);
-						
+
 			// Set the app status
 			if (appJso.has(CoreConstants.KEY_APP_STATUS)) {
 				String appStatus = appJso.getString(CoreConstants.KEY_APP_STATUS);
@@ -163,7 +166,7 @@ public class CodewindApplicationFactory {
 				}
 				app.setAppStatus(appStatus, detail);
 			}
-			
+
 			// Set the build status
 			if (appJso.has(CoreConstants.KEY_BUILD_STATUS)) {
 				String buildStatus = appJso.getString(CoreConstants.KEY_BUILD_STATUS);
@@ -178,7 +181,7 @@ public class CodewindApplicationFactory {
 				long timestamp = appJso.getLong(CoreConstants.KEY_LAST_BUILD);
 				app.setLastBuild(timestamp);
 			}
-			
+
 			if (appJso.has(CoreConstants.KEY_APP_IMAGE_LAST_BUILD)) {
 				String timestamp = appJso.getString(CoreConstants.KEY_APP_IMAGE_LAST_BUILD);
 				try {
@@ -187,28 +190,35 @@ public class CodewindApplicationFactory {
 					Logger.logError("Error parsing the app image last build value: " + timestamp, e);
 				}
 			}
-			
+
+			// Set the application base URL
+			String appBaseUrl = null;
+			if (appJso.has(CoreConstants.KEY_APP_BASE_URL)) {
+				appBaseUrl = appJso.getString(CoreConstants.KEY_APP_BASE_URL);
+			}
+			app.setAppBaseUrl(appBaseUrl);
+
 			// Set isHttps
 			boolean isHttps = false;
 			if (appJso.has(CoreConstants.KEY_IS_HTTPS)) {
 				isHttps = appJso.getBoolean(CoreConstants.KEY_IS_HTTPS);
 			}
 			app.setIsHttps(isHttps);
-			
+
 			// Get the container id
 			String containerId = null;
 			if (appJso.has(CoreConstants.KEY_CONTAINER_ID)) {
-			    containerId = appJso.getString(CoreConstants.KEY_CONTAINER_ID);
+				containerId = appJso.getString(CoreConstants.KEY_CONTAINER_ID);
 			}
 			app.setContainerId(containerId);
-			
+
 			// Get the ports if they are available
 			try {
 				JSONObject portsObj = null;
 				if (appJso.has(CoreConstants.KEY_PORTS) && (appJso.get(CoreConstants.KEY_PORTS) instanceof JSONObject)) {
 					portsObj = appJso.getJSONObject(CoreConstants.KEY_PORTS);
 				}
-	
+
 				int httpPortNum = -1;
 				if (portsObj != null && portsObj.has(CoreConstants.KEY_EXPOSED_PORT)) {
 					String httpPort = portsObj.getString(CoreConstants.KEY_EXPOSED_PORT);
@@ -217,7 +227,7 @@ public class CodewindApplicationFactory {
 					}
 				}
 				app.setHttpPort(httpPortNum);
-				
+
 				String internalAppPort = null;
 				if (portsObj != null && portsObj.has(CoreConstants.KEY_INTERNAL_PORT)) {
 					internalAppPort = portsObj.getString(CoreConstants.KEY_INTERNAL_PORT);
@@ -232,7 +242,7 @@ public class CodewindApplicationFactory {
 					}
 				}
 				app.setDebugPort(debugPortNum);
-				
+
 				String internalDebugPort = null;
 				if (portsObj != null && portsObj.has(CoreConstants.KEY_INTERNAL_DEBUG_PORT)) {
 					internalDebugPort = portsObj.getString(CoreConstants.KEY_INTERNAL_DEBUG_PORT);
@@ -241,7 +251,7 @@ public class CodewindApplicationFactory {
 			} catch (Exception e) {
 				Logger.logError("Failed to get the ports for application: " + app.name, e); //$NON-NLS-1$
 			}
-			
+
 			// Set the context root
 			String contextRoot = null;
 			if (appJso.has(CoreConstants.KEY_CONTEXT_ROOT)) {
@@ -250,20 +260,20 @@ public class CodewindApplicationFactory {
 				contextRoot = appJso.getString(CoreConstants.KEY_CONTEXTROOT);
 			}
 			app.setContextRoot(contextRoot);
-			
+
 			// Set the start mode
 			StartMode startMode = StartMode.get(appJso);
 			app.setStartMode(startMode);
-			
+
 			// Set auto build
 			if (appJso.has(CoreConstants.KEY_AUTO_BUILD)) {
 				boolean autoBuild = appJso.getBoolean(CoreConstants.KEY_AUTO_BUILD);
 				app.setAutoBuild(autoBuild);
 			}
-		} catch(JSONException e) {
+		} catch (JSONException e) {
 			Logger.logError("Error parsing project json: " + appJso, e); //$NON-NLS-1$
 		}
-		
+
 		try {
 			// Set the log information
 			List<ProjectLogInfo> logInfos = app.connection.requestProjectLogs(app);
@@ -271,7 +281,7 @@ public class CodewindApplicationFactory {
 		} catch (Exception e) {
 			Logger.logError("An error occurred while updating the log information for project: " + app.name, e);
 		}
-		
+
 		// Check for metrics support
 		boolean metricsAvailable = true;
 		try {
@@ -283,6 +293,6 @@ public class CodewindApplicationFactory {
 			Logger.logError("An error occurred checking if metrics are available: " + app.name, e);
 		}
 		app.setMetricsAvailable(metricsAvailable);
-		
+
 	}
 }

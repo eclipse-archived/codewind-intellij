@@ -16,11 +16,13 @@ import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
 import org.eclipse.codewind.intellij.core.constants.ProjectType;
 
 import java.net.MalformedURLException;
+import java.nio.file.Path;
 
 public class CodewindIntellijApplication extends CodewindApplication {
 
-    CodewindIntellijApplication(CodewindConnection connection, String id, String name, ProjectType projectType, ProjectLanguage language, String pathInWorkspace) throws MalformedURLException {
-        super(connection, id, name, projectType, language, pathInWorkspace);
+    CodewindIntellijApplication(CodewindConnection connection, String id, String name, ProjectType projectType,
+                                ProjectLanguage language, Path localPath) throws MalformedURLException {
+        super(connection, id, name, projectType, language, localPath);
     }
 
 }

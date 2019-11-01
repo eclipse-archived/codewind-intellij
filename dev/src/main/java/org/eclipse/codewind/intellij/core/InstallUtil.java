@@ -14,6 +14,8 @@ package org.eclipse.codewind.intellij.core;
 import com.intellij.openapi.progress.ProgressIndicator;
 import org.eclipse.codewind.intellij.core.PlatformUtil.OperatingSystem;
 import org.eclipse.codewind.intellij.core.ProcessHelper.ProcessResult;
+import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
+import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -112,10 +114,10 @@ public class InstallUtil {
         return new InstallStatus(status);
     }
 
-    public static ProcessResult startCodewind(String version, ProgressIndicator indicator) throws IOException, TimeoutException {
+    public static ProcessResult startCodewind(String version, ProgressIndicator indicator) throws IOException, TimeoutException, JSONException {
         indicator.setIndeterminate(true);
         ProcessResult result = runInstallerProcess(START_CMD, TAG_OPTION, version);
-        CodewindManager.getManager().createLocalConnection();
+        ConnectionManager.getManager().getLocalConnection().connect();
         return result;
     }
 
@@ -127,26 +129,26 @@ public class InstallUtil {
     private static ProcessResult runInstallerProcess(String cmd, String... options) throws IOException, TimeoutException {
         Process process = null;
         try {
-        	CodewindManager.InstallerStatus status;
+        	LocalConnection.InstallerStatus status;
         	switch (cmd) {
 				case START_CMD:
-					status = CodewindManager.InstallerStatus.STARTING;
+					status = LocalConnection.InstallerStatus.STARTING;
 					break;
 				case STOP_ALL_CMD:
-					status = CodewindManager.InstallerStatus.STOPPING;
+					status = LocalConnection.InstallerStatus.STOPPING;
 					break;
 				default:
 					throw new AssertionError("Unrecognized cwctl command: " + cmd);
 			}
-			CodewindManager.getManager().setInstallerStatus(status);
+			ConnectionManager.getManager().getLocalConnection().setInstallerStatus(status);
             process = runInstaller(cmd, options);
             return ProcessHelper.waitForProcess(process, 500, 120);
         } finally {
             if (process != null && process.isAlive()) {
                 process.destroy();
             }
-            CodewindManager.getManager().refreshInstallStatus();
-            CodewindManager.getManager().setInstallerStatus(null);
+            ConnectionManager.getManager().getLocalConnection().refreshInstallStatus();
+            ConnectionManager.getManager().getLocalConnection().setInstallerStatus(null);
         }
     }
 

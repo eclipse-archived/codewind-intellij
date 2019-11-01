@@ -124,6 +124,11 @@ public class CoreUtil {
         invokeLater(runner, defaultModalityState());
     }
 
+    /**
+     * Asynchronously execute the given runnable on a background thread
+     *
+     * @param runner the runner to run
+     */
     public static void runAsync(Runnable runner) {
         CompletableFuture.runAsync(runner);
     }
