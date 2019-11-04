@@ -25,7 +25,7 @@ Submit issues and contributions:
 git clone https://github.com/eclipse/codewind-intellij
 cd codewind-intellij/dev/
 src/main/resources/cwctl/meta-pull.sh
-APPSODY_VERSION=0.4.6 src/main/resources/cwctl/pull.sh
+src/main/resources/cwctl/pull.sh
 ./gradlew copyDependencies build
 ```
 3. Open the `codewind-intellij/dev` folder in IntelliJ.
@@ -37,7 +37,7 @@ To build a plugin zip file which can be installed into IntelliJ:
 git clone https://github.com/eclipse/codewind-intellij
 cd codewind-intellij/dev/
 src/main/resources/cwctl/meta-pull.sh
-APPSODY_VERSION=0.4.6 src/main/resources/cwctl/pull.sh
+src/main/resources/cwctl/pull.sh
 ./gradlew copyDependencies buildPlugin
 ```
 The built plugin zip file will be found in the `codewind-intellij/dev/build/distributions/` folder.
