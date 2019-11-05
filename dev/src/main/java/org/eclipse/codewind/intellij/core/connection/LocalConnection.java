@@ -63,6 +63,7 @@ public class LocalConnection extends CodewindConnection {
                 URI uri = new URI(installStatus.getURL());
                 setBaseUri(uri);
                 connect();
+                return;
             }
         } catch (IOException e) {
             Logger.logError("An error occurred trying to get the installer status", e); //$NON-NLS-1$

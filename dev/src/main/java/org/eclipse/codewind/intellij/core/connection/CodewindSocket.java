@@ -28,6 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
@@ -241,6 +242,11 @@ public class CodewindSocket {
                     Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
+        });
+
+        socket.on("error", (Object... args) -> {
+            System.out.println("*** error event from socket: " + Arrays.asList(args));
+            Logger.logError(args[0].toString());
         });
 
         socket.connect();
