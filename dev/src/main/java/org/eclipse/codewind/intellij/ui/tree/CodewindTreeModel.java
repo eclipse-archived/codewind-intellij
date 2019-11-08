@@ -55,7 +55,6 @@ public class CodewindTreeModel extends BaseTreeModel<Object> implements IUpdateH
 
     @Override
     public void updateAll() {
-        System.out.println("*** tree model root updateAll");
         this.treeStructureChanged(new TreePath(getRoot()), new int[0], new Object[0]);
     }
 

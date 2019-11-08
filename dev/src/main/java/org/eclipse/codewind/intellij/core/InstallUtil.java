@@ -79,6 +79,7 @@ public class InstallUtil {
     private static final String INSTALL_VERSION_PROPERTIES = "install-version.properties";
     private static final String INSTALL_VERSION_KEY = "install-version";
     private static final String INSTALL_VERSION;
+
     static {
         String version;
         try (InputStream stream = InstallUtil.class.getClassLoader().getResourceAsStream(INSTALL_VERSION_PROPERTIES)) {
@@ -123,24 +124,38 @@ public class InstallUtil {
 
     public static ProcessResult stopCodewind(ProgressIndicator indicator) throws IOException, TimeoutException {
         indicator.setIndeterminate(true);
+
+        // Close the local connection, then yield to give it the chance to close.
+        // If there's an exception, log it and continue to stop Codewind
+        try {
+            ConnectionManager.getManager().getLocalConnection().close();
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        } catch (Exception e) {
+            Logger.logError("Error closing socket", e);
+        }
+
         return runInstallerProcess(STOP_ALL_CMD);
     }
 
     private static ProcessResult runInstallerProcess(String cmd, String... options) throws IOException, TimeoutException {
         Process process = null;
         try {
-        	LocalConnection.InstallerStatus status;
-        	switch (cmd) {
-				case START_CMD:
-					status = LocalConnection.InstallerStatus.STARTING;
-					break;
-				case STOP_ALL_CMD:
-					status = LocalConnection.InstallerStatus.STOPPING;
-					break;
-				default:
-					throw new AssertionError("Unrecognized cwctl command: " + cmd);
-			}
-			ConnectionManager.getManager().getLocalConnection().setInstallerStatus(status);
+            LocalConnection.InstallerStatus status;
+            switch (cmd) {
+                case START_CMD:
+                    status = LocalConnection.InstallerStatus.STARTING;
+                    break;
+                case STOP_ALL_CMD:
+                    status = LocalConnection.InstallerStatus.STOPPING;
+                    break;
+                default:
+                    throw new AssertionError("Unrecognized cwctl command: " + cmd);
+            }
+            ConnectionManager.getManager().getLocalConnection().setInstallerStatus(status);
             process = runInstaller(cmd, options);
             return ProcessHelper.waitForProcess(process, 500, 120);
         } finally {

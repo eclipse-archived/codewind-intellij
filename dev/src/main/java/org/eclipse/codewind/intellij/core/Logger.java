@@ -21,7 +21,9 @@ public class Logger {
         getLogger().error(msg);
     }
 
-    public static void logError(String msg, Throwable t) { getLogger().error(msg, t); }
+    public static void logError(String msg, Throwable t) {
+        getLogger().error(msg, t);
+    }
 
     public static void logError(Throwable t) {
         getLogger().error(t);
@@ -29,5 +31,13 @@ public class Logger {
 
     public static void log(String msg) {
         getLogger().info(msg);
+    }
+
+    public static void log(String msg, Throwable t) {
+        getLogger().info(msg, t);
+    }
+
+    public static void log(Throwable t) {
+        getLogger().info(t);
     }
 }

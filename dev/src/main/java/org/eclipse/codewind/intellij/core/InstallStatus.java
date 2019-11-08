@@ -164,4 +164,9 @@ public class InstallStatus {
 		}
 		return builder.toString();
 	}
+
+	@Override
+	public String toString() {
+		return "InstallStatus: { Status: " + status + ", URL: " + url + " }";
+	}
 }

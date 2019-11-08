@@ -84,10 +84,9 @@ public class CodewindSocket {
         socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
             @Override
             public void call(Object... arg0) {
-                Logger.log("SocketIO connect success @ " + socketUri); //$NON-NLS-1$
-
                 if (!hasConnected) {
                     hasConnected = true;
+                    Logger.log("SocketIO connect success @ " + socketUri); //$NON-NLS-1$
                 }
                 if (hasLostConnection) {
                     connection.clearConnectionError();
@@ -242,11 +241,6 @@ public class CodewindSocket {
                     Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
-        });
-
-        socket.on("error", (Object... args) -> {
-            System.out.println("*** error event from socket: " + Arrays.asList(args));
-            Logger.logError(args[0].toString());
         });
 
         socket.connect();

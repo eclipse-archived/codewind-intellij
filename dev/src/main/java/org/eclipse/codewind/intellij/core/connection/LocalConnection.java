@@ -57,14 +57,12 @@ public class LocalConnection extends CodewindConnection {
             if (!installStatus.isStarted()) {
                 close();
                 setBaseUri(null);
-                return;
-            }
-            if (!isConnected()) {
+            } else if (!isConnected()) {
                 URI uri = new URI(installStatus.getURL());
                 setBaseUri(uri);
                 connect();
-                return;
             }
+            return;
         } catch (IOException e) {
             Logger.logError("An error occurred trying to get the installer status", e); //$NON-NLS-1$
         } catch (TimeoutException e) {
