@@ -89,7 +89,7 @@ public class ProjectCapabilities {
 				}
 			}
 		} catch (JSONException e) {
-			Logger.logError("Failed to parse the start mode capabilities.", e);
+			Logger.logWarning("Failed to parse the start mode capabilities.", e);
 		}
 		
 		try {
@@ -103,7 +103,7 @@ public class ProjectCapabilities {
 				}
 			}
 		} catch (JSONException e) {
-			Logger.logError("Failed to parse the control command capabilities.", e);
+			Logger.logWarning("Failed to parse the control command capabilities.", e);
 		}
 	}
 	

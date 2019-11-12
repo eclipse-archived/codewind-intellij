@@ -96,7 +96,7 @@ public class CoreUtil {
         try {
             return Integer.parseInt(portStr);
         } catch (NumberFormatException e) {
-            Logger.logError(String.format("Couldn't parse port from \"%s\"", portStr), e); //$NON-NLS-1$
+            Logger.logWarning(String.format("Couldn't parse port from \"%s\"", portStr), e); //$NON-NLS-1$
             return -1;
         }
     }

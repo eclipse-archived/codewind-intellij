@@ -70,7 +70,7 @@ public class CodewindApplicationFactory {
 						}
 					}
 				} catch (Exception e) {
-					Logger.logError("Error parsing project json: " + appJso, e); //$NON-NLS-1$
+					Logger.logWarning("Error parsing project json: " + appJso, e); //$NON-NLS-1$
 				}
 			}
 
@@ -86,7 +86,7 @@ public class CodewindApplicationFactory {
 				}
 			}
 		} catch (Exception e) {
-			Logger.logError("Error parsing json for project array.", e); //$NON-NLS-1$
+			Logger.logWarning("Error parsing json for project array.", e); //$NON-NLS-1$
 		}
 	}
 
@@ -111,7 +111,7 @@ public class CodewindApplicationFactory {
 				type = ProjectType.getType(typeStr, extension);
 				language = ProjectLanguage.getLanguage(languageStr);
 			} catch (JSONException e) {
-				Logger.logError(e.getMessage() + " in: " + appJso); //$NON-NLS-1$
+				Logger.logWarning(e.getMessage() + " in: " + appJso); //$NON-NLS-1$
 			}
 
 			String localPath = appJso.getString(CoreConstants.KEY_LOC_DISK);
@@ -123,9 +123,9 @@ public class CodewindApplicationFactory {
 			updateApp(app, appJso);
 			return app;
 		} catch (JSONException e) {
-			Logger.logError("Error parsing project json: " + appJso, e); //$NON-NLS-1$
+			Logger.logWarning("Error parsing project json: " + appJso, e); //$NON-NLS-1$
 		} catch (Exception e) {
-			Logger.logError("Error creating new application for project.", e); //$NON-NLS-1$
+			Logger.logWarning("Error creating new application for project.", e); //$NON-NLS-1$
 		}
 		return null;
 	}
@@ -187,7 +187,7 @@ public class CodewindApplicationFactory {
 				try {
 					app.setLastImageBuild(Long.parseLong(timestamp));
 				} catch (NumberFormatException e) {
-					Logger.logError("Error parsing the app image last build value: " + timestamp, e);
+					Logger.logWarning("Error parsing the app image last build value: " + timestamp, e);
 				}
 			}
 
@@ -249,7 +249,7 @@ public class CodewindApplicationFactory {
 				}
 				app.setContainerDebugPort(internalDebugPort);
 			} catch (Exception e) {
-				Logger.logError("Failed to get the ports for application: " + app.name, e); //$NON-NLS-1$
+				Logger.logWarning("Failed to get the ports for application: " + app.name, e); //$NON-NLS-1$
 			}
 
 			// Set the context root
@@ -271,7 +271,7 @@ public class CodewindApplicationFactory {
 				app.setAutoBuild(autoBuild);
 			}
 		} catch (JSONException e) {
-			Logger.logError("Error parsing project json: " + appJso, e); //$NON-NLS-1$
+			Logger.logWarning("Error parsing project json: " + appJso, e); //$NON-NLS-1$
 		}
 
 		try {
@@ -279,7 +279,7 @@ public class CodewindApplicationFactory {
 			List<ProjectLogInfo> logInfos = app.connection.requestProjectLogs(app);
 			app.setLogInfos(logInfos);
 		} catch (Exception e) {
-			Logger.logError("An error occurred while updating the log information for project: " + app.name, e);
+			Logger.logWarning("An error occurred while updating the log information for project: " + app.name, e);
 		}
 
 		// Check for metrics support
@@ -290,7 +290,7 @@ public class CodewindApplicationFactory {
 				metricsAvailable = obj.getBoolean(CoreConstants.KEY_METRICS_AVAILABLE);
 			}
 		} catch (Exception e) {
-			Logger.logError("An error occurred checking if metrics are available: " + app.name, e);
+			Logger.logWarning("An error occurred checking if metrics are available: " + app.name, e);
 		}
 		app.setMetricsAvailable(metricsAvailable);
 

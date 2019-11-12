@@ -50,7 +50,7 @@ public class InstallStatus {
 				}
 			}
 			// This should not happen
-			Logger.logError("Unrecognized installer status: " + statusStr);
+			Logger.logWarning("Unrecognized installer status: " + statusStr);
 			return UNKNOWN;
 		}
 
@@ -81,7 +81,7 @@ public class InstallStatus {
 			}
 			
 		} catch (JSONException e) {
-			Logger.logError("The Codewind installer status format is not recognized", e); //$NON-NLS-1$
+			Logger.logWarning("The Codewind installer status format is not recognized", e); //$NON-NLS-1$
 			status = Status.UNKNOWN;
 			url = null;
 		}
@@ -119,7 +119,7 @@ public class InstallStatus {
 				}
 			}
 		} catch (JSONException e) {
-			Logger.logError("The Codewind installer status format is not recognized", e); //$NON-NLS-1$
+			Logger.logWarning("The Codewind installer status format is not recognized", e); //$NON-NLS-1$
 		}
 		return false;
 	}
@@ -159,7 +159,7 @@ public class InstallStatus {
 				builder.append(versions.getString(i));
 				start = false;
 			} catch (JSONException e) {
-				Logger.logError("The Codewind installer status format is not recognized", e); //$NON-NLS-1$
+				Logger.logWarning("The Codewind installer status format is not recognized", e); //$NON-NLS-1$
 			}
 		}
 		return builder.toString();

@@ -64,7 +64,7 @@ public enum StartMode {
                 return startMode;
             }
         } catch (Exception e) {
-            Logger.logError("Failed to get start mode", e);
+            Logger.logWarning("Failed to get start mode", e);
         }
         return StartMode.RUN;
     }

@@ -28,7 +28,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
@@ -100,7 +99,7 @@ public class CodewindSocket {
                     Exception e = (Exception) arg0[0];
                     if (previousException == null || !e.getMessage().equals(previousException.getMessage())) {
                         previousException = e;
-                        Logger.logError("SocketIO Connect Error @ " + socketUri, e); //$NON-NLS-1$
+                        Logger.logWarning("SocketIO Connect Error @ " + socketUri, e); //$NON-NLS-1$
                     }
                 }
                 connection.onConnectionError();
@@ -129,7 +128,7 @@ public class CodewindSocket {
                     JSONObject event = new JSONObject(arg0[0].toString());
                     onProjectCreation(event);
                 } catch (JSONException e) {
-                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                    Logger.logWarning("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
         }).on(EVENT_PROJECT_CHANGED, new Emitter.Listener() {
@@ -141,7 +140,7 @@ public class CodewindSocket {
                     JSONObject event = new JSONObject(arg0[0].toString());
                     onProjectChanged(event);
                 } catch (JSONException e) {
-                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                    Logger.logWarning("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
         }).on(EVENT_PROJECT_SETTINGS_CHANGED, new Emitter.Listener() {
@@ -153,7 +152,7 @@ public class CodewindSocket {
                     JSONObject event = new JSONObject(arg0[0].toString());
                     onProjectSettingsChanged(event);
                 } catch (JSONException e) {
-                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                    Logger.logWarning("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
         }).on(EVENT_PROJECT_STATUS_CHANGE, new Emitter.Listener() {
@@ -165,7 +164,7 @@ public class CodewindSocket {
                     JSONObject event = new JSONObject(arg0[0].toString());
                     onProjectStatusChanged(event);
                 } catch (JSONException e) {
-                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                    Logger.logWarning("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
         }).on(EVENT_PROJECT_RESTART, new Emitter.Listener() {
@@ -177,7 +176,7 @@ public class CodewindSocket {
                     JSONObject event = new JSONObject(arg0[0].toString());
                     onProjectRestart(event);
                 } catch (JSONException e) {
-                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                    Logger.logWarning("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
         }).on(EVENT_PROJECT_CLOSED, new Emitter.Listener() {
@@ -189,7 +188,7 @@ public class CodewindSocket {
                     JSONObject event = new JSONObject(arg0[0].toString());
                     onProjectClosed(event);
                 } catch (JSONException e) {
-                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                    Logger.logWarning("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
         }).on(EVENT_PROJECT_DELETION, new Emitter.Listener() {
@@ -201,7 +200,7 @@ public class CodewindSocket {
                     JSONObject event = new JSONObject(arg0[0].toString());
                     onProjectDeletion(event);
                 } catch (JSONException e) {
-                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                    Logger.logWarning("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
         }).on(EVENT_PROJECT_LOGS_LIST_CHANGED, new Emitter.Listener() {
@@ -213,7 +212,7 @@ public class CodewindSocket {
                     JSONObject event = new JSONObject(arg0[0].toString());
                     onProjectLogsListChanged(event);
                 } catch (JSONException e) {
-                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                    Logger.logWarning("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
         }).on(EVENT_LOG_UPDATE, new Emitter.Listener() {
@@ -226,7 +225,7 @@ public class CodewindSocket {
                     JSONObject event = new JSONObject(arg0[0].toString());
                     onLogUpdate(event);
                 } catch (JSONException e) {
-                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                    Logger.logWarning("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
         }).on(EVENT_PROJECT_VALIDATED, new Emitter.Listener() {
@@ -238,7 +237,7 @@ public class CodewindSocket {
                     JSONObject event = new JSONObject(arg0[0].toString());
                     onValidationEvent(event);
                 } catch (JSONException e) {
-                    Logger.logError("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
+                    Logger.logWarning("Error parsing JSON: " + arg0[0].toString(), e); //$NON-NLS-1$
                 }
             }
         });
@@ -264,7 +263,7 @@ public class CodewindSocket {
             app.setEnabled(true);
             CoreUtil.updateApplication(app);
         } else {
-            Logger.logError("No application found matching the project id for the project creation event: " + projectID); //$NON-NLS-1$
+            Logger.logWarning("No application found matching the project id for the project creation event: " + projectID); //$NON-NLS-1$
         }
     }
 
@@ -272,7 +271,7 @@ public class CodewindSocket {
         String projectID = event.getString(CoreConstants.KEY_PROJECT_ID);
         CodewindApplication app = connection.getAppByID(projectID);
         if (app == null) {
-            Logger.logError("No application found matching the project id for the project changed event: " + projectID); //$NON-NLS-1$
+            Logger.logWarning("No application found matching the project id for the project changed event: " + projectID); //$NON-NLS-1$
             return;
         }
 
@@ -290,7 +289,7 @@ public class CodewindSocket {
         String projectID = event.getString(CoreConstants.KEY_PROJECT_ID);
         CodewindApplication app = connection.getAppByID(projectID);
         if (app == null) {
-            Logger.logError("No application found matching the project id for the project settings changed event: " + projectID); //$NON-NLS-1$
+            Logger.logWarning("No application found matching the project id for the project settings changed event: " + projectID); //$NON-NLS-1$
             return;
         }
 
@@ -304,7 +303,7 @@ public class CodewindSocket {
                     String errorMsg = event.getString(CoreConstants.KEY_ERROR);
                     CoreUtil.openDialog(true, message("ProjectSettingsUpdateErrorTitle"), errorMsg);
                 } else {
-                    Logger.logError("The project settings request failed but there is no error message in the result");
+                    Logger.logWarning("The project settings request failed but there is no error message in the result");
                 }
                 return;
             }
@@ -346,7 +345,7 @@ public class CodewindSocket {
         String projectID = event.getString(CoreConstants.KEY_PROJECT_ID);
         CodewindApplication app = connection.getAppByID(projectID);
         if (app == null) {
-            Logger.logError("No application found matching the project id for the project restart event: " + projectID); //$NON-NLS-1$
+            Logger.logWarning("No application found matching the project id for the project restart event: " + projectID); //$NON-NLS-1$
             return;
         }
 
@@ -354,7 +353,7 @@ public class CodewindSocket {
 
         String status = event.getString(CoreConstants.KEY_STATUS);
         if (!CoreConstants.REQUEST_STATUS_SUCCESS.equalsIgnoreCase(status)) {
-            Logger.logError("Project restart failed on the application: " + event.toString()); //$NON-NLS-1$
+            Logger.logWarning("Project restart failed on the application: " + event.toString()); //$NON-NLS-1$
             CoreUtil.openDialog(true,
                     message("Socket_ErrRestartingProjectDialogTitle"),
                     message("Socket_ErrRestartingProjectDialogMsg",
@@ -370,7 +369,7 @@ public class CodewindSocket {
             int port = CoreUtil.parsePort(portsObj.getString(CoreConstants.KEY_EXPOSED_PORT));
             app.setHttpPort(port);
         } else {
-            Logger.logError("No http port on project restart event for: " + app.name); //$NON-NLS-1$
+            Logger.logWarning("No http port on project restart event for: " + app.name); //$NON-NLS-1$
         }
 
         // Debug port will be missing if the restart was into Run mode.
@@ -403,7 +402,7 @@ public class CodewindSocket {
         String projectID = event.getString(CoreConstants.KEY_PROJECT_ID);
         CodewindApplication app = connection.getAppByID(projectID);
         if (app == null) {
-            Logger.logError("No application found for project being closed: " + projectID); //$NON-NLS-1$
+            Logger.logWarning("No application found for project being closed: " + projectID); //$NON-NLS-1$
             return;
         }
         app.dispose();
@@ -479,7 +478,7 @@ public class CodewindSocket {
         String projectID = event.getString(CoreConstants.KEY_PROJECT_ID);
         CodewindApplication app = connection.getAppByID(projectID);
         if (app == null) {
-            Logger.logError("No application found for project: " + projectID); //$NON-NLS-1$
+            Logger.logWarning("No application found for project: " + projectID); //$NON-NLS-1$
             return;
         }
 
@@ -551,7 +550,7 @@ public class CodewindSocket {
                     Logger.log("Waiting for CodewindSocket initial connection"); //$NON-NLS-1$
                 }
             } catch (InterruptedException e) {
-                Logger.logError(e);
+                Logger.logWarning(e);
             }
         }
         Logger.log("CodewindSocket initialized in time ? " + hasConnected); //$NON-NLS-1$

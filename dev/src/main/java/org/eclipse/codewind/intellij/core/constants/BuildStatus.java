@@ -45,7 +45,7 @@ public enum BuildStatus {
                 return status;
             }
         }
-        Logger.logError("Unrecognized application state: " + buildStatus);
+        Logger.logWarning("Unrecognized application state: " + buildStatus);
         return BuildStatus.UNKOWN;
     }
 

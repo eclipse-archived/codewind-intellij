@@ -26,7 +26,6 @@ import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,20 +66,20 @@ public abstract class CodewindConnection {
             return;
         }
         if (!waitForReady()) {
-            Logger.logError("Timed out waiting for Codewind to go into ready state.");
+            Logger.logWarning("Timed out waiting for Codewind to go into ready state.");
             onInitFail(message("Connection_ErrConnection_CodewindNotReady"));
         }
 
         env = new ConnectionEnv(getEnvData(this.baseUri));
         Logger.log("Codewind version is: " + env.getVersion());	// $NON-NLS-1$
         if (!isSupportedVersion(env.getVersion())) {
-            Logger.logError("The detected version of Codewind is not supported: " + env.getVersion() + ", url: " + baseUri);	// $NON-NLS-1$	// $NON-NLS-2$
+            Logger.logWarning("The detected version of Codewind is not supported: " + env.getVersion() + ", url: " + baseUri);	// $NON-NLS-1$	// $NON-NLS-2$
             onInitFail(message("Connection_ErrConnection_OldVersion", env.getVersion(), InstallUtil.getVersion()));
         }
 
         socket = new CodewindSocket(this);
         if(!socket.blockUntilFirstConnection()) {
-            Logger.logError("Socket failed to connect: " + socket.socketUri);
+            Logger.logWarning("Socket failed to connect: " + socket.socketUri);
             close();
             throw new CodewindConnectionException(socket.socketUri);
         }
@@ -146,7 +145,7 @@ public abstract class CodewindConnection {
         try {
             envResponse = HttpUtil.get(envUrl).response;
         } catch (IOException e) {
-            Logger.logError("Error contacting Environment endpoint", e); //$NON-NLS-1$
+            Logger.logWarning("Error contacting Environment endpoint", e); //$NON-NLS-1$
             throw e;
         }
 
@@ -158,7 +157,7 @@ public abstract class CodewindConnection {
             ConnectionEnv env = new ConnectionEnv(getEnvData(baseURI));
             return env.getVersion();
         } catch (Exception e) {
-            Logger.logError("An error occurred trying to get the Codewind version.", e);
+            Logger.logWarning("An error occurred trying to get the Codewind version.", e);
         }
         return null;
     }
@@ -200,7 +199,7 @@ public abstract class CodewindConnection {
             }
             return true;
         } catch (NumberFormatException e) {
-            Logger.logError("Couldn't parse version number from: " + versionStr); //$NON-NLS-1$
+            Logger.logWarning("Couldn't parse version number from: " + versionStr); //$NON-NLS-1$
             return false;
         }
     }
@@ -233,7 +232,7 @@ public abstract class CodewindConnection {
                     }
                 }
             } catch (NumberFormatException e) {
-                Logger.logError("Failed to parse the actual version: " + versionStr + ", or the required version: " + requiredVersionBr);
+                Logger.logWarning("Failed to parse the actual version: " + versionStr + ", or the required version: " + requiredVersionBr);
             }
             return false;
         }
@@ -241,7 +240,7 @@ public abstract class CodewindConnection {
         try {
             return Integer.parseInt(versionStr) >= requiredVersion;
         } catch (NumberFormatException e) {
-            Logger.logError("Couldn't parse version number from " + versionStr); //$NON-NLS-1$
+            Logger.logWarning("Couldn't parse version number from " + versionStr); //$NON-NLS-1$
         }
 
         return false;
@@ -727,7 +726,7 @@ public abstract class CodewindConnection {
             String oldSocketNS = env.getSocketNamespace();
             env = new ConnectionEnv(getEnvData(baseUri));
             if (!isSupportedVersion(env.getVersion())) {
-                Logger.logError("The detected version of Codewind after reconnect is not supported: " + env.getVersion());
+                Logger.logWarning("The detected version of Codewind after reconnect is not supported: " + env.getVersion());
                 this.connectionErrorMsg = message("Connection_ErrConnection_OldVersion", env.getVersion(), InstallUtil.getVersion());
                 CoreUtil.updateConnection(this);
                 return;
@@ -740,7 +739,7 @@ public abstract class CodewindConnection {
                 socket = new CodewindSocket(this);
                 if(!socket.blockUntilFirstConnection()) {
                     // Still not connected
-                    Logger.logError("Failed to create a new socket with updated URI: " + socket.socketUri);
+                    Logger.logWarning("Failed to create a new socket with updated URI: " + socket.socketUri);
                     // Clear the message so that it just shows the basic disconnected message
                     this.connectionErrorMsg = null;
                     CoreUtil.updateAll();
@@ -748,7 +747,7 @@ public abstract class CodewindConnection {
                 }
             }
         } catch (Exception e) {
-            Logger.logError("An exception occurred while trying to update the connection information", e);
+            Logger.logWarning("An exception occurred while trying to update the connection information", e);
             this.connectionErrorMsg = message("Connection_ErrConnection_UpdateCacheException");
             CoreUtil.updateAll();
             return;
@@ -804,7 +803,7 @@ public abstract class CodewindConnection {
             uri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), query, uri.getFragment());
             return uri;
         } catch (Exception e) {
-            Logger.logError("Failed to get the project URI for the query: " + projectQuery, e);  //$NON-NLS-1$
+            Logger.logWarning("Failed to get the project URI for the query: " + projectQuery, e);  //$NON-NLS-1$
         }
         return null;
     }
@@ -821,7 +820,7 @@ public abstract class CodewindConnection {
             uri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), query, uri.getFragment());
             return uri.toURL();
         } catch (Exception e) {
-            Logger.logError("Failed to get the URL for the " + view + " view and the " + app.name + "application.", e);  //$NON-NLS-1$  //$NON-NLS-2$  //$NON-NLS-3$
+            Logger.logWarning("Failed to get the URL for the " + view + " view and the " + app.name + "application.", e);  //$NON-NLS-1$  //$NON-NLS-2$  //$NON-NLS-3$
         }
         return null;
     }
@@ -834,7 +833,7 @@ public abstract class CodewindConnection {
             uri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), query, uri.getFragment());
             return uri.toURL();
         } catch (Exception e) {
-            Logger.logError("Failed to get the performance monitor URL for the " + app.name + "application.", e);  //$NON-NLS-1$  //$NON-NLS-2$  //$NON-NLS-3$
+            Logger.logWarning("Failed to get the performance monitor URL for the " + app.name + "application.", e);  //$NON-NLS-1$  //$NON-NLS-2$  //$NON-NLS-3$
         }
         return null;
     }

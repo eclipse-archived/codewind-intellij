@@ -66,7 +66,7 @@ public abstract class CodewindProcessTask extends Task.Backgroundable {
         }
 
         // An error occurred.
-        Logger.logError("Installer failed with return code: " + result.getExitValue() + ", output: " + result.getOutput() + ", error: " + result.getError()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        Logger.logWarning("Installer failed with return code: " + result.getExitValue() + ", output: " + result.getOutput() + ", error: " + result.getError()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         Messages.showErrorDialog(message(getExceptionMessageKey(), result.getError()), message("CodewindLabel"));
         super.onFinished();
     }
@@ -76,7 +76,7 @@ public abstract class CodewindProcessTask extends Task.Backgroundable {
         Throwable t = error;
         while (t.getCause() != null)
             t = t.getCause();
-        Logger.logError("An error occurred starting Codewind: ", t); //$NON-NLS-1$
+        Logger.logWarning("An error occurred starting Codewind: ", t); //$NON-NLS-1$
         Messages.showErrorDialog(message(getExceptionMessageKey(), t), message("CodewindLabel"));
     }
 }

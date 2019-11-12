@@ -80,7 +80,7 @@ public class OpenIdeaProjectTask extends Task.Backgroundable {
         Throwable t = error;
         while (t.getCause() != null)
             t = t.getCause();
-        Logger.logError("An error occurred opening project " + application.getName(), t);
+        Logger.logWarning("An error occurred opening project " + application.getName(), t);
         Messages.showErrorDialog(message("ProjectOpenError", application.getName()), "Codewind");
     }
 }

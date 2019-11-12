@@ -37,7 +37,7 @@ public class PlatformUtil {
 
     public static OperatingSystem getOS(String osName) {
         if (osName == null || osName.isEmpty()) {
-            Logger.logError("The operating system name is null or empty, defaulting to Linux.");
+            Logger.logWarning("The operating system name is null or empty, defaulting to Linux.");
             return OperatingSystem.LINUX;
         }
 
@@ -49,7 +49,7 @@ public class PlatformUtil {
         if (name.contains("linux"))
             return OperatingSystem.LINUX;
 
-        Logger.logError("The operating system name is not valid: " + osName + ", defaulting to Linux.");
+        Logger.logWarning("The operating system name is not valid: " + osName + ", defaulting to Linux.");
         return OperatingSystem.LINUX;
     }
 

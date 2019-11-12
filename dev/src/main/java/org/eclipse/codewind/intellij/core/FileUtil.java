@@ -31,7 +31,7 @@ public class FileUtil {
                     result = fp.mkdirs();
                 }
             } catch (Exception e) {
-                Logger.logError("Failed to create directory: " + path, e);
+                Logger.logWarning("Failed to create directory: " + path, e);
                 result = false;
             }
         }

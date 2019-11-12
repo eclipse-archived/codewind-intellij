@@ -12,10 +12,7 @@
 package org.eclipse.codewind.intellij.core.connection;
 
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
-import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.json.JSONObject;
 
@@ -83,7 +80,7 @@ public class ConnectionEnv extends JSONObjectResult {
 			try {
 				return new URL(urlStr);
 			} catch (Exception e) {
-				Logger.logError("The Tekton dashboard URL is not valid: " + urlStr, e);
+				Logger.logWarning("The Tekton dashboard URL is not valid: " + urlStr, e);
 			}
 			return null;
 		}

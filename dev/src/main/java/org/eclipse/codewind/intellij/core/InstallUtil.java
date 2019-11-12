@@ -87,7 +87,7 @@ public class InstallUtil {
             properties.load(stream);
             version = properties.getProperty(INSTALL_VERSION_KEY);
         } catch (Exception e) {
-            Logger.logError("Reading version from \"" + INSTALL_VERSION_PROPERTIES + " file failed, defaulting to \"latest\": ", e);
+            Logger.logWarning("Reading version from \"" + INSTALL_VERSION_PROPERTIES + " file failed, defaulting to \"latest\": ", e);
             version = CoreConstants.VERSION_LATEST;
         }
         INSTALL_VERSION = version;
@@ -108,7 +108,7 @@ public class InstallUtil {
                 error = result.getOutput();
             }
             String msg = "Installer status command failed with rc: " + result.getExitValue() + " and error: " + error;  //$NON-NLS-1$ //$NON-NLS-2$
-            Logger.logError(msg);
+            Logger.logWarning(msg);
             throw new IOException(msg);
         }
         JSONObject status = new JSONObject(result.getOutput());
@@ -135,7 +135,7 @@ public class InstallUtil {
                 // ignore
             }
         } catch (Exception e) {
-            Logger.logError("Error closing socket", e);
+            Logger.logWarning("Error closing socket", e);
         }
 
         return runInstallerProcess(STOP_ALL_CMD);
@@ -228,14 +228,14 @@ public class InstallUtil {
         Map<OperatingSystem, String> osPathMap = operation.getOSPathMap();
         if (osPathMap == null) {
             String msg = "Failed to get the list of operating specific paths for installing the executable " + operation.getInstallName();
-            Logger.logError(msg);
+            Logger.logWarning(msg);
             throw new IOException(msg);
         }
 
         String relPath = osPathMap.get(os);
         if (relPath == null) {
             String msg = "Failed to get the relative path for the install executable " + operation.getInstallName();
-            Logger.logError(msg);
+            Logger.logWarning(msg);
             throw new IOException(msg);
         }
 
@@ -247,7 +247,7 @@ public class InstallUtil {
         // Make the installer directory
         if (!FileUtil.makeDir(installerDir)) {
             String msg = "Failed to make the directory for the installer utility: " + installerDir;
-            Logger.logError(msg);
+            Logger.logWarning(msg);
             throw new IOException(msg);
         }
 

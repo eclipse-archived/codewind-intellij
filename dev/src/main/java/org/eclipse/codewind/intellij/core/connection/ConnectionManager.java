@@ -40,7 +40,7 @@ public class ConnectionManager {
                 try {
                     localConnection.connect();
                 } catch (Exception e) {
-                    Logger.logError("An error occurred trying to connect to the local Codewind instance at:" + localConnection.getBaseUri(), e); //$NON-NLS-1$
+                    Logger.logWarning("An error occurred trying to connect to the local Codewind instance at:" + localConnection.getBaseUri(), e); //$NON-NLS-1$
                 }
             });
         }
@@ -62,7 +62,7 @@ public class ConnectionManager {
      */
     public synchronized void add(CodewindConnection connection) {
         if (connection == null) {
-            Logger.logError("Null connection passed to be added"); //$NON-NLS-1$
+            Logger.logWarning("Null connection passed to be added"); //$NON-NLS-1$
             return;
         }
 

@@ -67,7 +67,7 @@ public class HttpUtil {
 			}
 
 			if (!isGoodResponse) {
-				Logger.logError("Received bad response code " + responseCode + " from "
+				Logger.logWarning("Received bad response code " + responseCode + " from "
 						+ connection.getURL() + " - Error:\n" + error);
 				response = null;
 			} else {
@@ -102,7 +102,7 @@ public class HttpUtil {
 			}
 
 			if (!isGoodResponse) {
-				Logger.logError("Received bad response code " + responseCode + " from "
+				Logger.logWarning("Received bad response code " + responseCode + " from "
 						+ uri + " - Error:\n" + content);
 			}
 		}

@@ -64,13 +64,13 @@ public class LocalConnection extends CodewindConnection {
             }
             return;
         } catch (IOException e) {
-            Logger.logError("An error occurred trying to get the installer status", e); //$NON-NLS-1$
+            Logger.logWarning("An error occurred trying to get the installer status", e); //$NON-NLS-1$
         } catch (TimeoutException e) {
-            Logger.logError("Timed out trying to get the installer status", e); //$NON-NLS-1$
+            Logger.logWarning("Timed out trying to get the installer status", e); //$NON-NLS-1$
         } catch (JSONException e) {
-            Logger.logError("The Codewind installer status format is not recognized", e); //$NON-NLS-1$
+            Logger.logWarning("The Codewind installer status format is not recognized", e); //$NON-NLS-1$
         } catch (URISyntaxException e) {
-            Logger.logError("The Codewind installer status command returned an invalid url: " + url, e);
+            Logger.logWarning("The Codewind installer status command returned an invalid url: " + url, e);
         }
         installStatus = InstallStatus.UNKNOWN;
     }

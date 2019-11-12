@@ -35,10 +35,10 @@ public abstract class JSONObjectResult {
 			try {
 				value = result.getString(key);
 			} catch (JSONException e) {
-				Logger.logError("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
+				Logger.logWarning("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
 			}
 		} else {
-			Logger.logError("The " + type + " object did not have the expected key: " + key);
+			Logger.logWarning("The " + type + " object did not have the expected key: " + key);
 		}
 		return value;
 	}
@@ -49,10 +49,10 @@ public abstract class JSONObjectResult {
 			try {
 				value = result.getBoolean(key);
 			} catch (JSONException e) {
-				Logger.logError("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
+				Logger.logWarning("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
 			}
 		} else {
-			Logger.logError("The " + type + " object did not have the expected key: " + key);
+			Logger.logWarning("The " + type + " object did not have the expected key: " + key);
 		}
 		return value;
 	}
@@ -66,10 +66,10 @@ public abstract class JSONObjectResult {
 					list.add(array.getString(i));
 				}
 			} catch (JSONException e) {
-				Logger.logError("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
+				Logger.logWarning("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
 			}
 		} else {
-			Logger.logError("The " + type + " object did not have the expected key: " + key);
+			Logger.logWarning("The " + type + " object did not have the expected key: " + key);
 		}
 		return list;
 	}
@@ -80,10 +80,10 @@ public abstract class JSONObjectResult {
 			try {
 				value = result.getJSONObject(key);
 			} catch (JSONException e) {
-				Logger.logError("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
+				Logger.logWarning("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
 			}
 		} else {
-			Logger.logError("The " + type + " object did not have the expected key: " + key);
+			Logger.logWarning("The " + type + " object did not have the expected key: " + key);
 		}
 		return value;
 	}

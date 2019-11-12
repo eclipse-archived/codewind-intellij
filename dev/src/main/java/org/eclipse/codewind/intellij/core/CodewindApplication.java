@@ -148,7 +148,7 @@ public class CodewindApplication {
         try {
             setUrls();
         } catch (MalformedURLException e) {
-            Logger.logError("An error occurred updating the application base url to: " + appBaseUrl, e);
+            Logger.logWarning("An error occurred updating the application base url to: " + appBaseUrl, e);
         }
     }
 
@@ -157,7 +157,7 @@ public class CodewindApplication {
         try {
             setUrls();
         } catch (MalformedURLException e) {
-            Logger.logError("An error occurred updating the base url with the new context root: " + contextRoot, e);
+            Logger.logWarning("An error occurred updating the base url with the new context root: " + contextRoot, e);
         }
     }
 
@@ -198,7 +198,7 @@ public class CodewindApplication {
 
     public synchronized void addLogInfos(List<ProjectLogInfo> newLogInfos) {
         if (newLogInfos == null || newLogInfos.isEmpty()) {
-            Logger.logError("Trying to add empty log infos to project: " + name);
+            Logger.logWarning("Trying to add empty log infos to project: " + name);
             return;
         }
         if (this.logInfos == null || this.logInfos.isEmpty()) {
@@ -222,7 +222,7 @@ public class CodewindApplication {
 
     public synchronized void setLogInfos(List<ProjectLogInfo> logInfos) {
         if (logInfos == null) {
-            Logger.logError("The logs should not be set to null for project: " + name);
+            Logger.logWarning("The logs should not be set to null for project: " + name);
             return;
         }
         this.logInfos = logInfos;
@@ -250,7 +250,7 @@ public class CodewindApplication {
         try {
             return new URL(getBaseUrl(), projectLanguage.getMetricsRoot());
         } catch (MalformedURLException e) {
-            Logger.logError("An error occurred trying to construct the application metrics URL", e);
+            Logger.logWarning("An error occurred trying to construct the application metrics URL", e);
         }
         return null;
     }
@@ -282,7 +282,7 @@ public class CodewindApplication {
             HttpResult getMetricsResult = HttpUtil.get(metricsUrl.toURI());
             this.metricsAvailable = getMetricsResult.isGoodResponse;
         } catch (IOException | URISyntaxException e) {
-            Logger.logError("An error occurred trying to confirm the application metrics status", e);
+            Logger.logWarning("An error occurred trying to confirm the application metrics status", e);
         }
     }
 
@@ -389,7 +389,7 @@ public class CodewindApplication {
         try {
             setUrls();
         } catch (MalformedURLException e) {
-            Logger.logError(e);
+            Logger.logWarning(e);
         }
     }
 
@@ -431,7 +431,7 @@ public class CodewindApplication {
         try {
             setUrls();
         } catch (MalformedURLException e) {
-            Logger.logError("An error occurred updating isHttps to: " + value, e);
+            Logger.logWarning("An error occurred updating isHttps to: " + value, e);
         }
     }
 
@@ -458,7 +458,7 @@ public class CodewindApplication {
                 JSONObject obj = connection.requestProjectCapabilities(this);
                 projectCapabilities = new ProjectCapabilities(obj);
             } catch (Exception e) {
-                Logger.logError("Failed to get the project capabilities for application: " + name, e); //$NON-NLS-1$
+                Logger.logWarning("Failed to get the project capabilities for application: " + name, e); //$NON-NLS-1$
             }
         }
         if (projectCapabilities == null) {

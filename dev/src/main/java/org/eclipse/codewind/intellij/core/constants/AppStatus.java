@@ -40,7 +40,7 @@ public enum AppStatus {
                 return state;
             }
         }
-        Logger.logError("Unrecognized application status: " + appStatus);
+        Logger.logWarning("Unrecognized application status: " + appStatus);
         return AppStatus.UNKNOWN;
     }
 
