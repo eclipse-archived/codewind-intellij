@@ -16,9 +16,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import org.eclipse.codewind.intellij.core.cli.AuthToken;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -33,10 +41,12 @@ import okhttp3.Response;
  */
 public class HttpUtil {
 	
-	private static final int DEFAULT_READ_TIMEOUT_S = 10;
-	private static final int DEFAULT_READ_TIMEOUT_MS = DEFAULT_READ_TIMEOUT_S * 1000;
+	private static final int DEFAULT_CONNECT_TIMEOUT_MS = 10000;
+	private static final int DEFAULT_READ_TIMEOUT_MS = 10000;
 	
 	public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+	
+	private static final SSLContext sslContext = getTrustAllCertsContext();;
 	
 	private HttpUtil() {}
 
@@ -120,42 +130,72 @@ public class HttpUtil {
 	}
 
 	public static HttpResult get(URI uri) throws IOException {
-		HttpURLConnection connection = null;
-
-		try {
-			connection = (HttpURLConnection) uri.toURL().openConnection();
-
-			connection.setRequestMethod("GET");
-			connection.setReadTimeout(DEFAULT_READ_TIMEOUT_MS);
-
-			return new HttpResult(connection);
-		} finally {
-			if (connection != null) {
-				connection.disconnect();
+		return get(uri, null);
+	}
+	
+	public static HttpResult get(URI uri, AuthToken auth) throws IOException {
+		return sendRequest("GET", uri, auth, null);
+	}
+	
+	public static HttpResult get(URI uri, AuthToken auth, int connectTimeoutMS, int readTimeoutMS) throws IOException {
+		return sendRequest("GET", uri, auth, null, connectTimeoutMS, readTimeoutMS);
 			}
-		}
-	}
-	
-	/**
-	 * Post to the given URI passing along the payload.  The default value is used
-	 * for the read timeout.
-	 */
-	public static HttpResult post(URI uri, JSONObject payload) throws IOException {
-		return post(uri, payload, DEFAULT_READ_TIMEOUT_S);
-	}
-	
-	/**
-	 * Post to the given URI passing along the payload.  The readTimeout is in seconds.
-	 */
-	public static HttpResult post(URI uri, JSONObject payload, int readTimoutSeconds) throws IOException {
-		HttpURLConnection connection = null;
 
-		Logger.log("POST " + payload.toString() + " TO " + uri);
+	public static HttpResult post(URI uri, AuthToken auth, JSONObject payload) throws IOException {
+		return sendRequest("POST", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
+	}
+	
+	public static HttpResult post(URI uri, AuthToken auth, JSONObject payload, int readTimeoutSeconds) throws IOException {
+		return sendRequest("POST", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, readTimeoutSeconds * 1000);
+	}
+	
+	public static HttpResult post(URI uri, AuthToken auth) throws IOException {
+		return sendRequest("POST", uri, auth, null);
+	}
+
+	public static HttpResult put(URI uri, AuthToken auth) throws IOException {
+		return sendRequest("PUT", uri, auth, null);
+	}
+
+	public static HttpResult put(URI uri, AuthToken auth, JSONObject payload) throws IOException {
+		return sendRequest("PUT", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
+	}
+
+	public static HttpResult put(URI uri, AuthToken auth, JSONObject payload, int readTimoutSeconds) throws IOException {
+		return sendRequest("PUT", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
+	}
+
+	public static HttpResult head(URI uri, AuthToken auth) throws IOException {
+		return sendRequest("HEAD", uri, auth, null);
+			}
+	
+	public static HttpResult delete(URI uri, AuthToken auth) throws IOException {
+		return delete(uri, auth, null);
+		}
+	
+	public static HttpResult delete(URI uri, AuthToken auth, JSONObject payload) throws IOException {
+		return sendRequest("DELETE", uri, auth, payload);
+	}
+	
+	public static HttpResult sendRequest(String method, URI uri, AuthToken auth, JSONObject payload) throws IOException {
+		return sendRequest(method, uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
+	}
+	
+	public static HttpResult sendRequest(String method, URI uri, AuthToken auth, JSONObject payload, int connectTimeoutMS, int readTimeoutMS) throws IOException {
+		HttpURLConnection connection = null;
+		if (payload != null) {
+			Logger.log("Making a " + method + " request on " + uri + " with payload: " + payload.toString());
+		} else {
+			Logger.log("Making a " + method + " request on " + uri);
+		}
+
 		try {
 			connection = (HttpURLConnection) uri.toURL().openConnection();
 
-			connection.setRequestMethod("POST");
-			connection.setReadTimeout(readTimoutSeconds * 1000);
+			connection.setRequestMethod(method);
+			connection.setConnectTimeout(connectTimeoutMS);
+			connection.setReadTimeout(readTimeoutMS);
+			addAuthorization(connection, auth);
 			
 			if (payload != null) {
 				connection.setRequestProperty("Content-Type", "application/json");
@@ -173,88 +213,14 @@ public class HttpUtil {
 		}
 	}
 	
-	public static HttpResult post(URI uri) throws IOException {
-		HttpURLConnection connection = null;
-
-		Logger.log("Empty POST TO " + uri);
-		try {
-			connection = (HttpURLConnection) uri.toURL().openConnection();
-			connection.setRequestMethod("POST");
-			connection.setReadTimeout(DEFAULT_READ_TIMEOUT_MS);
-			return new HttpResult(connection);
-		} finally {
-			if (connection != null) {
-				connection.disconnect();
-			}
+	private static void addAuthorization(HttpURLConnection connection, AuthToken auth) {
+		if (sslContext == null || auth == null || auth.getToken() == null || auth.getTokenType() == null || !(connection instanceof HttpsURLConnection)) {
+			return;
 		}
-	}
-	
-	public static HttpResult put(URI uri) throws IOException {
-		HttpURLConnection connection = null;
-
-		Logger.log("PUT " + uri);
-		try {
-			connection = (HttpURLConnection) uri.toURL().openConnection();
-
-			connection.setRequestMethod("PUT");
-			connection.setReadTimeout(DEFAULT_READ_TIMEOUT_MS);
-
-			return new HttpResult(connection);
-		} finally {
-			if (connection != null) {
-				connection.disconnect();
-			}
-		}
+		connection.setRequestProperty("Authorization", auth.getTokenType() + " " + auth.getToken());
+		((HttpsURLConnection)connection).setSSLSocketFactory(sslContext.getSocketFactory());
 	}
 
-	public static HttpResult head(URI uri) throws IOException {
-		HttpURLConnection connection = null;
-
-		Logger.log("HEAD " + uri);
-		try {
-			connection = (HttpURLConnection) uri.toURL().openConnection();
-
-			connection.setRequestMethod("HEAD");
-			connection.setReadTimeout(DEFAULT_READ_TIMEOUT_MS);
-
-			return new HttpResult(connection);
-		} finally {
-			if (connection != null) {
-				connection.disconnect();
-			}
-		}
-	}
-	
-	public static HttpResult delete(URI uri) throws IOException {
-		return delete(uri, null);
-	}
-	
-	public static HttpResult delete(URI uri, JSONObject payload) throws IOException {
-		HttpURLConnection connection = null;
-
-		Logger.log("DELETE " + uri);
-		try {
-			connection = (HttpURLConnection) uri.toURL().openConnection();
-
-			connection.setRequestMethod("DELETE");
-			connection.setReadTimeout(DEFAULT_READ_TIMEOUT_MS);
-			
-			if (payload != null) {
-				connection.setRequestProperty("Content-Type", "application/json");
-				connection.setDoOutput(true);
-	
-				DataOutputStream payloadStream = new DataOutputStream(connection.getOutputStream());
-				payloadStream.write(payload.toString().getBytes());
-			}
-
-			return new HttpResult(connection);
-		} finally {
-			if (connection != null) {
-				connection.disconnect();
-			}
-		}
-	}
-	
 	public static HttpResult patch(URI uri, JSONArray payload) throws IOException {
 		Logger.log("PATCH " + uri);
 		
@@ -264,6 +230,31 @@ public class HttpUtil {
 		Request request = new Request.Builder().url(uri.toURL()).patch(body).build();
 		Response response = client.newCall(request).execute();
 		return new HttpResult(uri, response);
+	}
+
+	private static SSLContext getTrustAllCertsContext() {
+		try {
+			SSLContext context = SSLContext.getInstance("TLS");
+			context.init(new KeyManager[0], new TrustManager[] { new X509TrustManager() {
+				@Override
+				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+					return new java.security.cert.X509Certificate[0];
+				}
+				@Override
+				public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
+					// TODO Auto-generated method stub
+				}
+				@Override
+				public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
+					// TODO Auto-generated method stub
+				}
+			}
+			}, new SecureRandom());
+			return context;
+		} catch (Exception e) {
+			Logger.logWarning("An error occurred creating a trust all certs context", e);
+		}
+		return null;
 	}
 
 }

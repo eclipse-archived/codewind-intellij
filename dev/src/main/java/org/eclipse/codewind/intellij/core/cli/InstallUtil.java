@@ -9,9 +9,10 @@
  *	 IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.codewind.intellij.core;
+package org.eclipse.codewind.intellij.core.cli;
 
 import com.intellij.openapi.progress.ProgressIndicator;
+import org.eclipse.codewind.intellij.core.*;
 import org.eclipse.codewind.intellij.core.PlatformUtil.OperatingSystem;
 import org.eclipse.codewind.intellij.core.ProcessHelper.ProcessResult;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
@@ -45,28 +46,6 @@ public class InstallUtil {
     public static final int START_TIMEOUT_DEFAULT = 60;
     public static final int STOP_TIMEOUT_DEFAULT = 300;
 
-    private static final Map<OperatingSystem, String> installMap = new HashMap<OperatingSystem, String>();
-    private static final Map<OperatingSystem, String> appsodyMap = new HashMap<OperatingSystem, String>();
-
-    static {
-        installMap.put(OperatingSystem.LINUX, "cwctl/linux/cwctl");
-        installMap.put(OperatingSystem.MAC, "cwctl/darwin/cwctl");
-        installMap.put(OperatingSystem.WINDOWS, "cwctl/windows/cwctl.exe");
-    }
-
-    static {
-        appsodyMap.put(OperatingSystem.LINUX, "cwctl/linux/appsody");
-        appsodyMap.put(OperatingSystem.MAC, "cwctl/darwin/appsody");
-        appsodyMap.put(OperatingSystem.WINDOWS, "cwctl/windows/appsody.exe");
-    }
-
-    private static final InstallOperation codewindInstall = new InstallOperation("Codewind", installMap);
-    private static final InstallOperation appsodyInstall = new InstallOperation("Appsody", appsodyMap);
-
-    private static final InstallOperation[] installOperations = {codewindInstall, appsodyInstall};
-
-
-    private static final String INSTALLER_DIR = ".codewind-intellij";
     private static final String INSTALL_CMD = "install";
     private static final String START_CMD = "start";
     private static final String STOP_CMD = "stop";
@@ -74,7 +53,6 @@ public class InstallUtil {
     private static final String STATUS_CMD = "status";
     private static final String REMOVE_CMD = "remove";
     private static final String PROJECT_CMD = "project";
-
 
     private static final String INSTALL_VERSION_PROPERTIES = "install-version.properties";
     private static final String INSTALL_VERSION_KEY = "install-version";
@@ -94,11 +72,6 @@ public class InstallUtil {
     }
 
     private static final String TAG_OPTION = "-t";
-    private static final String JSON_OPTION = "-j";
-    private static final String URL_OPTION = "--url";
-
-    public static final String STATUS_KEY = "status";
-    public static final String URL_KEY = "url";
 
     public static InstallStatus getInstallStatus() throws IOException, JSONException, TimeoutException {
         ProcessResult result = statusCodewind();
@@ -117,18 +90,29 @@ public class InstallUtil {
 
     public static ProcessResult startCodewind(String version, ProgressIndicator indicator) throws IOException, TimeoutException, JSONException {
         indicator.setIndeterminate(true);
-        ProcessResult result = runInstallerProcess(START_CMD, TAG_OPTION, version);
-        ConnectionManager.getManager().getLocalConnection().connect();
-        return result;
+        Process process = null;
+        try {
+            ConnectionManager.getManager().getLocalConnection().setInstallerStatus(LocalConnection.InstallerStatus.STARTING);
+            process = CLIUtil.runCWCTL(START_CMD, TAG_OPTION, version);
+            ProcessResult result = ProcessHelper.waitForProcess(process, 500, 120);
+            // ConnectionManager.getManager().getLocalConnection().connect();
+            return result;
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroy();
+            }
+            ConnectionManager.getManager().getLocalConnection().refreshInstallStatus();
+            ConnectionManager.getManager().getLocalConnection().setInstallerStatus(null);
+        }
     }
 
     public static ProcessResult stopCodewind(ProgressIndicator indicator) throws IOException, TimeoutException {
         indicator.setIndeterminate(true);
 
-        // Close the local connection, then yield to give it the chance to close.
+        // Disconnect the local connection, then yield to give it the chance to close.
         // If there's an exception, log it and continue to stop Codewind
         try {
-            ConnectionManager.getManager().getLocalConnection().close();
+            ConnectionManager.getManager().getLocalConnection().disconnect();
             try {
                 Thread.sleep(250);
             } catch (InterruptedException e) {
@@ -138,25 +122,10 @@ public class InstallUtil {
             Logger.logWarning("Error closing socket", e);
         }
 
-        return runInstallerProcess(STOP_ALL_CMD);
-    }
-
-    private static ProcessResult runInstallerProcess(String cmd, String... options) throws IOException, TimeoutException {
         Process process = null;
         try {
-            LocalConnection.InstallerStatus status;
-            switch (cmd) {
-                case START_CMD:
-                    status = LocalConnection.InstallerStatus.STARTING;
-                    break;
-                case STOP_ALL_CMD:
-                    status = LocalConnection.InstallerStatus.STOPPING;
-                    break;
-                default:
-                    throw new AssertionError("Unrecognized cwctl command: " + cmd);
-            }
-            ConnectionManager.getManager().getLocalConnection().setInstallerStatus(status);
-            process = runInstaller(cmd, options);
+            ConnectionManager.getManager().getLocalConnection().setInstallerStatus(LocalConnection.InstallerStatus.STOPPING);
+            process = CLIUtil.runCWCTL(STOP_ALL_CMD);
             return ProcessHelper.waitForProcess(process, 500, 120);
         } finally {
             if (process != null && process.isAlive()) {
@@ -170,7 +139,7 @@ public class InstallUtil {
     private static ProcessResult statusCodewind() throws IOException, TimeoutException {
         Process process = null;
         try {
-            process = runInstaller(STATUS_CMD, JSON_OPTION);
+            process = CLIUtil.runCWCTL(STATUS_CMD, CLIUtil.JSON_OPTION);
             ProcessResult result = ProcessHelper.waitForProcess(process, 500, 120);
             return result;
         } catch (Throwable t) {
@@ -187,88 +156,6 @@ public class InstallUtil {
                 process.destroy();
             }
         }
-    }
-
-    public static Process runInstaller(String cmd, String... options) throws IOException {
-        // Install prerequistes
-        int len = installOperations.length;
-        for (int i = 0; i < len; i++) {
-            if (installOperations[i] != null)
-                installOperations[i].setInstallPath(getInstallerExecutable(installOperations[i]));
-        }
-
-        List<String> cmdList = new ArrayList<String>();
-        cmdList.add(codewindInstall.getInstallPath());
-        cmdList.add(cmd);
-        if (options != null) {
-            for (String option : options) {
-                cmdList.add(option);
-            }
-        }
-        String[] command = cmdList.toArray(new String[cmdList.size()]);
-        ProcessBuilder builder = new ProcessBuilder(command);
-        if (PlatformUtil.getOS() == PlatformUtil.OperatingSystem.MAC) {
-            String pathVar = System.getenv("PATH");
-            pathVar = "/usr/local/bin:" + pathVar;
-            Map<String, String> env = builder.environment();
-            env.put("PATH", pathVar);
-        }
-        return builder.start();
-    }
-
-    public static String getInstallerExecutable(InstallOperation operation) throws IOException {
-        String installPath = operation.getInstallPath();
-        if (installPath != null && (new File(installPath).exists())) {
-            return installPath;
-        }
-
-        // Get the current platform and choose the correct executable path
-        OperatingSystem os = PlatformUtil.getOS(System.getProperty("os.name"));
-
-        Map<OperatingSystem, String> osPathMap = operation.getOSPathMap();
-        if (osPathMap == null) {
-            String msg = "Failed to get the list of operating specific paths for installing the executable " + operation.getInstallName();
-            Logger.logWarning(msg);
-            throw new IOException(msg);
-        }
-
-        String relPath = osPathMap.get(os);
-        if (relPath == null) {
-            String msg = "Failed to get the relative path for the install executable " + operation.getInstallName();
-            Logger.logWarning(msg);
-            throw new IOException(msg);
-        }
-
-        // Get the executable path
-        String installerDir = getInstallerDir();
-        String execName = relPath.substring(relPath.lastIndexOf('/') + 1);
-        String execPath = installerDir + File.separator + execName;
-
-        // Make the installer directory
-        if (!FileUtil.makeDir(installerDir)) {
-            String msg = "Failed to make the directory for the installer utility: " + installerDir;
-            Logger.logWarning(msg);
-            throw new IOException(msg);
-        }
-
-        // Copy the executable over
-        try (InputStream stream = InstallUtil.class.getClassLoader().getResourceAsStream(relPath)) {
-            if (stream == null) {
-                throw new FileNotFoundException(relPath);
-            }
-            FileUtil.copyFile(stream, execPath);
-            if (PlatformUtil.getOS() != PlatformUtil.OperatingSystem.WINDOWS) {
-                Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr-xr-x");
-                File file = new File(execPath);
-                Files.setPosixFilePermissions(file.toPath(), permissions);
-            }
-            return execPath;
-        }
-    }
-
-    private static String getInstallerDir() {
-        Path path = Paths.get(System.getProperty("user.home"), INSTALLER_DIR);
-        return path.toString();
     }
 
     public static String getVersion() {

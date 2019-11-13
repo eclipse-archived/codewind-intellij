@@ -11,8 +11,12 @@
 
 package org.eclipse.codewind.intellij.core.connection;
 
+import com.intellij.openapi.progress.EmptyProgressIndicator;
 import org.eclipse.codewind.intellij.core.*;
 import org.eclipse.codewind.intellij.core.HttpUtil.HttpResult;
+import org.eclipse.codewind.intellij.core.cli.AuthToken;
+import org.eclipse.codewind.intellij.core.cli.ConnectionUtil;
+import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.eclipse.codewind.intellij.core.console.ProjectLogInfo;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
 import org.eclipse.codewind.intellij.core.constants.ProjectType;
@@ -21,14 +25,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.Deflater;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
@@ -41,27 +49,27 @@ public abstract class CodewindConnection {
 
     private static final Pattern RELEASE_PATTERN = Pattern.compile("^\\d+\\.\\d+\\.\\d+$");
 
-    private final String name;
+    private String name;
     private URI baseUri;
-    private ConnectionEnv env;
-    private String connectionErrorMsg;
+    private String conid;
+    private AuthToken authToken;
+    private ConnectionEnv env = null;
+    private String connectionErrorMsg = null;
 
     private CodewindSocket socket;
 
     private volatile boolean isConnected = false;
 
-    private Map<String, CodewindApplication> appMap = new LinkedHashMap<String, CodewindApplication>();
+    private final Map<String, CodewindApplication> appMap = new LinkedHashMap<String, CodewindApplication>();
 
-    public static URI buildUrl(String host, int port) throws URISyntaxException {
-        return new URI("http", null, host, port, null, null, null);
+    public CodewindConnection(String name, URI uri, String conid, AuthToken authToken) {
+        setName(name);
+        setBaseURI(uri);
+        this.conid = conid;
+        this.authToken = authToken;
     }
 
-    public CodewindConnection(String name, URI uri) {
-        this.name = name;
-        this.baseUri = uri;
-    }
-
-    public void connect()  throws IOException, JSONException {
+    public void connect() throws IOException, JSONException {
         if (isConnected) {
             return;
         }
@@ -70,15 +78,15 @@ public abstract class CodewindConnection {
             onInitFail(message("Connection_ErrConnection_CodewindNotReady"));
         }
 
-        env = new ConnectionEnv(getEnvData(this.baseUri));
-        Logger.log("Codewind version is: " + env.getVersion());	// $NON-NLS-1$
+        env = new ConnectionEnv(getEnvData(this.baseUri, authToken));
+        Logger.log("Codewind version is: " + env.getVersion());    // $NON-NLS-1$
         if (!isSupportedVersion(env.getVersion())) {
-            Logger.logWarning("The detected version of Codewind is not supported: " + env.getVersion() + ", url: " + baseUri);	// $NON-NLS-1$	// $NON-NLS-2$
+            Logger.logWarning("The detected version of Codewind is not supported: " + env.getVersion() + ", url: " + baseUri);    // $NON-NLS-1$	// $NON-NLS-2$
             onInitFail(message("Connection_ErrConnection_OldVersion", env.getVersion(), InstallUtil.getVersion()));
         }
 
         socket = new CodewindSocket(this);
-        if(!socket.blockUntilFirstConnection()) {
+        if (!socket.blockUntilFirstConnection()) {
             Logger.logWarning("Socket failed to connect: " + socket.socketUri);
             close();
             throw new CodewindConnectionException(socket.socketUri);
@@ -104,7 +112,7 @@ public abstract class CodewindConnection {
     }
 
     public static LocalConnection createLocalConnection() {
-        return new LocalConnection();
+        return new LocalConnection(message("CodewindLocalConnectionName"), null);
     }
 
     public String getSocketNamespace() {
@@ -117,33 +125,77 @@ public abstract class CodewindConnection {
 
     private void onInitFail(String msg) throws ConnectException {
         Logger.log("Initializing Codewind connection failed: " + msg); //$NON-NLS-1$
-        close();
+        disconnect();
         throw new ConnectException(msg);
+    }
+
+    public void disconnect() {
+        Logger.log("Disconnecting connection: " + this); //$NON-NLS-1$
+        isConnected = false;
+        if (socket != null) {
+            socket.close();
+        }
+//		if (filewatcher != null) {
+//			filewatcher.dispose();
+//		}
+        for (CodewindApplication app : appMap.values()) {
+            app.dispose();
+        }
+        appMap.clear();
     }
 
     /**
      * Call this when the connection is removed.
      */
     public void close() {
-        Logger.log("Closing " + this); //$NON-NLS-1$
-        if (socket != null) {
-            socket.close();
+        disconnect();
+        Logger.log("Removing connection: " + this); //$NON-NLS-1$
+        if (conid != null) {
+            try {
+                ConnectionUtil.removeConnection(name, conid, new EmptyProgressIndicator());
+            } catch (Exception e) {
+                Logger.logWarning("An error occurred trying to de-register the connection: " + this, e); //$NON-NLS-1$ //$NON-NLS-2$
+            }
         }
-        // TODO: to be implemented
-//		if (filewatcher != null) {
-//			filewatcher.dispose();
-//		}
-//		for (CodewindApplication app : appMap.values()) {
-//			app.dispose();
-//		}
     }
 
-    private static JSONObject getEnvData(URI baseUrl) throws JSONException, IOException {
+    public String getName() {
+        if (name == null) {
+            return "";
+        }
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public URI getBaseURI() {
+        return this.baseUri;
+    }
+
+    public void setBaseURI(URI uri) {
+        if (uri != null && !uri.toString().endsWith("/")) { //$NON-NLS-1$
+            this.baseUri = uri.resolve("/"); //$NON-NLS-1$
+        } else {
+            this.baseUri = uri;
+        }
+    }
+
+    public String getConid() {
+        return conid;
+    }
+
+    public void setAuthToken(AuthToken authToken) {
+        this.authToken = authToken;
+    }
+
+    private static JSONObject getEnvData(URI baseUrl, AuthToken auth) throws JSONException, IOException {
         final URI envUrl = baseUrl.resolve(CoreConstants.APIPATH_ENV);
 
         String envResponse = null;
         try {
-            envResponse = HttpUtil.get(envUrl).response;
+            envResponse = HttpUtil.get(envUrl, auth).response;
         } catch (IOException e) {
             Logger.logWarning("Error contacting Environment endpoint", e); //$NON-NLS-1$
             throw e;
@@ -152,9 +204,9 @@ public abstract class CodewindConnection {
         return new JSONObject(envResponse);
     }
 
-    public static String getVersion(URI baseURI) {
+    public static String getVersion(URI baseURI, AuthToken auth) {
         try {
-            ConnectionEnv env = new ConnectionEnv(getEnvData(baseURI));
+            ConnectionEnv env = new ConnectionEnv(getEnvData(baseURI, auth));
             return env.getVersion();
         } catch (Exception e) {
             Logger.logWarning("An error occurred trying to get the Codewind version.", e);
@@ -162,87 +214,62 @@ public abstract class CodewindConnection {
         return null;
     }
 
-    public static boolean isSupportedVersion(String versionStr) {
-        if (ConnectionEnv.UNKNOWN_VERSION.equals(versionStr)) {
-            return false;
+    public static int compareVersions(String versionA, String versionB) throws NumberFormatException {
+        if (versionA.equals(versionB)) {
+            return 0;
+        }
+        if (CoreConstants.VERSION_LATEST.equals(versionA) || ConnectionEnv.UNKNOWN_VERSION.equals(versionB)) {
+            return 1;
+        }
+        if (CoreConstants.VERSION_LATEST.equals(versionB) || ConnectionEnv.UNKNOWN_VERSION.equals(versionA)) {
+            return -1;
         }
 
+        String[] digitsA = versionA.split("\\.");
+        String[] digitsB = versionB.split("\\.");
+
+        for (int i = 0; i < digitsA.length; i++) {
+            int valueA = Integer.parseInt(digitsA[i]);
+            if (i >= digitsB.length) {
+                // If versionA is longer than versionB and the extra digits are
+                // non-zero then versionA is greater
+                if (valueA != 0) {
+                    return 1;
+                }
+            } else {
+                // If valueA is greater than valueB return 1
+                // If valueA is less than valueB return -1.
+                // If they are the same, keep going.
+                int valueB = Integer.parseInt(digitsB[i]);
+                if (valueA > valueB) {
+                    return 1;
+                } else if (valueA < valueB) {
+                    return -1;
+                }
+            }
+        }
+        // If valueB is longer and the extra digits are not all zero, return -1
+        if (digitsB.length > digitsA.length) {
+            for (int i = digitsA.length; i < digitsB.length; i++) {
+                int valueB = Integer.parseInt(digitsB[i]);
+                if (valueB != 0) {
+                    return -1;
+                }
+            }
+        }
+        return 0;
+    }
+
+    public static boolean isSupportedVersion(String versionStr) {
         if (!RELEASE_PATTERN.matcher(versionStr).matches()) {
             // Development build
             return true;
         }
-
         try {
-            String[] expectedDigits = InstallUtil.getVersion().split("\\.");
-            String[] actualDigits = versionStr.split("\\.");
-
-            for (int i = 0; i < expectedDigits.length; i++) {
-                int expectedVal = Integer.parseInt(expectedDigits[i]);
-                if (i >= actualDigits.length) {
-                    // It is ok if the expected is longer than the actual
-                    // as long as all of the extra digits are 0, if not
-                    // then return false
-                    if (expectedVal != 0) {
-                        return false;
-                    }
-                } else {
-                    // If the value is less than expected, return false.
-                    // If the value is greater than expected, return true.
-                    // If they are the same, keep going.
-                    int actualVal = Integer.parseInt(actualDigits[i]);
-                    if (actualVal < expectedVal) {
-                        return false;
-                    } else if (actualVal > expectedVal) {
-                        return true;
-                    }
-                }
-            }
-            return true;
+            return compareVersions(versionStr, InstallUtil.getVersion()) >= 0;
         } catch (NumberFormatException e) {
-            Logger.logWarning("Couldn't parse version number from: " + versionStr); //$NON-NLS-1$
-            return false;
+            Logger.logWarning("Invalid version: " + versionStr, e);
         }
-    }
-
-    public boolean checkVersion(int requiredVersion, String requiredVersionBr) {
-        String versionStr = env.getVersion();
-
-        if (ConnectionEnv.UNKNOWN_VERSION.equals(versionStr)) {
-            return false;
-        }
-
-        if (CoreConstants.VERSION_LATEST.equals(versionStr)) {
-            // Development build - possible other values to check for?
-            return true;
-        }
-
-        // TODO fix this
-        Matcher matcher = RELEASE_PATTERN.matcher(versionStr);
-        if (matcher.matches()) {
-            String actualYear = versionStr.substring(0, 4);
-            String requiredYear = requiredVersionBr.substring(0, 4);
-            try {
-                if (Integer.parseInt(actualYear) >= (Integer.parseInt(requiredYear))) {
-                    int index = versionStr.lastIndexOf('_');
-                    String actualIteration = versionStr.substring(6, index);
-                    index = requiredVersionBr.lastIndexOf('_');
-                    String requiredIteration = requiredVersionBr.substring(6, index);
-                    if (Integer.parseInt(actualIteration) >= Integer.parseInt(requiredIteration)) {
-                        return true;
-                    }
-                }
-            } catch (NumberFormatException e) {
-                Logger.logWarning("Failed to parse the actual version: " + versionStr + ", or the required version: " + requiredVersionBr);
-            }
-            return false;
-        }
-
-        try {
-            return Integer.parseInt(versionStr) >= requiredVersion;
-        } catch (NumberFormatException e) {
-            Logger.logWarning("Couldn't parse version number from " + versionStr); //$NON-NLS-1$
-        }
-
         return false;
     }
 
@@ -259,7 +286,7 @@ public abstract class CodewindConnection {
         final URI projectsURL = baseUri.resolve(CoreConstants.APIPATH_PROJECT_LIST);
 
         try {
-            String projectsResponse = HttpUtil.get(projectsURL).response;
+            String projectsResponse = HttpUtil.get(projectsURL, authToken).response;
             CodewindApplicationFactory.getAppsFromProjectsJson(this, projectsResponse, projectID);
             Logger.log("App list update success"); //$NON-NLS-1$
         } catch (Exception e) {
@@ -332,10 +359,10 @@ public abstract class CodewindConnection {
         IOException exception = null;
         for (int i = 0; i < 10; i++) {
             try {
-                if (requestCodewindReady()) {
+                if (requestCodewindReady(500, 500)) {
                     return true;
                 }
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (IOException e) {
                 exception = e;
             } catch (InterruptedException e) {
@@ -348,10 +375,10 @@ public abstract class CodewindConnection {
         return false;
     }
 
-    public boolean requestCodewindReady() throws IOException {
+    public boolean requestCodewindReady(int connectTimeoutMS, int readTimeoutMS) throws IOException {
         String endpoint = CoreConstants.APIPATH_READY;
         URI uri = baseUri.resolve(endpoint);
-        HttpResult result = HttpUtil.get(uri);
+        HttpResult result = HttpUtil.get(uri, authToken, connectTimeoutMS, readTimeoutMS);
         checkResult(result, uri, true);
         return "true".equals(result.response);
     }
@@ -369,7 +396,7 @@ public abstract class CodewindConnection {
         restartProjectPayload.put(CoreConstants.KEY_START_MODE, launchMode);
 
         // This initiates the restart
-        HttpResult result = HttpUtil.post(url, restartProjectPayload);
+        HttpResult result = HttpUtil.post(url, authToken, restartProjectPayload);
         if (!result.isGoodResponse) {
             final String msg = String.format("Received bad response from server %d with error message %s", //$NON-NLS-1$
                     result.responseCode, result.error);
@@ -390,7 +417,7 @@ public abstract class CodewindConnection {
         URI url = baseUri.resolve(restartEndpoint);
 
         // This initiates the restart
-        HttpResult result = HttpUtil.put(url);
+        HttpResult result = HttpUtil.put(url, authToken);
         if (!result.isGoodResponse) {
             final String msg = String.format("Received bad response from server %d with error message %s", //$NON-NLS-1$
                     result.responseCode, result.error);
@@ -407,7 +434,7 @@ public abstract class CodewindConnection {
     public JSONObject requestProjectStatus(CodewindApplication app) throws IOException, JSONException {
         final URI statusUrl = baseUri.resolve(CoreConstants.APIPATH_PROJECT_LIST);
 
-        HttpResult result = HttpUtil.get(statusUrl);
+        HttpResult result = HttpUtil.get(statusUrl, authToken);
 
         if (!result.isGoodResponse) {
             final String msg = String.format("Received bad response from server %d with error message %s", //$NON-NLS-1$
@@ -437,7 +464,7 @@ public abstract class CodewindConnection {
                 + CoreConstants.APIPATH_METRICS_STATUS;
 
         URI uri = baseUri.resolve(endpoint);
-        HttpResult result = HttpUtil.get(uri);
+        HttpResult result = HttpUtil.get(uri, authToken);
         checkResult(result, uri, true);
         return new JSONObject(result.response);
     }
@@ -447,8 +474,14 @@ public abstract class CodewindConnection {
      *
      * @param app The app to build
      */
-    public void requestProjectBuild(CodewindApplication app, String action)
-            throws JSONException, IOException {
+    public void requestProjectBuild(CodewindApplication app, String action) throws JSONException, IOException {
+
+        // Synchronise the source by clearing the old version and uploading the latest.
+        long syncTime = System.currentTimeMillis();
+        String[] fileList = requestUploadsRecursively(app.projectID, app.fullLocalPath.toString(), app.getLastSync());
+        requestProjectClear(app, fileList);
+        Logger.log("Sync complete for " + app.name + " to " + app.connection.baseUri + " in " + (System.currentTimeMillis() - syncTime) + "ms");
+        app.setLastSync(syncTime);
 
         String buildEndpoint = CoreConstants.APIPATH_PROJECT_LIST + "/"    //$NON-NLS-1$
                 + app.projectID + "/"                                    //$NON-NLS-1$
@@ -460,7 +493,7 @@ public abstract class CodewindConnection {
         buildPayload.put(CoreConstants.KEY_ACTION, action);
 
         // This initiates the build
-        HttpUtil.post(url, buildPayload);
+        HttpUtil.post(url, authToken, buildPayload);
     }
 
     public List<ProjectLogInfo> requestProjectLogs(CodewindApplication app) throws JSONException, IOException {
@@ -471,7 +504,7 @@ public abstract class CodewindConnection {
                 + CoreConstants.APIPATH_LOGS;
 
         URI uri = baseUri.resolve(endpoint);
-        HttpResult result = HttpUtil.get(uri);
+        HttpResult result = HttpUtil.get(uri, authToken);
         checkResult(result, uri, true);
 
         JSONObject logs = new JSONObject(result.response);
@@ -514,7 +547,7 @@ public abstract class CodewindConnection {
                 + logInfo.logName;
 
         URI uri = baseUri.resolve(endpoint);
-        HttpResult result = HttpUtil.post(uri);
+        HttpResult result = HttpUtil.post(uri, authToken);
         checkResult(result, uri, false);
     }
 
@@ -526,7 +559,7 @@ public abstract class CodewindConnection {
                 + logInfo.logName;
 
         URI uri = baseUri.resolve(endpoint);
-        HttpResult result = HttpUtil.delete(uri);
+        HttpResult result = HttpUtil.delete(uri, authToken);
         checkResult(result, uri, false);
     }
 
@@ -540,7 +573,7 @@ public abstract class CodewindConnection {
         JSONObject buildPayload = new JSONObject();
         buildPayload.put(CoreConstants.KEY_PROJECT_TYPE, app.projectType.getId());
 
-        HttpResult result = HttpUtil.post(url, buildPayload);
+        HttpResult result = HttpUtil.post(url, authToken, buildPayload);
         if (!result.isGoodResponse) {
             final String msg = String.format("Received bad response from server %d with error message %s", //$NON-NLS-1$
                     result.responseCode, result.error);
@@ -559,7 +592,7 @@ public abstract class CodewindConnection {
         buildPayload.put(CoreConstants.KEY_PROJECT_TYPE, app.projectType.getId());
         buildPayload.put(CoreConstants.KEY_AUTO_GENERATE, true);
 
-        HttpResult result = HttpUtil.post(url, buildPayload);
+        HttpResult result = HttpUtil.post(url, authToken, buildPayload);
         if (!result.isGoodResponse) {
             final String msg = String.format("Received bad response from server %d with error message %s", //$NON-NLS-1$
                     result.responseCode, result.error);
@@ -573,7 +606,7 @@ public abstract class CodewindConnection {
     public JSONObject requestProjectCapabilities(CodewindApplication app) throws IOException, JSONException {
         final URI statusUrl = baseUri.resolve(CoreConstants.APIPATH_PROJECT_LIST + "/" + app.projectID + "/" + CoreConstants.APIPATH_CAPABILITIES);
 
-        HttpResult result = HttpUtil.get(statusUrl);
+        HttpResult result = HttpUtil.get(statusUrl, authToken);
 
         if (!result.isGoodResponse) {
             final String msg = String.format("Received bad response from server %d with error message %s", //$NON-NLS-1$
@@ -595,7 +628,7 @@ public abstract class CodewindConnection {
             String query = CoreConstants.QUERY_SHOW_ENABLED_ONLY + "=true";
             uri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), query, uri.getFragment());
         }
-        HttpResult result = HttpUtil.get(uri);
+        HttpResult result = HttpUtil.get(uri, authToken);
         checkResult(result, uri, false);
 
         // A response code of 204 means there are no available templates so just return the empty template list
@@ -612,7 +645,7 @@ public abstract class CodewindConnection {
     public List<RepositoryInfo> requestRepositories() throws IOException, JSONException {
         List<RepositoryInfo> repos = new ArrayList<RepositoryInfo>();
         final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_REPOSITORIES);
-        HttpResult result = HttpUtil.get(uri);
+        HttpResult result = HttpUtil.get(uri, authToken);
         checkResult(result, uri, true);
 
         JSONArray repoArray = new JSONArray(result.response);
@@ -635,14 +668,19 @@ public abstract class CodewindConnection {
         checkResult(result, uri, false);
     }
 
-    public void requestRepoAdd(String description, String url) throws IOException, JSONException {
+    public void requestRepoAdd(String url, String name, String description) throws IOException, JSONException {
         final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_REPOSITORIES);
         JSONObject payload = new JSONObject();
-        payload.put(RepositoryInfo.DESCRIPTION_KEY, description);
         payload.put(RepositoryInfo.URL_KEY, url);
+        if (name != null && !name.isEmpty()) {
+            payload.put(RepositoryInfo.NAME_KEY, name);
+        }
+        if (description != null && !description.isEmpty()) {
+            payload.put(RepositoryInfo.DESCRIPTION_KEY, description);
+        }
         payload.put(RepositoryInfo.ENABLED_KEY, true);
 
-        HttpResult result = HttpUtil.post(uri, payload);
+        HttpResult result = HttpUtil.post(uri, authToken, payload);
         checkResult(result, uri, false);
     }
 
@@ -651,40 +689,171 @@ public abstract class CodewindConnection {
         JSONObject payload = new JSONObject();
         payload.put(RepositoryInfo.URL_KEY, url);
 
-        HttpResult result = HttpUtil.delete(uri, payload);
+        HttpResult result = HttpUtil.delete(uri, authToken, payload);
         checkResult(result, uri, false);
     }
 
     public void requestProjectBind(String name, String path, String language, String projectType)
             throws JSONException, IOException {
 
-        String endpoint = CoreConstants.APIPATH_PROJECT_LIST + "/" + CoreConstants.APIPATH_PROJECT_BIND;
+        String bindStartEndpoint = CoreConstants.APIPATH_PROJECT_LIST + "/" + CoreConstants.APIPATH_PROJECT_REMOTE_BIND_START;
+        URI bindStartUri = baseUri.resolve(bindStartEndpoint);
+        long initialSyncTime = System.currentTimeMillis();
 
-        URI uri = baseUri.resolve(endpoint);
-
-        JSONObject payload = new JSONObject();
-        payload.put(CoreConstants.KEY_NAME, name);
-        payload.put(CoreConstants.KEY_PATH, CoreUtil.getContainerPath(path));
-        payload.put(CoreConstants.KEY_LANGUAGE, language);
+        JSONObject bindStartPayload = new JSONObject();
+        bindStartPayload.put(CoreConstants.KEY_NAME, name);
+        bindStartPayload.put(CoreConstants.KEY_PATH, CoreUtil.getContainerPath(path));
+        bindStartPayload.put(CoreConstants.KEY_LANGUAGE, language);
         if (projectType == null) {
             projectType = ProjectType.getTypeFromLanguage(language).getId();
         }
         if (projectType != null) {
-            payload.put(CoreConstants.KEY_PROJECT_TYPE, projectType);
+            bindStartPayload.put(CoreConstants.KEY_PROJECT_TYPE, projectType);
         }
-        payload.put(CoreConstants.KEY_AUTO_BUILD, true);
+        bindStartPayload.put(CoreConstants.KEY_AUTO_BUILD, true);
 
-        HttpResult result = HttpUtil.post(uri, payload, 300);
-        checkResult(result, uri, false);
+        HttpResult bindStartResult = HttpUtil.post(bindStartUri, authToken, bindStartPayload, 300);
+        checkResult(bindStartResult, bindStartUri, false);
+
+        JSONObject projectInf = new JSONObject(bindStartResult.response);
+        String projectID = projectInf.getString(CoreConstants.KEY_PROJECT_ID);
+
+        requestUploadsRecursively(projectID, path, 0);
+        String bindEndEndpoint = CoreConstants.APIPATH_PROJECT_LIST + "/" + projectID + "/" + CoreConstants.APIPATH_PROJECT_REMOTE_BIND_END;
+        URI bindEndUri = baseUri.resolve(bindEndEndpoint);
+
+        HttpResult bindEndResult = HttpUtil.post(bindEndUri, authToken);
+        checkResult(bindEndResult, bindEndUri, false);
+
+        CodewindApplication newApp = getAppByID(projectID);
+        if (newApp != null) {
+            newApp.setLastSync(initialSyncTime);
+        }
+        Logger.log("Initial project upload complete for " + name + " to " + baseUri + " in " + (System.currentTimeMillis() - initialSyncTime) + "ms");
+
         CoreUtil.updateConnection(this);
+    }
+
+    public String[] requestUploadsRecursively(String projectId, String path, long lastSyncMs) throws JSONException, IOException {
+
+        List<Path> fileList = new LinkedList<Path>();
+        Path basePath = Paths.get(path);
+        Files.walk(basePath).forEach((Path fullPath) -> {
+            Path relative = basePath.relativize(fullPath);
+            fileList.add(relative);
+            try {
+                if (Files.getLastModifiedTime(fullPath).toMillis() > lastSyncMs && !Files.isDirectory(fullPath)) {
+                    requestUpload(projectId, fullPath, relative.toString());
+                }
+            } catch (JSONException | IOException e) {
+                Logger.logWarning(e);
+            }
+        });
+        String[] fileArray = fileList.stream().map(Path::toString).toArray(String[]::new);
+        return fileArray;
+    }
+
+    /**
+     * Request a clear of the source tree (prior to upload).
+     *
+     * @param app The app to clear
+     */
+    public void requestProjectClear(CodewindApplication app, String[] fileList)
+            throws JSONException, IOException {
+
+        String clearEndpoint = CoreConstants.APIPATH_PROJECT_LIST + "/"    //$NON-NLS-1$
+                + app.projectID + "/"                                    //$NON-NLS-1$
+                + CoreConstants.APIPATH_PROJECT_CLEAR;
+
+        JSONObject payload = new JSONObject();
+        payload.put(CoreConstants.KEY_FILE_LIST, fileList);
+
+        URI url = baseUri.resolve(clearEndpoint);
+
+        // This initiates the build
+        HttpUtil.post(url, authToken, payload);
+    }
+
+    public void requestUpload(String projectId, Path fullPath, String relativePath) throws JSONException, IOException {
+
+        // Read the file and convert the content to JSON.
+        byte[] fileContent = Files.readAllBytes(fullPath);
+        String jsonContent = JSONObject.quote(new String(fileContent, "UTF-8"));
+
+        // zlib compress the content
+        Deflater fileDeflater = new Deflater();
+        byte[] jsonBytes = jsonContent.getBytes("UTF-8");
+        fileDeflater.setInput(jsonBytes);
+        fileDeflater.finish();
+        byte[] buffer = new byte[jsonBytes.length];
+        ByteArrayOutputStream compressedStream = new ByteArrayOutputStream(jsonBytes.length);
+        while (!fileDeflater.finished()) {
+            int bytesCompressed = fileDeflater.deflate(buffer);
+            compressedStream.write(buffer, 0, bytesCompressed);
+        }
+
+        // base64 encode the compressed content
+        Base64.Encoder encoder = Base64.getEncoder();
+        String base64Compressed = encoder.encodeToString(compressedStream.toByteArray());
+
+        JSONObject body = new JSONObject();
+        body.put(CoreConstants.KEY_DIRECTORY, false);
+        body.put(CoreConstants.KEY_PATH, relativePath.replace('\\', '/'));
+        body.put(CoreConstants.KEY_MSG, base64Compressed);
+
+        String endpoint = CoreConstants.APIPATH_PROJECT_LIST + "/" + projectId + "/"
+                + CoreConstants.APIPATH_PROJECT_UPLOAD;
+        URI uri = baseUri.resolve(endpoint);
+        HttpResult result = HttpUtil.put(uri, authToken, body, 300);
+        checkResult(result, uri, false);
     }
 
     public void requestProjectUnbind(String projectID) throws IOException {
         String endpoint = CoreConstants.APIPATH_PROJECT_LIST + "/" + projectID + "/" + CoreConstants.APIPATH_PROJECT_UNBIND;
         URI uri = baseUri.resolve(endpoint);
-        HttpResult result = HttpUtil.post(uri);
+        HttpResult result = HttpUtil.post(uri, authToken);
         checkResult(result, uri, false);
         CoreUtil.updateConnection(this);
+    }
+
+    public List<ProjectTypeInfo> requestProjectTypes() throws IOException, JSONException {
+        List<ProjectTypeInfo> projectTypes = new ArrayList<ProjectTypeInfo>();
+        final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_PROJECT_TYPES);
+        HttpResult result = HttpUtil.get(uri, authToken);
+        checkResult(result, uri, true);
+
+        JSONArray array = new JSONArray(result.response);
+        for (int i = 0; i < array.length(); i++) {
+            projectTypes.add(new ProjectTypeInfo(array.getJSONObject(i)));
+        }
+        return projectTypes;
+    }
+
+    public String requestRegistryTest(String registry) throws IOException, JSONException {
+        final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_REGISTRY);
+        JSONObject payload = new JSONObject();
+        payload.put(CoreConstants.KEY_DEPLOYMENT_REGISTRY, registry);
+        payload.put(CoreConstants.KEY_OPERATION, CoreConstants.VALUE_OP_TEST);
+
+        HttpResult result = HttpUtil.post(uri, authToken, payload);
+        checkResult(result, uri, true);
+
+        JSONObject resultObj = new JSONObject(result.response);
+        if (resultObj.getBoolean(CoreConstants.KEY_DEPLOYMENT_REGISTRY_TEST)) {
+            return null;
+        }
+        String msg = resultObj.getString(CoreConstants.KEY_MSG);
+        return msg;
+    }
+
+    public void requestRegistrySet(String registry) throws IOException, JSONException {
+        final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_REGISTRY);
+        JSONObject payload = new JSONObject();
+        payload.put(CoreConstants.KEY_DEPLOYMENT_REGISTRY, registry);
+        payload.put(CoreConstants.KEY_OPERATION, CoreConstants.VALUE_OP_SET);
+
+        HttpResult result = HttpUtil.post(uri, authToken, payload);
+        checkResult(result, uri, false);
     }
 
     private void checkResult(HttpResult result, URI uri, boolean checkContent) throws IOException {
@@ -724,7 +893,7 @@ public abstract class CodewindConnection {
         // Reset any cached information in case it has changed
         try {
             String oldSocketNS = env.getSocketNamespace();
-            env = new ConnectionEnv(getEnvData(baseUri));
+            env = new ConnectionEnv(getEnvData(baseUri, authToken));
             if (!isSupportedVersion(env.getVersion())) {
                 Logger.logWarning("The detected version of Codewind after reconnect is not supported: " + env.getVersion());
                 this.connectionErrorMsg = message("Connection_ErrConnection_OldVersion", env.getVersion(), InstallUtil.getVersion());
@@ -737,7 +906,7 @@ public abstract class CodewindConnection {
                 // The socket namespace has changed so need to recreate the socket
                 socket.close();
                 socket = new CodewindSocket(this);
-                if(!socket.blockUntilFirstConnection()) {
+                if (!socket.blockUntilFirstConnection()) {
                     // Still not connected
                     Logger.logWarning("Failed to create a new socket with updated URI: " + socket.socketUri);
                     // Clear the message so that it just shows the basic disconnected message
@@ -761,16 +930,8 @@ public abstract class CodewindConnection {
 
     @Override
     public String toString() {
-        return String.format("%s @ name=%s baseUrl=%s", //$NON-NLS-1$
-                CodewindConnection.class.getSimpleName(), name, baseUri == null ? "unknown" : baseUri);
-    }
-
-    // Note that toPrefsString and fromPrefsString are used to save and load connections from the preferences store
-    // in CodewindConnectionManager, so be careful modifying these.
-
-    public String toPrefsString() {
-        // No newlines allowed!
-        return baseUri.toString();
+        return String.format("%s @ name=%s baseUrl=%s conid=%s", //$NON-NLS-1$
+                CodewindConnection.class.getSimpleName(), name, baseUri == null ? "unknown" : baseUri, conid == null ? "<none>" : conid);
     }
 
     public void requestProjectDelete(String projectId)
@@ -780,7 +941,7 @@ public abstract class CodewindConnection {
 
         URI uri = baseUri.resolve(endpoint);
 
-        HttpResult result = HttpUtil.delete(uri);
+        HttpResult result = HttpUtil.delete(uri, authToken);
         checkResult(result, uri, false);
     }
 
@@ -859,9 +1020,5 @@ public abstract class CodewindConnection {
     @Override
     public int hashCode() {
         return name.hashCode();
-    }
-
-    public String getName() {
-        return name;
     }
 }

@@ -18,7 +18,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
-import org.eclipse.codewind.intellij.core.InstallStatus;
+import org.eclipse.codewind.intellij.core.cli.InstallStatus;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.RemoteConnection;

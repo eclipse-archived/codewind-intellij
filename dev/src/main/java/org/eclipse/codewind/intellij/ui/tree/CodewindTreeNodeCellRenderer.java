@@ -20,6 +20,8 @@ import java.awt.Component;
 import static org.eclipse.codewind.intellij.ui.IconCache.*;
 
 import org.eclipse.codewind.intellij.core.*;
+import org.eclipse.codewind.intellij.core.cli.InstallStatus;
+import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;

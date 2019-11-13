@@ -9,8 +9,9 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.codewind.intellij.core;
+package org.eclipse.codewind.intellij.core.cli;
 
+import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,7 +23,9 @@ public class InstallStatus {
 	public static final String URL_KEY = "url";
 	public static final String INSTALLED_VERSIONS_KEY = "installed-versions";
 	public static final String STARTED_KEY = "started";
-	
+
+	public static final String WS_UPGRADE_VERSION = "0.6.0";
+
 	public static final InstallStatus UNKNOWN = new InstallStatus(Status.UNKNOWN);
 
 	private Status status;

@@ -12,8 +12,8 @@
 package org.eclipse.codewind.intellij.core.connection;
 
 import org.eclipse.codewind.intellij.core.CoreUtil;
-import org.eclipse.codewind.intellij.core.InstallStatus;
-import org.eclipse.codewind.intellij.core.InstallUtil;
+import org.eclipse.codewind.intellij.core.cli.InstallStatus;
+import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.json.JSONException;
 
@@ -39,8 +39,10 @@ public class LocalConnection extends CodewindConnection {
         STOPPING
     }
 
-    protected LocalConnection() {
-        super(message("CodewindLocalConnectionName"), null);
+    private static final String CONNECTION_ID = "local";
+
+    public LocalConnection(String name, URI uri) {
+        super(name, uri, CONNECTION_ID, null);
     }
 
     /**
@@ -55,7 +57,7 @@ public class LocalConnection extends CodewindConnection {
         try {
             installStatus = InstallUtil.getInstallStatus();
             if (!installStatus.isStarted()) {
-                close();
+                disconnect();
                 setBaseUri(null);
             } else if (!isConnected()) {
                 URI uri = new URI(installStatus.getURL());

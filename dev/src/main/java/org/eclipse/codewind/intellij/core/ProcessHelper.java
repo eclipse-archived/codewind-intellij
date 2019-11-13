@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeoutException;
 
+import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
+
 public class ProcessHelper {
 
     public static class ProcessResult {
@@ -38,6 +40,16 @@ public class ProcessHelper {
 
         public String getError() {
             return sysError.toString();
+        }
+
+        public String getErrorMsg() {
+            if (sysError != null && !sysError.trim().isEmpty()) {
+                return sysError;
+            }
+            if (sysOut != null && !sysOut.trim().isEmpty()) {
+                return sysOut;
+            }
+            return message("ProcessHelperUnknownError");
         }
     }
 

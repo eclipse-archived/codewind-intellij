@@ -12,8 +12,8 @@
 package org.eclipse.codewind.intellij.ui.tasks;
 
 import com.intellij.openapi.progress.ProgressIndicator;
-import org.eclipse.codewind.intellij.core.InstallStatus;
-import org.eclipse.codewind.intellij.core.InstallUtil;
+import org.eclipse.codewind.intellij.core.cli.InstallStatus;
+import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.eclipse.codewind.intellij.core.ProcessHelper;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.jetbrains.annotations.NotNull;
