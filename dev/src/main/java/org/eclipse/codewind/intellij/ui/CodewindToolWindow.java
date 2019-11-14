@@ -23,6 +23,7 @@ import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.RemoteConnection;
 import org.eclipse.codewind.intellij.ui.actions.OpenIdeaProjectAction;
+import org.eclipse.codewind.intellij.ui.actions.RefreshAction;
 import org.eclipse.codewind.intellij.ui.actions.StartCodewindAction;
 import org.eclipse.codewind.intellij.ui.actions.StopCodewindAction;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeModel;
@@ -47,6 +48,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction stopCodewindAction;
 
     private final AnAction openIdeaProjectAction;
+    private final AnAction refreshAction;
 
     public CodewindToolWindow() {
         treeModel = new CodewindTreeModel();
@@ -57,6 +59,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         stopCodewindAction = new StopCodewindAction(this::expandLocalTree);
 
         openIdeaProjectAction = new OpenIdeaProjectAction();
+        refreshAction = new RefreshAction();
 
         debugAction = new AnAction("* debug *") {
             @Override
@@ -149,6 +152,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         } else if (status.isInstalled()) {
             actions.add(startCodewindAction);
         }
+        actions.addSeparator();
+        actions.add(refreshAction);
 
         // TODO remove this
         // actions.add(debugAction);
@@ -164,6 +169,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private void handleApplicationPopup(CodewindApplication application, Component component, int x, int y) {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindApplicationGroup", true);
         actions.add(openIdeaProjectAction);
+        actions.addSeparator();
+        actions.add(refreshAction);
         ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("CodewindTree", actions);
         popupMenu.getComponent().show(component, x, y);
     }

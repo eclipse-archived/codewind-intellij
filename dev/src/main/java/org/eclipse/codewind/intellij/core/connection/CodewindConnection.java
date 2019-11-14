@@ -875,13 +875,15 @@ public abstract class CodewindConnection {
      * Called by the CodewindSocket when the socket.io connection goes down.
      */
     public synchronized void onConnectionError() {
-        Logger.log("Connection to " + baseUri + " lost"); //$NON-NLS-1$ //$NON-NLS-2$
-        isConnected = false;
-        synchronized (appMap) {
-            appMap.clear();
+        if (isConnected) {
+            Logger.log("Connection to " + baseUri + " lost"); //$NON-NLS-1$ //$NON-NLS-2$
+            isConnected = false;
+            synchronized (appMap) {
+                appMap.clear();
+            }
+            // Update everything as Codewind might be down as well
+            CoreUtil.updateAll();
         }
-        // Update everything as Codewind might be down as well
-        CoreUtil.updateAll();
     }
 
     /**
