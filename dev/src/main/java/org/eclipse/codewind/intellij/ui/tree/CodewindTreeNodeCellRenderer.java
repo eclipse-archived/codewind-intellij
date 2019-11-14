@@ -145,8 +145,10 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
 
         if (application.isEnabled()) {
             AppStatus appStatus = application.getAppStatus();
-            String displayString = appStatus.getDisplayString(application.getStartMode());
-            builder.append(" [").append(displayString).append("]");
+            if (appStatus != AppStatus.UNKNOWN) {
+                String displayString = appStatus.getDisplayString(application.getStartMode());
+                builder.append(" [").append(displayString).append("]");
+            }
 
             BuildStatus buildStatus = application.getBuildStatus();
             String buildDetails = application.getBuildDetails();
