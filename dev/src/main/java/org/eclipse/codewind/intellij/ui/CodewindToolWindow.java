@@ -151,7 +151,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         }
 
         // TODO remove this
-        actions.add(debugAction);
+        // actions.add(debugAction);
 
         ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("CodewindTree", actions);
         popupMenu.getComponent().show(component, x, y);

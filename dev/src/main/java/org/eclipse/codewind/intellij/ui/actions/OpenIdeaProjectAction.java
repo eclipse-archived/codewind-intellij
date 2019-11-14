@@ -22,30 +22,18 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.tree.TreePath;
 
+import java.util.Optional;
+
 import static com.intellij.openapi.actionSystem.PlatformDataKeys.*;
 
-public class OpenIdeaProjectAction extends AnAction {
+public class OpenIdeaProjectAction extends TreeAction {
     public OpenIdeaProjectAction() {
         super("Open Project");
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        Object data = e.getData(CONTEXT_COMPONENT);
-        if (!(data instanceof Tree)) {
-            Logger.log("unrecognized component for OpenIdeaProjectAction: " + data);
-            System.out.println("*** unrecognized component for OpenIdeaProjectAction: " + data);
-            return;
-        }
-        Tree tree = (Tree) data;
-        TreePath treePath = tree.getSelectionPath();
-        Object node = treePath.getLastPathComponent();
-        if (!(node instanceof CodewindApplication)) {
-            Logger.log("unrecognized node for OpenIdeaProjectAction: " + node);
-            System.out.println("*** unrecognized node for OpenIdeaProjectAction: " + node);
-            return;
-        }
-        CodewindApplication application = (CodewindApplication) node;
-        ProgressManager.getInstance().run(new OpenIdeaProjectTask(application));
+        Optional<CodewindApplication> application = selectionAsType(e, CodewindApplication.class);
+        application.ifPresent(a -> ProgressManager.getInstance().run(new OpenIdeaProjectTask(a)));
     }
 }
