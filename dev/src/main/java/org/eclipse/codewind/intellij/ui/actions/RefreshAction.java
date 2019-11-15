@@ -30,7 +30,7 @@ import static com.intellij.openapi.actionSystem.PlatformDataKeys.CONTEXT_COMPONE
 public class RefreshAction extends AnAction {
 
     public RefreshAction() {
-        super("Refresh");
+        super("ACTION_REFRESH");
     }
 
     @Override

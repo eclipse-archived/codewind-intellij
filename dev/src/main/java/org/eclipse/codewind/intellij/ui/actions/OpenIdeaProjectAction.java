@@ -11,24 +11,19 @@
 
 package org.eclipse.codewind.intellij.ui.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
-import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.ui.tasks.OpenIdeaProjectTask;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.tree.TreePath;
+import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
 import java.util.Optional;
 
-import static com.intellij.openapi.actionSystem.PlatformDataKeys.*;
-
 public class OpenIdeaProjectAction extends TreeAction {
     public OpenIdeaProjectAction() {
-        super("Open Project");
+        super(message("ACTION_IMPORT_PROJECT"));
     }
 
     @Override
