@@ -28,7 +28,7 @@ src/main/resources/cwctl/meta-pull.sh
 src/main/resources/cwctl/pull.sh
 ./gradlew copyDependencies build
 ```
-3. Open the `codewind-intellij/dev` folder in IntelliJ.
+3. Import the `codewind-intellij/dev` folder into IntelliJ, selecting `Import project from external model` and choosing the `Gradle` option (see [Import a project](https://www.jetbrains.com/help/idea/import-project-or-module-wizard.html) in the IntelliJ help)
 
 Use the `dev (latest) [runIde]` run configuration to run and test your changes.
 
