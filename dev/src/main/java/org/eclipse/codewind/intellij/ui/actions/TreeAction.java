@@ -13,35 +13,48 @@ package org.eclipse.codewind.intellij.ui.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.ui.treeStructure.Tree;
-import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.tree.TreePath;
-
 import java.util.Optional;
+import java.util.function.Function;
 
 import static com.intellij.openapi.actionSystem.PlatformDataKeys.CONTEXT_COMPONENT;
 
-public abstract class TreeAction extends AnAction {
-    public TreeAction(String text) {
+public abstract class TreeAction<T> extends AnAction {
+    private final String text;
+    private final Class<T> type;
+    private final Function<T, Task.Backgroundable> taskFactory;
+
+    public TreeAction(String text, Class<T> type, Function<T, Task.Backgroundable> taskFactory) {
         super(text);
+        this.text = text;
+        this.type = type;
+        this.taskFactory = taskFactory;
     }
 
-    protected  <T> Optional<T> selectionAsType(@NotNull AnActionEvent e, Class<T> type) {
+    @Override
+    public void actionPerformed(@NotNull AnActionEvent e) {
+        getSelection(e).ifPresent(value -> ProgressManager.getInstance().run(taskFactory.apply(value)));
+    }
+
+    private Optional<T> getSelection(@NotNull AnActionEvent e) {
         Object data = e.getData(CONTEXT_COMPONENT);
         if (!(data instanceof Tree)) {
-            Logger.log("unrecognized component for OpenIdeaProjectAction: " + data);
-            System.out.println("*** unrecognized component for OpenIdeaProjectAction: " + data);
+            Logger.logWarning("unrecognized component for action " + text + ": " + data);
+            System.out.println("unrecognized component for action " + text + ": " + data);
             return Optional.empty();
         }
         Tree tree = (Tree) data;
         TreePath treePath = tree.getSelectionPath();
         Object node = treePath.getLastPathComponent();
         if (!(type.isInstance(node))) {
-            Logger.log("unrecognized node for OpenIdeaProjectAction: " + node);
-            System.out.println("*** unrecognized node for OpenIdeaProjectAction: " + node);
+            Logger.logWarning("unrecognized node for action " + text + ": " + node);
+            System.out.println("unrecognized node for action " + text + ": " + node);
             return Optional.empty();
         }
         return Optional.of(type.cast(node));

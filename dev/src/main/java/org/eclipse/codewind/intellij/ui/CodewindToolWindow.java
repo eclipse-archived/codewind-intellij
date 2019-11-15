@@ -22,10 +22,7 @@ import org.eclipse.codewind.intellij.core.cli.InstallStatus;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.RemoteConnection;
-import org.eclipse.codewind.intellij.ui.actions.OpenIdeaProjectAction;
-import org.eclipse.codewind.intellij.ui.actions.RefreshAction;
-import org.eclipse.codewind.intellij.ui.actions.StartCodewindAction;
-import org.eclipse.codewind.intellij.ui.actions.StopCodewindAction;
+import org.eclipse.codewind.intellij.ui.actions.*;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeModel;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeNodeCellRenderer;
 import org.jetbrains.annotations.NotNull;
@@ -48,6 +45,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction stopCodewindAction;
 
     private final AnAction openIdeaProjectAction;
+    private final AnAction startBuildAction;
+
     private final AnAction refreshAction;
 
     public CodewindToolWindow() {
@@ -59,6 +58,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         stopCodewindAction = new StopCodewindAction(this::expandLocalTree);
 
         openIdeaProjectAction = new OpenIdeaProjectAction();
+        startBuildAction = new StartBuildAction();
         refreshAction = new RefreshAction();
 
         debugAction = new AnAction("* debug *") {
@@ -169,6 +169,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private void handleApplicationPopup(CodewindApplication application, Component component, int x, int y) {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindApplicationGroup", true);
         actions.add(openIdeaProjectAction);
+        actions.addSeparator();
+        actions.add(startBuildAction);
         actions.addSeparator();
         actions.add(refreshAction);
         ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("CodewindTree", actions);

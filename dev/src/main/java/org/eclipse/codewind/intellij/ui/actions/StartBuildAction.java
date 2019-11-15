@@ -11,18 +11,13 @@
 
 package org.eclipse.codewind.intellij.ui.actions;
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.progress.ProgressManager;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
-import org.eclipse.codewind.intellij.ui.tasks.OpenIdeaProjectTask;
-import org.jetbrains.annotations.NotNull;
+import org.eclipse.codewind.intellij.ui.tasks.StartBuildTask;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
-import java.util.Optional;
-
-public class OpenIdeaProjectAction extends TreeAction<CodewindApplication> {
-    public OpenIdeaProjectAction() {
-        super(message("ACTION_IMPORT_PROJECT"), CodewindApplication.class, OpenIdeaProjectTask::new);
+public class StartBuildAction extends TreeAction<CodewindApplication> {
+    public StartBuildAction() {
+        super(message("ACTION_START_BUILD"), CodewindApplication.class, StartBuildTask::new);
     }
 }
