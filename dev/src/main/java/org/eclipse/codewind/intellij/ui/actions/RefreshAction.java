@@ -27,10 +27,12 @@ import javax.swing.tree.TreePath;
 
 import static com.intellij.openapi.actionSystem.PlatformDataKeys.CONTEXT_COMPONENT;
 
+import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
+
 public class RefreshAction extends AnAction {
 
     public RefreshAction() {
-        super("ACTION_REFRESH");
+        super(message("ACTION_REFRESH"));
     }
 
     @Override
