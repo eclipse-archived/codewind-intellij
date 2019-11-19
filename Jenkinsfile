@@ -23,6 +23,14 @@ pipeline {
     stages {
 
         stage("Download dependency binaries") {
+            // This when clause disables Tagged build
+            when {
+                beforeAgent true
+                not {
+                    buildingTag()
+                }
+            }
+
             steps {
                 dir("dev/src/main/resources/cwctl") {
                     sh """#!/usr/bin/env bash
@@ -62,6 +70,14 @@ pipeline {
         }
 
         stage("Create install-version.properties") {
+            // This when clause disables Tagged build
+            when {
+                beforeAgent true
+                not {
+                    buildingTag()
+                }
+            }
+
             steps {
                 sh """
                    ci-scripts/set-install-version.sh ${env.BRANCH_NAME} dev/src/main/resources
@@ -70,6 +86,14 @@ pipeline {
         }
 
         stage('Build') {
+            // This when clause disables Tagged build
+            when {
+                beforeAgent true
+                not {
+                    buildingTag()
+                }
+            }
+
             steps {
                 script {
                     println("Starting codewind-intellij build ...")
@@ -89,6 +113,14 @@ pipeline {
         } 
         
         stage('Deploy') {
+            // This when clause disables Tagged build
+            when {
+                beforeAgent true
+                not {
+                    buildingTag()
+                }
+            }
+            
             steps {
                 sshagent ( ['projects-storage.eclipse.org-bot-ssh']) {
                     println("Deploying codewind-intellij to download area...")
@@ -136,9 +168,15 @@ pipeline {
         stage("Report") {
             when {
                 beforeAgent true
-                triggeredBy 'UpstreamCause'
-            }
 
+                allOf {
+                    triggeredBy 'UpstreamCause'
+                    not {
+                        buildingTag()
+                    }
+                }
+            }
+            
             options {
                 skipDefaultCheckout()
             }
