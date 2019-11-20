@@ -79,16 +79,18 @@ public abstract class CodewindConnection {
         }
 
         env = new ConnectionEnv(getEnvData(this.baseUri, authToken));
-        Logger.log("Codewind version is: " + env.getVersion());    // $NON-NLS-1$
-        if (!isSupportedVersion(env.getVersion())) {
-            Logger.logWarning("The detected version of Codewind is not supported: " + env.getVersion() + ", url: " + baseUri);    // $NON-NLS-1$	// $NON-NLS-2$
-            onInitFail(message("Connection_ErrConnection_OldVersion", env.getVersion(), InstallUtil.getVersion()));
+        if (isLocal()) {
+            Logger.log("Codewind version is: " + env.getVersion());    // $NON-NLS-1$
+            if (!isSupportedVersion(env.getVersion())) {
+                Logger.logWarning("The detected version of Codewind is not supported: " + env.getVersion() + ", url: " + baseUri);    // $NON-NLS-1$	// $NON-NLS-2$
+                onInitFail(message("Connection_ErrConnection_OldVersion", env.getVersion(), InstallUtil.getVersion()));
+            }
         }
 
-        socket = new CodewindSocket(this);
+        socket = new CodewindSocket(this, authToken);
         if (!socket.blockUntilFirstConnection()) {
             Logger.logWarning("Socket failed to connect: " + socket.socketUri);
-            close();
+            disconnect();
             throw new CodewindConnectionException(socket.socketUri);
         }
 
@@ -149,8 +151,8 @@ public abstract class CodewindConnection {
      */
     public void close() {
         disconnect();
-        Logger.log("Removing connection: " + this); //$NON-NLS-1$
-        if (conid != null) {
+        if (!isLocal() && conid != null) {
+            Logger.log("Removing connection: " + this); //$NON-NLS-1$
             try {
                 ConnectionUtil.removeConnection(name, conid, new EmptyProgressIndicator());
             } catch (Exception e) {
@@ -304,14 +306,6 @@ public abstract class CodewindConnection {
         synchronized (appMap) {
             return new ArrayList<CodewindApplication>(appMap.values());
         }
-    }
-
-    public List<CodewindApplication> getSortedApps() {
-        List<CodewindApplication> apps = getApps()
-                .stream()
-                .sorted(comparing(CodewindApplication::getName))
-                .collect(toList());
-        return apps;
     }
 
     public Set<String> getAppIds() {
@@ -613,78 +607,6 @@ public abstract class CodewindConnection {
         return capabilities;
     }
 
-    public List<ProjectTemplateInfo> requestProjectTemplates(boolean enabledOnly) throws IOException, JSONException, URISyntaxException {
-        List<ProjectTemplateInfo> templates = new ArrayList<ProjectTemplateInfo>();
-        URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_TEMPLATES);
-        if (enabledOnly) {
-            String query = CoreConstants.QUERY_SHOW_ENABLED_ONLY + "=true";
-            uri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), query, uri.getFragment());
-        }
-        HttpResult result = HttpUtil.get(uri, authToken);
-        checkResult(result, uri, false);
-
-        // A response code of 204 means there are no available templates so just return the empty template list
-        if (result.responseCode == 204) {
-            return templates;
-        }
-        JSONArray templateArray = new JSONArray(result.response);
-        for (int i = 0; i < templateArray.length(); i++) {
-            templates.add(new ProjectTemplateInfo(templateArray.getJSONObject(i)));
-        }
-        return templates;
-    }
-
-    public List<RepositoryInfo> requestRepositories() throws IOException, JSONException {
-        List<RepositoryInfo> repos = new ArrayList<RepositoryInfo>();
-        final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_REPOSITORIES);
-        HttpResult result = HttpUtil.get(uri, authToken);
-        checkResult(result, uri, true);
-
-        JSONArray repoArray = new JSONArray(result.response);
-        for (int i = 0; i < repoArray.length(); i++) {
-            repos.add(new RepositoryInfo(repoArray.getJSONObject(i)));
-        }
-        return repos;
-    }
-
-    public void requestRepoEnable(String repoUrl, boolean enable) throws IOException, JSONException {
-        final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_BATCH_REPOSITORIES);
-        JSONArray payload = new JSONArray();
-        JSONObject obj = new JSONObject();
-        obj.put(CoreConstants.KEY_OP, CoreConstants.VALUE_OP_ENABLE);
-        obj.put(CoreConstants.KEY_URL, repoUrl);
-        obj.put(CoreConstants.KEY_VALUE, enable ? "true" : "false");
-        payload.put(obj);
-
-        HttpResult result = HttpUtil.patch(uri, payload);
-        checkResult(result, uri, false);
-    }
-
-    public void requestRepoAdd(String url, String name, String description) throws IOException, JSONException {
-        final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_REPOSITORIES);
-        JSONObject payload = new JSONObject();
-        payload.put(RepositoryInfo.URL_KEY, url);
-        if (name != null && !name.isEmpty()) {
-            payload.put(RepositoryInfo.NAME_KEY, name);
-        }
-        if (description != null && !description.isEmpty()) {
-            payload.put(RepositoryInfo.DESCRIPTION_KEY, description);
-        }
-        payload.put(RepositoryInfo.ENABLED_KEY, true);
-
-        HttpResult result = HttpUtil.post(uri, authToken, payload);
-        checkResult(result, uri, false);
-    }
-
-    public void requestRepoRemove(String url) throws IOException, JSONException {
-        final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_REPOSITORIES);
-        JSONObject payload = new JSONObject();
-        payload.put(RepositoryInfo.URL_KEY, url);
-
-        HttpResult result = HttpUtil.delete(uri, authToken, payload);
-        checkResult(result, uri, false);
-    }
-
     public void requestProjectUnbind(String projectID) throws IOException {
         String endpoint = CoreConstants.APIPATH_PROJECT_LIST + "/" + projectID + "/" + CoreConstants.APIPATH_PROJECT_UNBIND;
         URI uri = baseUri.resolve(endpoint);
@@ -784,7 +706,7 @@ public abstract class CodewindConnection {
             if ((socketNS != null && !socketNS.equals(oldSocketNS)) || (oldSocketNS != null && !oldSocketNS.equals(socketNS))) {
                 // The socket namespace has changed so need to recreate the socket
                 socket.close();
-                socket = new CodewindSocket(this);
+                socket = new CodewindSocket(this, authToken);
                 if (!socket.blockUntilFirstConnection()) {
                     // Still not connected
                     Logger.logWarning("Failed to create a new socket with updated URI: " + socket.socketUri);
@@ -876,6 +798,18 @@ public abstract class CodewindConnection {
             Logger.logWarning("Failed to get the performance monitor URL for the " + app.name + "application.", e);  //$NON-NLS-1$  //$NON-NLS-2$  //$NON-NLS-3$
         }
         return null;
+    }
+
+    public boolean isLocal() {
+        return false;
+    }
+
+    public List<CodewindApplication> getSortedApps() {
+        List<CodewindApplication> apps = getApps()
+                .stream()
+                .sorted(comparing(CodewindApplication::getName))
+                .collect(toList());
+        return apps;
     }
 
     public URI getBaseUri() {

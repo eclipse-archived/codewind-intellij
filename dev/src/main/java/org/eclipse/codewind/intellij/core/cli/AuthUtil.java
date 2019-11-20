@@ -30,7 +30,6 @@ public class AuthUtil {
 	private static final String SECTOKEN_CMD = "sectoken";
 	private static final String GET_OPTION = "get";
 	
-	private static final String INSECURE_OPTION = "--insecure";
 	private static final String USERNAME_OPTION = "--username";
 	private static final String PASSWORD_OPTION = "--password";
 	
@@ -61,7 +60,7 @@ public class AuthUtil {
 				throw new IOException(msg);
 			}
 			
-			process = CLIUtil.runCWCTL(new String[] {INSECURE_OPTION}, new String[] {SECTOKEN_CMD, GET_OPTION}, new String[] {USERNAME_OPTION, username, CLIUtil.CON_ID_OPTION, conid});
+			process = CLIUtil.runCWCTL(new String[] {CLIUtil.INSECURE_OPTION}, new String[] {SECTOKEN_CMD, GET_OPTION}, new String[] {USERNAME_OPTION, username, CLIUtil.CON_ID_OPTION, conid});
 			result = ProcessHelper.waitForProcess(process, 500, 60);
 			if (result.getExitValue() != 0) {
 				Logger.logWarning("Sectoken get failed with rc: " + result.getExitValue() + " and error: " + result.getErrorMsg()); //$NON-NLS-1$ //$NON-NLS-2$

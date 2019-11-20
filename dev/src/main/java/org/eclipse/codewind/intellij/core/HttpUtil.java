@@ -11,6 +11,12 @@
 
 package org.eclipse.codewind.intellij.core;
 
+import okhttp3.*;
+import org.eclipse.codewind.intellij.core.cli.AuthToken;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import javax.net.ssl.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,241 +26,235 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import org.eclipse.codewind.intellij.core.cli.AuthToken;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 /**
  * Static utilities to allow easy HTTP communication, and make diagnosing and handling errors a bit easier.
  */
 public class HttpUtil {
-	
-	private static final int DEFAULT_CONNECT_TIMEOUT_MS = 10000;
-	private static final int DEFAULT_READ_TIMEOUT_MS = 10000;
-	
-	public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-	
-	private static final SSLContext sslContext = getTrustAllCertsContext();;
-	
-	private HttpUtil() {}
 
-	public static class HttpResult {
-		public final int responseCode;
-		public final boolean isGoodResponse;
+    private static final int DEFAULT_CONNECT_TIMEOUT_MS = 10000;
+    private static final int DEFAULT_READ_TIMEOUT_MS = 10000;
 
-		// Can be null
-		public final String response;
-		// Can be null
-		public final String error;
-		
-		private final Map<String, List<String>> headerFields;
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-		public HttpResult(HttpURLConnection connection) throws IOException {
-			responseCode = connection.getResponseCode();
-			isGoodResponse = responseCode > 199 && responseCode < 300;
-			
-			headerFields = isGoodResponse ? connection.getHeaderFields() : null;
+    public static final X509TrustManager trustManager;
+    public static final SSLContext sslContext;
 
-			// Read error first because sometimes if there is an error, connection.getInputStream() throws an exception
-			InputStream eis = connection.getErrorStream();
-			if (eis != null) {
-				error = CoreUtil.readAllFromStream(eis);
-			}
-			else {
-				error = null;
-			}
+    static {
+        trustManager = getTrustAllCertsManager();
+        sslContext = getTrustAllCertsContext(trustManager);
+    }
 
-			if (!isGoodResponse) {
-				Logger.logWarning("Received bad response code " + responseCode + " from "
-						+ connection.getURL() + " - Error:\n" + error);
-				response = null;
-			} else {
-				InputStream is = connection.getInputStream();
-				if (is != null) {
-					response = CoreUtil.readAllFromStream(is);
-				}
-				else {
-					response = null;
-				}
-			}
-		}
-		
-		// HttpResult for OkHttp (used for PATCH)
-		public HttpResult(URI uri, Response httpResponse) throws IOException {
-			responseCode = httpResponse.code();
-			isGoodResponse = responseCode > 199 && responseCode < 300;
-			
-			headerFields = null;
+    private HttpUtil() {
+    }
 
-			InputStream stream = httpResponse.body().byteStream();
-			String content = null;
-			if (stream != null) {
-				content = CoreUtil.readAllFromStream(stream);
-			}
-			if (isGoodResponse) {
-				response = content;
-				error = null;
-			} else {
-				error = content;
-				response = null;
-			}
+    public static class HttpResult {
+        public final int responseCode;
+        public final boolean isGoodResponse;
 
-			if (!isGoodResponse) {
-				Logger.logWarning("Received bad response code " + responseCode + " from "
-						+ uri + " - Error:\n" + content);
-			}
-		}
-		
-		public String getHeader(String key) {
-			if (headerFields == null) {
-				return null;
-			}
-			List<String> list = headerFields.get(key);
-			if (list == null || list.isEmpty()) {
-				return null;
-			}
-			return list.get(0);
-		}
-	}
+        // Can be null
+        public final String response;
+        // Can be null
+        public final String error;
 
-	public static HttpResult get(URI uri) throws IOException {
-		return get(uri, null);
-	}
-	
-	public static HttpResult get(URI uri, AuthToken auth) throws IOException {
-		return sendRequest("GET", uri, auth, null);
-	}
-	
-	public static HttpResult get(URI uri, AuthToken auth, int connectTimeoutMS, int readTimeoutMS) throws IOException {
-		return sendRequest("GET", uri, auth, null, connectTimeoutMS, readTimeoutMS);
-			}
+        private final Map<String, List<String>> headerFields;
 
-	public static HttpResult post(URI uri, AuthToken auth, JSONObject payload) throws IOException {
-		return sendRequest("POST", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
-	}
-	
-	public static HttpResult post(URI uri, AuthToken auth, JSONObject payload, int readTimeoutSeconds) throws IOException {
-		return sendRequest("POST", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, readTimeoutSeconds * 1000);
-	}
-	
-	public static HttpResult post(URI uri, AuthToken auth) throws IOException {
-		return sendRequest("POST", uri, auth, null);
-	}
+        public HttpResult(HttpURLConnection connection) throws IOException {
+            responseCode = connection.getResponseCode();
+            isGoodResponse = responseCode > 199 && responseCode < 300;
 
-	public static HttpResult put(URI uri, AuthToken auth) throws IOException {
-		return sendRequest("PUT", uri, auth, null);
-	}
+            headerFields = isGoodResponse ? connection.getHeaderFields() : null;
 
-	public static HttpResult put(URI uri, AuthToken auth, JSONObject payload) throws IOException {
-		return sendRequest("PUT", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
-	}
+            // Read error first because sometimes if there is an error, connection.getInputStream() throws an exception
+            InputStream eis = connection.getErrorStream();
+            if (eis != null) {
+                error = CoreUtil.readAllFromStream(eis);
+            } else {
+                error = null;
+            }
 
-	public static HttpResult put(URI uri, AuthToken auth, JSONObject payload, int readTimoutSeconds) throws IOException {
-		return sendRequest("PUT", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
-	}
+            if (!isGoodResponse) {
+                Logger.logWarning("Received bad response code " + responseCode + " from "
+                        + connection.getURL() + " - Error:\n" + error);
+                response = null;
+            } else {
+                InputStream is = connection.getInputStream();
+                if (is != null) {
+                    response = CoreUtil.readAllFromStream(is);
+                } else {
+                    response = null;
+                }
+            }
+        }
 
-	public static HttpResult head(URI uri, AuthToken auth) throws IOException {
-		return sendRequest("HEAD", uri, auth, null);
-			}
-	
-	public static HttpResult delete(URI uri, AuthToken auth) throws IOException {
-		return delete(uri, auth, null);
-		}
-	
-	public static HttpResult delete(URI uri, AuthToken auth, JSONObject payload) throws IOException {
-		return sendRequest("DELETE", uri, auth, payload);
-	}
-	
-	public static HttpResult sendRequest(String method, URI uri, AuthToken auth, JSONObject payload) throws IOException {
-		return sendRequest(method, uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
-	}
-	
-	public static HttpResult sendRequest(String method, URI uri, AuthToken auth, JSONObject payload, int connectTimeoutMS, int readTimeoutMS) throws IOException {
-		HttpURLConnection connection = null;
-		if (payload != null) {
-			Logger.log("Making a " + method + " request on " + uri + " with payload: " + payload.toString());
-		} else {
-			Logger.log("Making a " + method + " request on " + uri);
-		}
+        // HttpResult for OkHttp (used for PATCH)
+        public HttpResult(URI uri, Response httpResponse) throws IOException {
+            responseCode = httpResponse.code();
+            isGoodResponse = responseCode > 199 && responseCode < 300;
 
-		try {
-			connection = (HttpURLConnection) uri.toURL().openConnection();
+            headerFields = null;
 
-			connection.setRequestMethod(method);
-			connection.setConnectTimeout(connectTimeoutMS);
-			connection.setReadTimeout(readTimeoutMS);
-			addAuthorization(connection, auth);
-			
-			if (payload != null) {
-				connection.setRequestProperty("Content-Type", "application/json");
-				connection.setDoOutput(true);
-	
-				DataOutputStream payloadStream = new DataOutputStream(connection.getOutputStream());
-				payloadStream.write(payload.toString().getBytes());
-			}
+            InputStream stream = httpResponse.body().byteStream();
+            String content = null;
+            if (stream != null) {
+                content = CoreUtil.readAllFromStream(stream);
+            }
+            if (isGoodResponse) {
+                response = content;
+                error = null;
+            } else {
+                error = content;
+                response = null;
+            }
 
-			return new HttpResult(connection);
-		} finally {
-			if (connection != null) {
-				connection.disconnect();
-			}
-		}
-	}
-	
-	private static void addAuthorization(HttpURLConnection connection, AuthToken auth) {
-		if (sslContext == null || auth == null || auth.getToken() == null || auth.getTokenType() == null || !(connection instanceof HttpsURLConnection)) {
-			return;
-		}
-		connection.setRequestProperty("Authorization", auth.getTokenType() + " " + auth.getToken());
-		((HttpsURLConnection)connection).setSSLSocketFactory(sslContext.getSocketFactory());
-	}
+            if (!isGoodResponse) {
+                Logger.logWarning("Received bad response code " + responseCode + " from "
+                        + uri + " - Error:\n" + content);
+            }
+        }
 
-	public static HttpResult patch(URI uri, JSONArray payload) throws IOException {
-		Logger.log("PATCH " + uri);
-		
-		// No PATCH for HttpURLConnection so use OkHttp
-		RequestBody body = RequestBody.create(JSON, payload.toString());
-		OkHttpClient client = new OkHttpClient();
-		Request request = new Request.Builder().url(uri.toURL()).patch(body).build();
-		Response response = client.newCall(request).execute();
-		return new HttpResult(uri, response);
-	}
+        public String getHeader(String key) {
+            if (headerFields == null) {
+                return null;
+            }
+            List<String> list = headerFields.get(key);
+            if (list == null || list.isEmpty()) {
+                return null;
+            }
+            return list.get(0);
+        }
+    }
 
-	private static SSLContext getTrustAllCertsContext() {
-		try {
-			SSLContext context = SSLContext.getInstance("TLS");
-			context.init(new KeyManager[0], new TrustManager[] { new X509TrustManager() {
-				@Override
-				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-					return new java.security.cert.X509Certificate[0];
-				}
-				@Override
-				public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
-					// TODO Auto-generated method stub
-				}
-				@Override
-				public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
-					// TODO Auto-generated method stub
-				}
-			}
-			}, new SecureRandom());
-			return context;
-		} catch (Exception e) {
-			Logger.logWarning("An error occurred creating a trust all certs context", e);
-		}
-		return null;
-	}
+    public static HttpResult get(URI uri) throws IOException {
+        return get(uri, null);
+    }
+
+    public static HttpResult get(URI uri, AuthToken auth) throws IOException {
+        return sendRequest("GET", uri, auth, null);
+    }
+
+    public static HttpResult get(URI uri, AuthToken auth, int connectTimeoutMS, int readTimeoutMS) throws IOException {
+        return sendRequest("GET", uri, auth, null, connectTimeoutMS, readTimeoutMS);
+    }
+
+    public static HttpResult post(URI uri, AuthToken auth, JSONObject payload) throws IOException {
+        return sendRequest("POST", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
+    }
+
+    public static HttpResult post(URI uri, AuthToken auth, JSONObject payload, int readTimeoutSeconds) throws IOException {
+        return sendRequest("POST", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, readTimeoutSeconds * 1000);
+    }
+
+    public static HttpResult post(URI uri, AuthToken auth) throws IOException {
+        return sendRequest("POST", uri, auth, null);
+    }
+
+    public static HttpResult put(URI uri, AuthToken auth) throws IOException {
+        return sendRequest("PUT", uri, auth, null);
+    }
+
+    public static HttpResult put(URI uri, AuthToken auth, JSONObject payload) throws IOException {
+        return sendRequest("PUT", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
+    }
+
+    public static HttpResult put(URI uri, AuthToken auth, JSONObject payload, int readTimoutSeconds) throws IOException {
+        return sendRequest("PUT", uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
+    }
+
+    public static HttpResult head(URI uri, AuthToken auth) throws IOException {
+        return sendRequest("HEAD", uri, auth, null);
+    }
+
+    public static HttpResult delete(URI uri, AuthToken auth) throws IOException {
+        return delete(uri, auth, null);
+    }
+
+    public static HttpResult delete(URI uri, AuthToken auth, JSONObject payload) throws IOException {
+        return sendRequest("DELETE", uri, auth, payload);
+    }
+
+    public static HttpResult sendRequest(String method, URI uri, AuthToken auth, JSONObject payload) throws IOException {
+        return sendRequest(method, uri, auth, payload, DEFAULT_CONNECT_TIMEOUT_MS, DEFAULT_READ_TIMEOUT_MS);
+    }
+
+    public static HttpResult sendRequest(String method, URI uri, AuthToken auth, JSONObject payload, int connectTimeoutMS, int readTimeoutMS) throws IOException {
+        HttpURLConnection connection = null;
+        if (payload != null) {
+            Logger.log("Making a " + method + " request on " + uri + " with payload: " + payload.toString());
+        } else {
+            Logger.log("Making a " + method + " request on " + uri);
+        }
+
+        try {
+            connection = (HttpURLConnection) uri.toURL().openConnection();
+
+            connection.setRequestMethod(method);
+            connection.setConnectTimeout(connectTimeoutMS);
+            connection.setReadTimeout(readTimeoutMS);
+            addAuthorization(connection, auth);
+
+            if (payload != null) {
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setDoOutput(true);
+
+                DataOutputStream payloadStream = new DataOutputStream(connection.getOutputStream());
+                payloadStream.write(payload.toString().getBytes());
+            }
+
+            return new HttpResult(connection);
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    private static void addAuthorization(HttpURLConnection connection, AuthToken auth) {
+        if (sslContext == null || auth == null || auth.getToken() == null || auth.getTokenType() == null || !(connection instanceof HttpsURLConnection)) {
+            return;
+        }
+        connection.setRequestProperty("Authorization", auth.getTokenType() + " " + auth.getToken());
+        ((HttpsURLConnection) connection).setSSLSocketFactory(sslContext.getSocketFactory());
+    }
+
+    public static HttpResult patch(URI uri, JSONArray payload) throws IOException {
+        Logger.log("PATCH " + uri);
+
+        // No PATCH for HttpURLConnection so use OkHttp
+        RequestBody body = RequestBody.create(JSON, payload.toString());
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(uri.toURL()).patch(body).build();
+        Response response = client.newCall(request).execute();
+        return new HttpResult(uri, response);
+    }
+
+    private static X509TrustManager getTrustAllCertsManager() {
+        return new X509TrustManager() {
+            @Override
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return new java.security.cert.X509Certificate[0];
+            }
+
+            @Override
+            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
+                // TODO Auto-generated method stub
+            }
+        };
+    }
+
+    private static SSLContext getTrustAllCertsContext(X509TrustManager manager) {
+        try {
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(new KeyManager[0], new TrustManager[]{manager}, new SecureRandom());
+            return context;
+        } catch (Exception e) {
+            Logger.logWarning("An error occurred creating a trust all certs context", e);
+        }
+        return null;
+    }
 
 }

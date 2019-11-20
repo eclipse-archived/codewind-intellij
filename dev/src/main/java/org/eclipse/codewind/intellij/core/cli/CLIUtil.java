@@ -29,8 +29,11 @@ import org.eclipse.codewind.intellij.core.PlatformUtil.OperatingSystem;
 
 public class CLIUtil {
 
-    // Common options
+	// Global options
     public static final String JSON_OPTION = "--json";
+	public static final String INSECURE_OPTION = "--insecure";
+	
+	// Common options
     public static final String CON_ID_OPTION = "--conid";
 
     private static final String INSTALLER_DIR = ".codewind-intellij";
@@ -158,12 +161,4 @@ public class CLIUtil {
         return path.toString();
 	}
 	
-	public static String[] getOptions(String[] options, String conid) {
-		ArrayList<String> opts = new ArrayList<String>(Arrays.asList(options));
-		if (conid != null) {
-			opts.add(CON_ID_OPTION);
-			opts.add(conid);
-		}
-		return opts.toArray(new String[opts.size()]);
-    }
 }

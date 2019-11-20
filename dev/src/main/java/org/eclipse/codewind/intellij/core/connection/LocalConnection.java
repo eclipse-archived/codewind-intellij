@@ -86,4 +86,8 @@ public class LocalConnection extends CodewindConnection {
         CoreUtil.updateAll();
     }
 
+    @Override
+    public boolean isLocal() {
+        return true;
+    }
 }

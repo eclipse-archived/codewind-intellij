@@ -14,10 +14,9 @@ package org.eclipse.codewind.intellij.core.connection;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
-import org.eclipse.codewind.intellij.core.CodewindApplication;
-import org.eclipse.codewind.intellij.core.CodewindApplicationFactory;
-import org.eclipse.codewind.intellij.core.CoreUtil;
-import org.eclipse.codewind.intellij.core.Logger;
+import okhttp3.OkHttpClient;
+import org.eclipse.codewind.intellij.core.*;
+import org.eclipse.codewind.intellij.core.cli.AuthToken;
 import org.eclipse.codewind.intellij.core.console.ProjectLogInfo;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
 import org.eclipse.codewind.intellij.core.constants.ProjectType;
@@ -28,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
@@ -69,7 +69,7 @@ public class CodewindSocket {
             EVENT_PROJECT_LOGS_LIST_CHANGED = "projectLogsListChanged",
             EVENT_PROJECT_SETTINGS_CHANGED = "projectSettingsChanged";
 
-    public CodewindSocket(CodewindConnection connection) {
+	public CodewindSocket(CodewindConnection connection, AuthToken authToken) {
         this.connection = connection;
 
         URI uri = connection.getBaseUri();
@@ -78,11 +78,31 @@ public class CodewindSocket {
         }
         socketUri = uri;
 
+		if (authToken != null) {
+			OkHttpClient okHttpClient = new OkHttpClient.Builder().sslSocketFactory(HttpUtil.sslContext.getSocketFactory(), HttpUtil.trustManager).build();
+			IO.setDefaultOkHttpCallFactory(okHttpClient);
+			IO.setDefaultOkHttpWebSocketFactory(okHttpClient);
+			IO.Options opts = new IO.Options();
+			opts.callFactory = okHttpClient;
+			opts.webSocketFactory = okHttpClient;
+			socket = IO.socket(socketUri, opts);
+		} else {
         socket = IO.socket(socketUri);
+		}
 
         socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
             @Override
             public void call(Object... arg0) {
+				if (authToken != null) {
+					try {
+						JSONObject obj = new JSONObject();
+						obj.put("token", authToken.getToken());
+						socket.emit("authentication", obj.toString());
+					} catch (Exception e) {
+						Logger.logWarning("An error occurred trying to pass the authentication token to the socket", e);
+						return;
+					}
+				}
                 if (!hasConnected) {
                     hasConnected = true;
                     Logger.log("SocketIO connect success @ " + socketUri); //$NON-NLS-1$
