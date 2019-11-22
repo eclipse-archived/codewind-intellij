@@ -11,32 +11,23 @@
 
 package org.eclipse.codewind.intellij.core.connection;
 
-import com.intellij.openapi.progress.EmptyProgressIndicator;
 import org.eclipse.codewind.intellij.core.*;
 import org.eclipse.codewind.intellij.core.HttpUtil.HttpResult;
 import org.eclipse.codewind.intellij.core.cli.AuthToken;
-import org.eclipse.codewind.intellij.core.cli.ConnectionUtil;
 import org.eclipse.codewind.intellij.core.cli.InstallUtil;
+import org.eclipse.codewind.intellij.core.connection.ConnectionEnv.TektonDashboard;
 import org.eclipse.codewind.intellij.core.console.ProjectLogInfo;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
-import org.eclipse.codewind.intellij.core.constants.ProjectType;
-import org.eclipse.codewind.intellij.core.connection.ConnectionEnv.TektonDashboard;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.zip.Deflater;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
@@ -151,14 +142,6 @@ public abstract class CodewindConnection {
      */
     public void close() {
         disconnect();
-        if (!isLocal() && conid != null) {
-            Logger.log("Removing connection: " + this); //$NON-NLS-1$
-            try {
-                ConnectionUtil.removeConnection(name, conid, new EmptyProgressIndicator());
-            } catch (Exception e) {
-                Logger.logWarning("An error occurred trying to de-register the connection: " + this, e); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-        }
     }
 
     public String getName() {

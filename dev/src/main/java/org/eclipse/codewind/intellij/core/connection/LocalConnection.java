@@ -26,6 +26,17 @@ import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.mes
 
 public class LocalConnection extends CodewindConnection {
 
+    public static final String CONNECTION_ID = "local";
+
+    public LocalConnection(String name, URI uri) {
+        super(name, uri, CONNECTION_ID, null);
+    }
+
+    @Override
+    public boolean isLocal() {
+        return true;
+    }
+
     // Keep track of the install status and if the installer is currently running.
     // If the installer is running, this is the status that should be reported, if
     // not the install status should be reported (installerStatus will be null).
@@ -37,12 +48,6 @@ public class LocalConnection extends CodewindConnection {
         UNINSTALLING,
         STARTING,
         STOPPING
-    }
-
-    private static final String CONNECTION_ID = "local";
-
-    public LocalConnection(String name, URI uri) {
-        super(name, uri, CONNECTION_ID, null);
     }
 
     /**
@@ -84,10 +89,5 @@ public class LocalConnection extends CodewindConnection {
     public void setInstallerStatus(InstallerStatus status) {
         this.installerStatus = status;
         CoreUtil.updateAll();
-    }
-
-    @Override
-    public boolean isLocal() {
-        return true;
     }
 }

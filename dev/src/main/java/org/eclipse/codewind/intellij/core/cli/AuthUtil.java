@@ -60,8 +60,21 @@ public class AuthUtil {
 				throw new IOException(msg);
 			}
 			
+			return getAuthToken(username, conid, null);
+		} finally {
+			if (process != null && process.isAlive()) {
+				process.destroy();
+			}
+		}
+	}
+	
+	public static AuthToken getAuthToken(String username, String conid, ProgressIndicator monitor) throws IOException, JSONException, TimeoutException {
+		if (monitor != null)
+			monitor.setIndeterminate(true);
+		Process process = null;
+		try {
 			process = CLIUtil.runCWCTL(new String[] {CLIUtil.INSECURE_OPTION}, new String[] {SECTOKEN_CMD, GET_OPTION}, new String[] {USERNAME_OPTION, username, CLIUtil.CON_ID_OPTION, conid});
-			result = ProcessHelper.waitForProcess(process, 500, 60);
+			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 60);
 			if (result.getExitValue() != 0) {
 				Logger.logWarning("Sectoken get failed with rc: " + result.getExitValue() + " and error: " + result.getErrorMsg()); //$NON-NLS-1$ //$NON-NLS-2$
 				throw new IOException(result.getErrorMsg());
@@ -71,8 +84,7 @@ public class AuthUtil {
 				Logger.logWarning("Sectoken get had 0 return code but the output is empty"); //$NON-NLS-1$
 				throw new IOException("The output from sectoken get is empty."); //$NON-NLS-1$
 			}
-			resultJson = new JSONObject(result.getOutput());
-			return new AuthToken(resultJson);
+			return new AuthToken(new JSONObject(result.getOutput()));
 		} finally {
 			if (process != null && process.isAlive()) {
 				process.destroy();

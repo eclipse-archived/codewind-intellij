@@ -13,11 +13,17 @@ package org.eclipse.codewind.intellij.core.connection;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 // import org.eclipse.codewind.core.internal.CodewindObjectFactory;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.progress.EmptyProgressIndicator;
+import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.Logger;
+import org.eclipse.codewind.intellij.core.cli.ConnectionInfo;
+import org.eclipse.codewind.intellij.core.cli.ConnectionUtil;
 
 /**
  * Singleton class to keep track of the list of current Codewind connections,
@@ -25,25 +31,23 @@ import org.eclipse.codewind.intellij.core.Logger;
  */
 public class ConnectionManager {
 
-    // Singleton instance. Never access this directly. Use the instance() method.
+    // Singleton instance. Never access this directly. Use the getManager() method.
     private static ConnectionManager instance;
 
     private final LocalConnection localConnection;
     private List<CodewindConnection> connections = new ArrayList<>();
 
     private ConnectionManager() {
-        localConnection = CodewindConnection.createLocalConnection();
-        add(localConnection);
-        localConnection.refreshInstallStatus();
-        if (localConnection.getInstallStatus().isStarted()) {
-            CoreUtil.runAsync(() -> {
-                try {
-                    localConnection.connect();
-                } catch (Exception e) {
-                    Logger.logWarning("An error occurred trying to connect to the local Codewind instance at:" + localConnection.getBaseUri(), e); //$NON-NLS-1$
-                }
-            });
-        }
+		localConnection = CodewindConnection.createLocalConnection();
+		add(localConnection);
+		CoreUtil.runAsync( () -> {
+			try {
+				// This will connect if Codewind is running
+				localConnection.refreshInstallStatus();
+			} catch (Exception e) {
+				Logger.logWarning("An error occurred trying to connect to the local Codewind instance at:" + localConnection.getBaseUri(), e); //$NON-NLS-1$
+			}
+		});
     }
 
     public static synchronized ConnectionManager getManager() {
@@ -86,55 +90,63 @@ public class ConnectionManager {
         return null;
     }
 
-    // Preferences serialization
-    private void writeToPreferences() {
-        // TODO: to be implemented
-//		StringBuilder prefsBuilder = new StringBuilder();
-//
-//		for (CodewindConnection mcc : activeConnections()) {
-//			prefsBuilder.append(mcc.toPrefsString()).append('\n');
-//		}
-//		for (String mcc : brokenConnections()) {
-//			prefsBuilder.append(mcc).append('\n');
-//		}
-//
-//		Logger.log("Writing connections to preferences: " + prefsBuilder.toString()); //$NON-NLS-1$
-//
-//		CodewindCorePlugin.getDefault().getPreferenceStore()
-//				.setValue(CONNECTION_LIST_PREFSKEY, prefsBuilder.toString());
+	public synchronized CodewindConnection getActiveConnectionByName(String name) {
+		for(CodewindConnection conn : activeConnections()) {
+			if(name != null && name.equals(conn.getName())) {
+				return conn;
     }
+		}
+		return null;
+	}
 
-    private void loadFromPreferences() {
-        // TODO: to be implemented
-//		clear();
-//
-//		String storedConnections = CodewindCorePlugin.getDefault()
-//				.getPreferenceStore()
-//				.getString(CONNECTION_LIST_PREFSKEY).trim();
-//
-//		Logger.log("Reading connections from preferences: \"" + storedConnections + "\""); //$NON-NLS-1$ //$NON-NLS-2$
-//
-//		for(String line : storedConnections.split("\n")) { //$NON-NLS-1$
-//			line = line.trim();
-//			if(line.isEmpty()) {
-//				continue;
-//			}
-//
-//			try {
-//				// Assume all connections are active. If they are broken they will be handled in the catch below.
-//				URI uri = new URI(line);
-//				CodewindConnection connection = CodewindObjectFactory.createCodewindConnection(uri);
-//				add(connection);
-//			}
-//			catch (CodewindConnectionException mce) {
-//				// The MC instance we wanted to connect to is down.
-//				brokenConnections.add(mce.connectionUrl.toString());
-//				CodewindReconnectJob.createAndStart(mce.connectionUrl);
-//			}
-//			catch (Exception e) {
-//				Logger.logError("Error loading connection from preferences", e); //$NON-NLS-1$
-//			}
-//		}
+	public synchronized int activeConnectionsCount() {
+		return connections.size();
+	}
 
-    }
+	/**
+	 * Try to remove the given connection.
+	 * @return
+	 * 	true if the connection was removed,
+	 * 	false if not because it didn't exist.
+	 */
+	public synchronized boolean remove(String baseUrl) {
+		boolean removeResult = false;
+
+		CodewindConnection connection = getActiveConnection(baseUrl.toString());
+		if (connection != null) {
+			List<CodewindApplication> apps = connection.getApps();
+			connection.close();
+			removeResult = connections.remove(connection);
+			CoreUtil.removeConnection(apps);
+			if (connection.getConid() != null) {
+				try {
+					ConnectionUtil.removeConnection(connection.getName(), connection.getConid(), new EmptyProgressIndicator());
+				} catch (Exception e) {
+					Logger.logWarning("An error occurred trying to de-register the connection: " + connection.getName()); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			}
+		}
+
+		if (!removeResult) {
+			Logger.logWarning("Tried to remove connection " + baseUrl + ", but it didn't exist"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		
+		CoreUtil.updateAll();
+		return removeResult;
+	}
+
+	/**
+	 * Deletes all of the instance's connections. Called when the plugin is stopped.
+	 */
+	public synchronized void clear() {
+		Logger.log("Clearing " + connections.size() + " connections"); //$NON-NLS-1$ //$NON-NLS-2$
+
+		Iterator<CodewindConnection> it = connections.iterator();
+
+		while(it.hasNext()) {
+			CodewindConnection connection = it.next();
+			connection.close();
+			it.remove();
+		}
+	}
 }
