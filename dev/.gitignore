@@ -16,6 +16,7 @@ src/main/lib/
 
 # Generated files
 .idea/**/contentModel.xml
+.idea/jarRepositories.xml
 
 # Sensitive or high-churn files
 .idea/**/dataSources/
