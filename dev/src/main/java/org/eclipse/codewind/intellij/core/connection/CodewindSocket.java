@@ -27,8 +27,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
 
@@ -72,23 +72,27 @@ public class CodewindSocket {
 	public CodewindSocket(CodewindConnection connection, AuthToken authToken) {
         this.connection = connection;
 
-        URI uri = connection.getBaseUri();
+        URI uri = connection.getBaseURI();
         if (connection.getSocketNamespace() != null) {
             uri = uri.resolve(connection.getSocketNamespace());
         }
         socketUri = uri;
 
+		OkHttpClient.Builder builder = new OkHttpClient.Builder();
 		if (authToken != null) {
-			OkHttpClient okHttpClient = new OkHttpClient.Builder().sslSocketFactory(HttpUtil.sslContext.getSocketFactory(), HttpUtil.trustManager).build();
+			builder
+				.hostnameVerifier(HttpUtil.hostnameVerifier)
+				.sslSocketFactory(HttpUtil.sslContext.getSocketFactory(), HttpUtil.trustManager);
+		}
+		OkHttpClient okHttpClient = builder
+				.readTimeout(0L, TimeUnit.MILLISECONDS)
+				.build();
 			IO.setDefaultOkHttpCallFactory(okHttpClient);
 			IO.setDefaultOkHttpWebSocketFactory(okHttpClient);
 			IO.Options opts = new IO.Options();
 			opts.callFactory = okHttpClient;
 			opts.webSocketFactory = okHttpClient;
 			socket = IO.socket(socketUri, opts);
-		} else {
-        socket = IO.socket(socketUri);
-		}
 
         socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
             @Override

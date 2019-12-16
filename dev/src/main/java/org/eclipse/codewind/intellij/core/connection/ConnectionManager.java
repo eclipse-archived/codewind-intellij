@@ -45,7 +45,7 @@ public class ConnectionManager {
 				// This will connect if Codewind is running
 				localConnection.refreshInstallStatus();
 			} catch (Exception e) {
-				Logger.logWarning("An error occurred trying to connect to the local Codewind instance at:" + localConnection.getBaseUri(), e); //$NON-NLS-1$
+				Logger.logWarning("An error occurred trying to connect to the local Codewind instance at:" + localConnection.getBaseURI(), e); //$NON-NLS-1$
 			}
 		});
     }
@@ -71,7 +71,7 @@ public class ConnectionManager {
         }
 
         connections.add(connection);
-        Logger.log("Added a new connection: " + connection.getBaseUri()); //$NON-NLS-1$
+        Logger.log("Added a new connection: " + connection.getBaseURI()); //$NON-NLS-1$
     }
 
     /**
@@ -83,7 +83,7 @@ public class ConnectionManager {
 
     public synchronized CodewindConnection getActiveConnection(String baseUrl) {
         for (CodewindConnection mcc : activeConnections()) {
-            if (mcc.getBaseUri().toString().equals(baseUrl)) {
+            if (mcc.getBaseURI().toString().equals(baseUrl)) {
                 return mcc;
             }
         }

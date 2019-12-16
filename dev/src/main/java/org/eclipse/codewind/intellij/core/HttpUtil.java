@@ -38,10 +38,12 @@ public class HttpUtil {
 
     public static final X509TrustManager trustManager;
     public static final SSLContext sslContext;
+	public static final HostnameVerifier hostnameVerifier;
 
     static {
         trustManager = getTrustAllCertsManager();
         sslContext = getTrustAllCertsContext(trustManager);
+		hostnameVerifier = getHostnameVerifier();
     }
 
     private HttpUtil() {
@@ -214,6 +216,7 @@ public class HttpUtil {
         }
         connection.setRequestProperty("Authorization", auth.getTokenType() + " " + auth.getToken());
         ((HttpsURLConnection) connection).setSSLSocketFactory(sslContext.getSocketFactory());
+		((HttpsURLConnection)connection).setHostnameVerifier(hostnameVerifier);
     }
 
     public static HttpResult patch(URI uri, JSONArray payload) throws IOException {
@@ -248,7 +251,7 @@ public class HttpUtil {
 
     private static SSLContext getTrustAllCertsContext(X509TrustManager manager) {
         try {
-            SSLContext context = SSLContext.getInstance("TLS");
+			SSLContext context = SSLContext.getInstance("TLSv1.2");
             context.init(new KeyManager[0], new TrustManager[]{manager}, new SecureRandom());
             return context;
         } catch (Exception e) {
@@ -256,5 +259,14 @@ public class HttpUtil {
         }
         return null;
     }
+
+	private static HostnameVerifier getHostnameVerifier() {
+		return new HostnameVerifier() {
+			@Override
+			public boolean verify(String hostname, javax.net.ssl.SSLSession sslSession) {
+				return true;
+			}
+		};
+	}
 
 }

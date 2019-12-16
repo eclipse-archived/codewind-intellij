@@ -795,10 +795,6 @@ public abstract class CodewindConnection {
         return apps;
     }
 
-    public URI getBaseUri() {
-        return baseUri;
-    }
-
     public void setBaseUri(URI uri) {
         baseUri = uri;
     }
