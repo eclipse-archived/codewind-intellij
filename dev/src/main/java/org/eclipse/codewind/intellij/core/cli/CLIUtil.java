@@ -29,14 +29,14 @@ import org.eclipse.codewind.intellij.core.PlatformUtil.OperatingSystem;
 
 public class CLIUtil {
 
+    public static final Path CODEWIND_DIR = Paths.get(System.getProperty("user.home"), ".codewind");
+
 	// Global options
     public static final String JSON_OPTION = "--json";
 	public static final String INSECURE_OPTION = "--insecure";
 	
 	// Common options
     public static final String CON_ID_OPTION = "--conid";
-
-    private static final String INSTALLER_DIR = ".codewind-intellij";
 
     private static final Map<OperatingSystem, String> cwctlMap = new HashMap<>();
     private static final Map<OperatingSystem, String> appsodyMap = new HashMap<>();
@@ -157,8 +157,7 @@ public class CLIUtil {
     }
 
     private static String getCLIInstallDir() {
-        Path path = Paths.get(System.getProperty("user.home"), INSTALLER_DIR);
-        return path.toString();
+        return CODEWIND_DIR.resolve(InstallUtil.getVersion()).toString();
 	}
 	
 }
