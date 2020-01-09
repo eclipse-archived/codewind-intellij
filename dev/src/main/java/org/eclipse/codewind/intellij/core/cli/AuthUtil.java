@@ -11,9 +11,6 @@
 
 package org.eclipse.codewind.intellij.core.cli;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
 import com.intellij.openapi.progress.ProgressIndicator;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.ProcessHelper;
@@ -21,14 +18,15 @@ import org.eclipse.codewind.intellij.core.ProcessHelper.ProcessResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
 public class AuthUtil {
 	
 
-	private static final String SECKEYRING_CMD = "seckeyring";
-	private static final String UPDATE_OPTION = "update";
+	private static final String[] SECKEYRING_UPDATE_CMD = new String[] {"seckeyring",  "update"};
 	
-	private static final String SECTOKEN_CMD = "sectoken";
-	private static final String GET_OPTION = "get";
+	private static final String[] SECTOKEN_GET_CMD = new String[] {"sectoken",  "get"};
 	
 	private static final String USERNAME_OPTION = "--username";
 	private static final String PASSWORD_OPTION = "--password";
@@ -38,11 +36,11 @@ public class AuthUtil {
 	
 	private static final String STATUS_OK_VALUE = "OK";
 	
-	public static AuthToken getAuthToken(String username, String password, String conid, ProgressIndicator indicator) throws IOException, JSONException, TimeoutException {
-		indicator.setIndeterminate(true);
+	public static AuthToken getAuthToken(String username, String password, String conid, ProgressIndicator monitor) throws IOException, JSONException, TimeoutException {
+		monitor.setIndeterminate(true);
 		Process process = null;
 		try {
-			process = CLIUtil.runCWCTL(null, new String[] {SECKEYRING_CMD, UPDATE_OPTION}, new String[] {USERNAME_OPTION, username, PASSWORD_OPTION, password, CLIUtil.CON_ID_OPTION, conid});
+			process = CLIUtil.runCWCTL(null, SECKEYRING_UPDATE_CMD, new String[] {USERNAME_OPTION, username, PASSWORD_OPTION, password, CLIUtil.CON_ID_OPTION, conid});
 			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 60);
 			if (result.getExitValue() != 0) {
 				Logger.logWarning("Seckeyring update failed with rc: " + result.getExitValue() + " and error: " + result.getErrorMsg()); //$NON-NLS-1$ //$NON-NLS-2$
@@ -73,7 +71,7 @@ public class AuthUtil {
 			monitor.setIndeterminate(true);
 		Process process = null;
 		try {
-			process = CLIUtil.runCWCTL(new String[] {CLIUtil.INSECURE_OPTION}, new String[] {SECTOKEN_CMD, GET_OPTION}, new String[] {USERNAME_OPTION, username, CLIUtil.CON_ID_OPTION, conid});
+			process = CLIUtil.runCWCTL(CLIUtil.GLOBAL_INSECURE, SECTOKEN_GET_CMD, new String[] {USERNAME_OPTION, username, CLIUtil.CON_ID_OPTION, conid});
 			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 60);
 			if (result.getExitValue() != 0) {
 				Logger.logWarning("Sectoken get failed with rc: " + result.getExitValue() + " and error: " + result.getErrorMsg()); //$NON-NLS-1$ //$NON-NLS-2$

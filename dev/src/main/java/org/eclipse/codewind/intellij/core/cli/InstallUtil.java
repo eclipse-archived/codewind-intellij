@@ -12,8 +12,8 @@
 package org.eclipse.codewind.intellij.core.cli;
 
 import com.intellij.openapi.progress.ProgressIndicator;
-import org.eclipse.codewind.intellij.core.*;
-import org.eclipse.codewind.intellij.core.PlatformUtil.OperatingSystem;
+import org.eclipse.codewind.intellij.core.Logger;
+import org.eclipse.codewind.intellij.core.ProcessHelper;
 import org.eclipse.codewind.intellij.core.ProcessHelper.ProcessResult;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
@@ -21,16 +21,9 @@ import org.eclipse.codewind.intellij.core.constants.CoreConstants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.*;
+import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
 public class InstallUtil {
@@ -46,17 +39,18 @@ public class InstallUtil {
     public static final int START_TIMEOUT_DEFAULT = 60;
     public static final int STOP_TIMEOUT_DEFAULT = 300;
 
-    private static final String INSTALL_CMD = "install";
-    private static final String START_CMD = "start";
-    private static final String STOP_CMD = "stop";
-    private static final String STOP_ALL_CMD = "stop-all";
-    private static final String STATUS_CMD = "status";
-    private static final String REMOVE_CMD = "remove";
-    private static final String PROJECT_CMD = "project";
+	private static final String[] INSTALL_CMD = new String[] {"install"};
+	private static final String[] START_CMD = new String[] {"start"};
+	private static final String[] STOP_CMD = new String[] {"stop"};
+	private static final String[] STOP_ALL_CMD = new String[] {"stop-all"};
+	private static final String[] STATUS_CMD = new String[] {"status"};
+	private static final String[] REMOVE_CMD = new String[] {"remove"};
+	private static final String[] UPGRADE_CMD = new String[] {"upgrade"};
 
     private static final String INSTALL_VERSION_PROPERTIES = "install-version.properties";
     private static final String INSTALL_VERSION_KEY = "install-version";
     private static final String INSTALL_VERSION;
+    private static final String TAG_OPTION = "-t";
 
     static {
         String version;
@@ -70,8 +64,6 @@ public class InstallUtil {
         }
         INSTALL_VERSION = version;
     }
-
-    private static final String TAG_OPTION = "-t";
 
     public static InstallStatus getInstallStatus() throws IOException, JSONException, TimeoutException {
         ProcessResult result = statusCodewind();
@@ -93,9 +85,8 @@ public class InstallUtil {
         Process process = null;
         try {
             ConnectionManager.getManager().getLocalConnection().setInstallerStatus(LocalConnection.InstallerStatus.STARTING);
-            process = CLIUtil.runCWCTL(START_CMD, TAG_OPTION, version);
+            process = CLIUtil.runCWCTL(null, START_CMD, new String[] {TAG_OPTION, version});
             ProcessResult result = ProcessHelper.waitForProcess(process, 500, 120);
-            // ConnectionManager.getManager().getLocalConnection().connect();
             return result;
         } finally {
             if (process != null && process.isAlive()) {
@@ -125,7 +116,7 @@ public class InstallUtil {
         Process process = null;
         try {
             ConnectionManager.getManager().getLocalConnection().setInstallerStatus(LocalConnection.InstallerStatus.STOPPING);
-            process = CLIUtil.runCWCTL(STOP_ALL_CMD);
+            process = CLIUtil.runCWCTL(null, STOP_ALL_CMD, null);
             return ProcessHelper.waitForProcess(process, 500, 120);
         } finally {
             if (process != null && process.isAlive()) {
@@ -139,7 +130,7 @@ public class InstallUtil {
     private static ProcessResult statusCodewind() throws IOException, TimeoutException {
         Process process = null;
         try {
-            process = CLIUtil.runCWCTL(STATUS_CMD, CLIUtil.JSON_OPTION);
+            process = CLIUtil.runCWCTL(CLIUtil.GLOBAL_JSON, STATUS_CMD, null);
             ProcessResult result = ProcessHelper.waitForProcess(process, 500, 120);
             return result;
         } catch (Throwable t) {

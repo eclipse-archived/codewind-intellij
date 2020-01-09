@@ -120,7 +120,7 @@ public class ConnectionManager {
 			CoreUtil.removeConnection(apps);
 			if (connection.getConid() != null) {
 				try {
-					ConnectionUtil.removeConnection(connection.getName(), connection.getConid(), new EmptyProgressIndicator());
+					ConnectionUtil.removeConnection(connection.getConid(), new EmptyProgressIndicator());
 				} catch (Exception e) {
 					Logger.logWarning("An error occurred trying to de-register the connection: " + connection.getName()); //$NON-NLS-1$ //$NON-NLS-2$
 				}

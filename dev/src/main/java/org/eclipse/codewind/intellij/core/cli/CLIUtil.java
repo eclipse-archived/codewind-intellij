@@ -11,6 +11,14 @@
 
 package org.eclipse.codewind.intellij.core.cli;
 
+import org.eclipse.codewind.intellij.core.FileUtil;
+import org.eclipse.codewind.intellij.core.Logger;
+import org.eclipse.codewind.intellij.core.PlatformUtil;
+import org.eclipse.codewind.intellij.core.PlatformUtil.OperatingSystem;
+import org.eclipse.codewind.intellij.core.ProcessHelper.ProcessResult;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,21 +30,28 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
 
-import org.eclipse.codewind.intellij.core.FileUtil;
-import org.eclipse.codewind.intellij.core.Logger;
-import org.eclipse.codewind.intellij.core.PlatformUtil;
-import org.eclipse.codewind.intellij.core.PlatformUtil.OperatingSystem;
-
 public class CLIUtil {
 
     public static final Path CODEWIND_DIR = Paths.get(System.getProperty("user.home"), ".codewind");
 
 	// Global options
-    public static final String JSON_OPTION = "--json";
+	public static final String JSON_OPTION = "--json";
 	public static final String INSECURE_OPTION = "--insecure";
+	public static final String[] GLOBAL_JSON = new String[] {JSON_OPTION};
+	public static final String[] GLOBAL_INSECURE = new String[] {INSECURE_OPTION};
+	public static final String[] GLOBAL_JSON_INSECURE = new String[] {JSON_OPTION, INSECURE_OPTION};
 	
 	// Common options
-    public static final String CON_ID_OPTION = "--conid";
+	public static final String CON_ID_OPTION = "--conid";
+
+	// Common keys
+	public static final String ERROR_KEY = "error";
+	public static final String ERROR_DESCRIPTION_KEY = "error_description";
+	private static final String STATUS_KEY = "status";
+	private static final String STATUS_MSG_KEY = "status_message";
+	
+	// Common values
+	private static final String STATUS_OK_VALUE = "OK";
 
     private static final Map<OperatingSystem, String> cwctlMap = new HashMap<>();
     private static final Map<OperatingSystem, String> appsodyMap = new HashMap<>();
@@ -55,16 +70,7 @@ public class CLIUtil {
 
     private static final CLIInfo codewindInfo = new CLIInfo("Codewind", cwctlMap);
     private static final CLIInfo appsodyInfo = new CLIInfo("Appsody", appsodyMap);
-
     private static final CLIInfo[] cliInfos = {codewindInfo, appsodyInfo};
-
-    public static Process runCWCTL(String cmd, List<String> options) throws IOException {
-        return runCWCTL(cmd, options.toArray(new String[0]));
-    }
-
-    public static Process runCWCTL(String cmd, String... options) throws IOException {
-		return runCWCTL(null, new String[] {cmd}, options, null);
-    }
 
 	public static Process runCWCTL(String[] globalOptions, String[] cmd, String[] options) throws IOException {
 		return runCWCTL(globalOptions, cmd, options, null);
@@ -160,4 +166,46 @@ public class CLIUtil {
         return CODEWIND_DIR.resolve(InstallUtil.getVersion()).toString();
 	}
 	
+	public static void checkResult(String[] command, ProcessResult result, boolean checkOutput) throws IOException {
+		// Check for json error output (may still get a 0 return code in this case)
+		// Throws an exception if there is an error
+		checkErrorResult(command, result);
+
+		if (result.getExitValue() != 0) {
+			String msg;
+			String error = result.getError() != null && !result.getError().isEmpty() ? result.getError() : result.getOutput();
+			if (error == null || error.isEmpty()) {
+				msg = String.format("The %s command exited with return code %d", Arrays.toString(command), result.getExitValue()); //$NON-NLS-1$
+			} else {
+				msg = String.format("The %s command exited with return code %d and error: %s", Arrays.toString(command), result.getExitValue(), error); //$NON-NLS-1$
+			}
+			Logger.logWarning(msg);
+			throw new IOException(msg);
+		} else if (checkOutput && (result.getOutput() == null || result.getOutput().isEmpty())) {
+			String msg = String.format("The %s command exited with return code 0 but the output was empty", Arrays.toString(command));  //$NON-NLS-1$
+			Logger.logWarning(msg);
+			throw new IOException(msg);
+		}
+	}
+
+	private static void checkErrorResult(String[] command, ProcessResult result) throws IOException {
+		try {
+			if (result.getOutput() != null && !result.getOutput().isEmpty()) {
+				JSONObject obj = new JSONObject(result.getOutput());
+				if (obj.has(ERROR_KEY)) {
+					String msg = String.format("The %s command failed with error: %s", Arrays.toString(command), obj.getString(ERROR_DESCRIPTION_KEY)); //$NON-NLS-1$
+					Logger.logWarning(msg);
+					throw new IOException(msg);
+				}
+				if (obj.has(STATUS_KEY) && !STATUS_OK_VALUE.equals(obj.getString(STATUS_KEY))) {
+					String msg = String.format("The %s command failed with error: %s", Arrays.toString(command), obj.getString(STATUS_MSG_KEY)); //$NON-NLS-1$
+					Logger.logWarning(msg);
+					throw new IOException(msg);
+				}
+			}
+		} catch (JSONException e) {
+			// Ignore
+		}
+	}
+
 }
