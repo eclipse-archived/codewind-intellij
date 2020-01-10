@@ -611,33 +611,6 @@ public abstract class CodewindConnection {
         return projectTypes;
     }
 
-    public String requestRegistryTest(String registry) throws IOException, JSONException {
-        final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_REGISTRY);
-        JSONObject payload = new JSONObject();
-        payload.put(CoreConstants.KEY_DEPLOYMENT_REGISTRY, registry);
-        payload.put(CoreConstants.KEY_OPERATION, CoreConstants.VALUE_OP_TEST);
-
-        HttpResult result = HttpUtil.post(uri, authToken, payload);
-        checkResult(result, uri, true);
-
-        JSONObject resultObj = new JSONObject(result.response);
-        if (resultObj.getBoolean(CoreConstants.KEY_DEPLOYMENT_REGISTRY_TEST)) {
-            return null;
-        }
-        String msg = resultObj.getString(CoreConstants.KEY_MSG);
-        return msg;
-    }
-
-    public void requestRegistrySet(String registry) throws IOException, JSONException {
-        final URI uri = baseUri.resolve(CoreConstants.APIPATH_BASE + "/" + CoreConstants.APIPATH_REGISTRY);
-        JSONObject payload = new JSONObject();
-        payload.put(CoreConstants.KEY_DEPLOYMENT_REGISTRY, registry);
-        payload.put(CoreConstants.KEY_OPERATION, CoreConstants.VALUE_OP_SET);
-
-        HttpResult result = HttpUtil.post(uri, authToken, payload);
-        checkResult(result, uri, false);
-    }
-
     private void checkResult(HttpResult result, URI uri, boolean checkContent) throws IOException {
         if (!result.isGoodResponse) {
             final String msg = String.format("Received bad response code %d for uri %s with error message %s", //$NON-NLS-1$

@@ -36,9 +36,11 @@ public class CoreConstants {
 			APIPATH_CAPABILITIES = "capabilities",
 			APIPATH_LOGS = "logs",
 			APIPATH_METRICS_STATUS = "metrics/status",
+			APIPATH_INJECT_METRICS = "metrics/inject",
 			APIPATH_PROJECT_UNBIND = "unbind",
 			APIPATH_PROJECT_TYPES = "project-types",
-			APIPATH_REGISTRY = "registry",
+			APIPATH_IMAGEPUSHREGISTRY = "imagepushregistry",
+			APIPATH_REGISTRYSECRETS = "registrysecrets",
 
 			// JSON keys
 			KEY_PROJECT_ID = "projectID",
@@ -76,6 +78,8 @@ public class CoreConstants {
 			KEY_ERROR = "error",
 			KEY_APP_STATUS = "appStatus",
 			KEY_DETAILED_APP_STATUS = "detailedAppStatus",
+			KEY_MESSAGE = "message",
+			KEY_NOTIFY = "notify",
 			KEY_BUILD_STATUS = "buildStatus",
 			KEY_DETAILED_BUILD_STATUS = "detailedBuildStatus",
 			KEY_LAST_BUILD = "lastbuild",
@@ -87,13 +91,17 @@ public class CoreConstants {
 			KEY_INTERNAL_DEBUG_PORT = "internalDebugPort",
 			KEY_AUTO_BUILD = "autoBuild",
 			KEY_APP_BASE_URL = "appBaseURL",
+			KEY_INJECT_METRICS = "enable",
+			
+			VALUE_INFO = "INFO",
+			VALUE_WARN = "WARN",
+			VALUE_ERROR = "ERROR",
 
 			KEY_LANGUAGE = "language",
 			KEY_FRAMEWORK = "framework",
 			KEY_EXTENSION = "extension",
 			KEY_PROJECT_NAME = "projectName",
 			KEY_PARENT_PATH = "parentPath",
-			KEY_URL = "url",
 			KEY_TEMPLATE_ID = "templateID",
 			KEY_OP = "op",
 			KEY_VALUE = "value",
@@ -133,12 +141,16 @@ public class CoreConstants {
 			KEY_AUTO_GENERATE = "autoGenerate",
 			
 			// Registry
-			KEY_DEPLOYMENT_REGISTRY = "deploymentRegistry",
+			KEY_IMAGE_PUSH_REGISTRY = "imagePushRegistry",
+			KEY_ADDRESS = "address",
+			KEY_USERNAME = "username",
+			KEY_PASSWORD = "password",
+			KEY_CREDENTIALS = "credentials",
+			KEY_NAMESPACE = "namespace",
 			KEY_OPERATION = "operation",
 			VALUE_OP_TEST = "test",
 			VALUE_OP_SET = "set",
 			KEY_STATUS_CODE = "statusCode",
-			KEY_DEPLOYMENT_REGISTRY_TEST = "deploymentRegistryTest",
 			
 			// JSON attribute values
 			REQUEST_STATUS_SUCCESS = "success",
@@ -155,7 +167,8 @@ public class CoreConstants {
 			QUERY_VIEW = "view",
 			VIEW_MONITOR = "monitor",
 			VIEW_OVERVIEW = "overview",
-			PERF_MONITOR = "performance/charts"
+			PERF_MONITOR = "performance/charts",
+			PERF_METRICS_DASH = "performance/monitor/dashboard"
 
 			;
 }

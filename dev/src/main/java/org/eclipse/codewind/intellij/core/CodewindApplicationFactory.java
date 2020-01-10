@@ -11,11 +11,6 @@
 
 package org.eclipse.codewind.intellij.core;
 
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.console.ProjectLogInfo;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
@@ -25,6 +20,13 @@ import org.eclipse.codewind.intellij.core.constants.StartMode;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
 
 public class CodewindApplicationFactory {
 
@@ -162,7 +164,23 @@ public class CodewindApplicationFactory {
 				String appStatus = appJso.getString(CoreConstants.KEY_APP_STATUS);
 				String detail = null;
 				if (appJso.has(CoreConstants.KEY_DETAILED_APP_STATUS)) {
-					detail = appJso.getString(CoreConstants.KEY_DETAILED_APP_STATUS);
+					JSONObject detailObj = appJso.getJSONObject(CoreConstants.KEY_DETAILED_APP_STATUS);
+					if (detailObj != null && detailObj.has(CoreConstants.KEY_MESSAGE)) {
+						detail = detailObj.getString(CoreConstants.KEY_MESSAGE);
+						if (detailObj.has(CoreConstants.KEY_NOTIFY) && detailObj.getBoolean(CoreConstants.KEY_NOTIFY)) {
+							// Need to notify the user of the problem
+							CoreUtil.DialogType type = CoreUtil.DialogType.ERROR;
+							if (detailObj.has(CoreConstants.KEY_SEVERITY)) {
+								String severity = detailObj.getString(CoreConstants.KEY_SEVERITY);
+								if (CoreConstants.VALUE_WARN.equals(severity)) {
+									type = CoreUtil.DialogType.WARN;
+								} else if (CoreConstants.VALUE_INFO.equals(severity)) {
+									type = CoreUtil.DialogType.INFO;
+								}
+							}
+							CoreUtil.openDialog(type, message("ProjectErrorTitle", app.name), detail);
+						}
+					}
 				}
 				app.setAppStatus(appStatus, detail);
 			}

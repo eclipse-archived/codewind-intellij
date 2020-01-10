@@ -36,16 +36,33 @@ public class CoreUtil {
 
     private static IUpdateHandler updateHandler;
 
+	public enum DialogType {
+		ERROR,
+		WARN,
+		INFO;
+	};
+
+
     /**
      * Open a dialog on top of the current active window. Can be called off the UI thread.
      */
     public static void openDialog(boolean isError, String title, String msg) {
-        if (isError) {
-            invokeLater(() -> Messages.showErrorDialog(msg, title));
-        } else {
-            invokeLater(() -> Messages.showInfoMessage(msg, title));
+		openDialog(isError ? DialogType.ERROR : DialogType.INFO, title, msg);
+	}
+	
+	public static void openDialog(DialogType type, String title, String msg) {
+        switch (type) {
+            case ERROR:
+                invokeLater(() -> Messages.showErrorDialog(msg, title));
+                break;
+            case WARN:
+                invokeLater(() -> Messages.showWarningDialog(msg, title));
+                break;
+            case INFO:
+                invokeLater(() -> Messages.showInfoMessage(msg, title));
+                break;
         }
-    }
+	}
 
     public static String readAllFromStream(InputStream stream) {
         Scanner s = new Scanner(stream);
