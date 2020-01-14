@@ -28,7 +28,7 @@ src/main/resources/cwctl/meta-pull.sh
 src/main/resources/cwctl/pull.sh
 ./gradlew copyDependencies build
 ```
-- If you get an error message indicating that the `org.jetbrains.intellij` plugin cannot be found, ensure you have `JAVA_HOME` pointing to the JDK provided by IntelliJ installation.  For example. `export JAVA_HOME=/Applications/IntelliJ\ IDEA\ CE.app/Contents/jbr/Contents/Home`. Also set `PATH` to point to its `bin` folder
+- If you get an error message indicating that the `org.jetbrains.intellij` plugin cannot be found, check if your machine is configured to use an IBM JDK.  If so, configure it to use an Oracle JDK or use the one provided by the IntelliJ installation.  
 3. Import the `codewind-intellij/dev` folder into IntelliJ, selecting `Import project from external model` and choosing the `Gradle` option (see [Import a project](https://www.jetbrains.com/help/idea/import-project-or-module-wizard.html) in the IntelliJ help)
 
 Use the `dev (latest) [runIde]` run configuration to run and test your changes.
