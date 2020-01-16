@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -31,6 +31,8 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 
 public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
@@ -118,6 +120,16 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
                 AnActionEvent actionEvent = AnActionEvent.createFromInputEvent(e, ActionPlaces.POPUP,
                         null, DataContext.EMPTY_CONTEXT, true, false);
                 startCodewindAction.actionPerformed(actionEvent);
+            }
+        } else if (node instanceof CodewindApplication) {
+            CodewindApplication app = (CodewindApplication)node;
+            final URL rootURL = app.getRootUrl();
+            if (rootURL != null) {
+                try {
+                    com.intellij.ide.browsers.BrowserLauncher.getInstance().browse(rootURL.toURI());
+                } catch (URISyntaxException use) {
+                    // probably ought to log the bad use
+                }
             }
         }
     }
