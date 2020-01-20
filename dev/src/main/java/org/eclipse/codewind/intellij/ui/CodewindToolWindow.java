@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -18,10 +18,9 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
+import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.InstallStatus;
-import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
-import org.eclipse.codewind.intellij.core.connection.LocalConnection;
-import org.eclipse.codewind.intellij.core.connection.RemoteConnection;
+import org.eclipse.codewind.intellij.core.connection.*;
 import org.eclipse.codewind.intellij.ui.actions.*;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeModel;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeNodeCellRenderer;
@@ -31,6 +30,8 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 
 public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
@@ -44,10 +45,12 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction startCodewindAction;
     private final AnAction stopCodewindAction;
 
+    private final AnAction openApplicationAction;
     private final AnAction openIdeaProjectAction;
     private final AnAction startBuildAction;
-
     private final AnAction refreshAction;
+    private final AnAction openPerformanceDashboardAction;
+    private final AnAction openTektonDashboardAction;
 
     public CodewindToolWindow() {
         treeModel = new CodewindTreeModel();
@@ -57,9 +60,12 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         startCodewindAction = new StartCodewindAction(this::expandLocalTree);
         stopCodewindAction = new StopCodewindAction(this::expandLocalTree);
 
+        openApplicationAction = new OpenApplicationAction();
         openIdeaProjectAction = new OpenIdeaProjectAction();
         startBuildAction = new StartBuildAction();
         refreshAction = new RefreshAction();
+        openPerformanceDashboardAction = new OpenPerformanceDashboardAction();
+        openTektonDashboardAction = new OpenTektonDashboardAction();
 
         debugAction = new AnAction("* debug *") {
             @Override
@@ -119,6 +125,17 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
                         null, DataContext.EMPTY_CONTEXT, true, false);
                 startCodewindAction.actionPerformed(actionEvent);
             }
+        } else if (node instanceof CodewindApplication) {
+            CodewindApplication app = (CodewindApplication)node;
+            final URL rootURL = app.getRootUrl();
+            if (rootURL != null) {
+                try {
+                    com.intellij.ide.browsers.BrowserLauncher.getInstance().browse(rootURL.toURI());
+                } catch (URISyntaxException use) {
+                    Logger.log("Bad Application URL: " + rootURL);
+                    System.out.println("*** Bad Application URL: " + rootURL);
+                }
+            }
         }
     }
 
@@ -168,11 +185,23 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
     private void handleApplicationPopup(CodewindApplication application, Component component, int x, int y) {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindApplicationGroup", true);
+        actions.add(openApplicationAction);
+        actions.addSeparator();
         actions.add(openIdeaProjectAction);
         actions.addSeparator();
         actions.add(startBuildAction);
         actions.addSeparator();
         actions.add(refreshAction);
+        actions.addSeparator();
+        actions.add(openPerformanceDashboardAction);
+        CodewindConnection connection = application.getConnection();
+        if (connection != null) {
+            ConnectionEnv.TektonDashboard tekton = connection.getTektonDashboard();
+            if (tekton.hasTektonDashboard()) {
+                actions.addSeparator();
+                actions.add(openTektonDashboardAction);
+            }
+        }
         ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("CodewindTree", actions);
         popupMenu.getComponent().show(component, x, y);
     }
