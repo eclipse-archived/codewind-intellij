@@ -90,6 +90,10 @@ public class ProjectType {
         return extension != null;
     }
 
+	public static boolean isCodewindStyle(String typeId) {
+		return !"appsodyExtension".equals(typeId) && !"odo".equals(typeId);
+	}
+	
     public static String getDisplayName(String typeId) {
         if (typeId == null) {
             return message("GenericUnknown");
@@ -99,22 +103,6 @@ public class ProjectType {
             return type.getDisplayName();
         }
         return getExtDisplayName(typeId);
-    }
-
-    public static ProjectType getTypeFromLanguage(String language) {
-        ProjectLanguage lang = ProjectLanguage.getLanguage(language);
-        switch (lang) {
-            case LANGUAGE_NODEJS:
-                return TYPE_NODEJS;
-            case LANGUAGE_SWIFT:
-                return TYPE_SWIFT;
-            case LANGUAGE_PYTHON:
-                return TYPE_DOCKER;
-            case LANGUAGE_GO:
-                return TYPE_DOCKER;
-            default:
-                return null;
-        }
     }
 }
 
