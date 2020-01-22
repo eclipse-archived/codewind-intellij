@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.4.14'
+    id 'org.jetbrains.intellij' version '0.4.15'
 }
 
 final BUILD_TIME = "${new Date().format('yyyyMMddHHmm')}"
@@ -70,7 +70,8 @@ defaultTasks 'copyDependencies', 'compileJava'
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2019.2'
+    version '2019.3'
+    updateSinceUntilBuild false
 }
 patchPluginXml {
     changeNotes """
