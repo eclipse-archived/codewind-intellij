@@ -66,12 +66,12 @@ task downloadJson(type: Download) {
 }
 
 task downloadFileWatcherStandalonenio(type: Download) {
-    sourceUrl = 'https://download.eclipse.org/codewind/codewind-eclipse/master/latest/repository/plugins/org.eclipse.codewind.filewatchers.standalonenio_1.2.1.v202001231707.jar'
+    src = 'https://download.eclipse.org/codewind/codewind-eclipse/master/latest/repository/plugins/org.eclipse.codewind.filewatchers.standalonenio_1.2.1.v202001231707.jar'
     dest = file('src/main/lib')
 }
 
 task downloadFileWatcherCore(type: Download) {
-    sourceUrl = 'https://download.eclipse.org/codewind/codewind-eclipse/master/latest/repository/plugins/org.eclipse.codewind.filewatchers.core_1.2.1.v202001231707.jar'
+    src = 'https://download.eclipse.org/codewind/codewind-eclipse/master/latest/repository/plugins/org.eclipse.codewind.filewatchers.core_1.2.1.v202001231707.jar'
     dest = file('src/main/lib')
 }
 
