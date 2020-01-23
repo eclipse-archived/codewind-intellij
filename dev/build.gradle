@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '0.4.15'
+    id "de.undercouch.download" version "4.0.2"
 }
 
 final BUILD_TIME = "${new Date().format('yyyyMMddHHmm')}"
@@ -34,21 +35,21 @@ dependencies {
     implementation fileTree(dir: 'src/main/lib', include: ['*.jar'])
 }
 
-class Download extends DefaultTask {
-    @Input
-    String sourceUrl
+// class Download extends DefaultTask {
+//     @Input
+//     String sourceUrl
 
-    @OutputFile
-    File target
+//     @OutputFile
+//     File target
 
-    @TaskAction
-    void download() {
-        if (!target.exists()) {
-            println("Downloading $sourceUrl")
-            ant.get(src: sourceUrl, dest: target)
-        }
-    }
-}
+//     @TaskAction
+//     void download() {
+//         if (!target.exists()) {
+//             println("Downloading $sourceUrl")
+//             ant.get(src: sourceUrl, dest: target)
+//         }
+//     }
+// }
 
 def excludeJson = 'json-20090211.jar'
 
@@ -60,18 +61,18 @@ task copyDependencies(type: Copy, dependsOn: ['downloadFileWatcherStandalonenio'
 }
 
 task downloadJson(type: Download) {
-    sourceUrl = 'https://download.eclipse.org/tools/orbit/downloads/drops/R20190726180751/repository/plugins/org.json_1.0.0.v201011060100.jar'
-    target = file('src/main/lib/org.json_1.0.0.v201011060100.jar')
+    src = 'https://download.eclipse.org/tools/orbit/downloads/drops/R20190726180751/repository/plugins/org.json_1.0.0.v201011060100.jar'
+    dest = file('src/main/lib')
 }
 
 task downloadFileWatcherStandalonenio(type: Download) {
     sourceUrl = 'https://download.eclipse.org/codewind/codewind-eclipse/master/latest/repository/plugins/org.eclipse.codewind.filewatchers.standalonenio_1.2.1.v202001231707.jar'
-    target = file('src/main/lib/org.eclipse.codewind.filewatchers.standalonenio_1.2.1.v202001231707.jar')
+    dest = file('src/main/lib')
 }
 
 task downloadFileWatcherCore(type: Download) {
     sourceUrl = 'https://download.eclipse.org/codewind/codewind-eclipse/master/latest/repository/plugins/org.eclipse.codewind.filewatchers.core_1.2.1.v202001231707.jar'
-    target = file('src/main/lib/org.eclipse.codewind.filewatchers.core_1.2.1.v202001231707.jar')
+    dest = file('src/main/lib')
 }
 
 copyDependencies.finalizedBy downloadJson
