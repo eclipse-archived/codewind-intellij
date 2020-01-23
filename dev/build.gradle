@@ -52,7 +52,7 @@ class Download extends DefaultTask {
 
 def excludeJson = 'json-20090211.jar'
 
-task copyDependencies(type: Copy) {
+task copyDependencies(type: Copy, dependsOn: ['downloadFileWatcherStandalonenio', 'downloadFileWatcherCore']) {
     from configurations.corelibs {
         exclude excludeJson
     }
@@ -60,13 +60,11 @@ task copyDependencies(type: Copy) {
 }
 
 task downloadJson(type: Download) {
-    dependsOn downloadFileWatcherStandalonenio
     sourceUrl = 'https://download.eclipse.org/tools/orbit/downloads/drops/R20190726180751/repository/plugins/org.json_1.0.0.v201011060100.jar'
     target = file('src/main/lib/org.json_1.0.0.v201011060100.jar')
 }
 
 task downloadFileWatcherStandalonenio(type: Download) {
-    dependsOn downloadFileWatcherCore
     sourceUrl = 'https://download.eclipse.org/codewind/codewind-eclipse/master/latest/repository/plugins/org.eclipse.codewind.filewatchers.standalonenio_1.2.1.v202001231707.jar'
     target = file('src/main/lib')
 }
