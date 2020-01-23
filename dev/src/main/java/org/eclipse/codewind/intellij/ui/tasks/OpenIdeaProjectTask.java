@@ -66,7 +66,7 @@ public class OpenIdeaProjectTask extends Task.Backgroundable {
             return;
         }
         System.out.println("*** loading idea project for: application" + application.getName());
-        Project project = pm.loadProject(path.toString());
+        Project project = pm.loadProject(path);
         if (project == null) {
             System.out.println("*** no project returned for application " + application.getName());
         } else if (!project.isOpen()) {

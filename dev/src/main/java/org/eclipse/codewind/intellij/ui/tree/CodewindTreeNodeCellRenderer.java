@@ -86,32 +86,21 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
         }
 
         ProjectLanguage lang = app.projectLanguage;
-        switch (lang) {
-            case LANGUAGE_GO: {
-                Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_GO_SVG);
-                setIcons(icon);
-                break;
-            }
-            case LANGUAGE_JAVA: {
-                Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_JAVA_SVG);
-                setIcons(icon);
-                break;
-            }
-            case LANGUAGE_NODEJS: {
-                Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_NODEJS_SVG1);
-                setIcons(icon);
-                break;
-            }
-            case LANGUAGE_PYTHON: {
-                Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_PYTHON_SVG);
-                setIcons(icon);
-                break;
-            }
-            default: {
-                Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_GENERIC_SVG);
-                setIcons(icon);
-                break;
-            }
+        if (lang.isGo()) {
+            Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_GO_SVG);
+            setIcons(icon);
+        } else if (lang.isJava()) {
+            Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_JAVA_SVG);
+            setIcons(icon);
+        } else if (lang.isJavaScript()) {
+            Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_NODEJS_SVG1);
+            setIcons(icon);
+        } else if (lang.isPython()) {
+            Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_PYTHON_SVG);
+            setIcons(icon);
+        } else {
+            Icon icon = getCachedIcon(ICONS_THEMELESS_PROJECT_TYPES_GENERIC_SVG);
+            setIcons(icon);
         }
     }
 

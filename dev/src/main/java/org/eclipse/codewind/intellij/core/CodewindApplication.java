@@ -24,6 +24,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -44,8 +45,10 @@ public class CodewindApplication {
     private BuildStatus buildStatus;
     private String buildDetails;
     private boolean autoBuild = true;
+	private boolean injectMetrics = false;
     private boolean enabled = true;
     private String containerId;
+	private boolean capabilitiesReady = false;
     private ProjectCapabilities projectCapabilities;
     private String action;
     private List<ProjectLogInfo> logInfos = new ArrayList<ProjectLogInfo>();
@@ -173,6 +176,11 @@ public class CodewindApplication {
         CoreUtil.updateApplication(this);
     }
 
+	public synchronized void setInjectMetrics(boolean enabled) {
+		this.injectMetrics = enabled;
+		CoreUtil.updateApplication(this);
+	}
+	
     public synchronized void setEnabled(boolean enabled) {
         boolean reenabled = enabled && !this.enabled;
         this.enabled = enabled;
@@ -247,7 +255,11 @@ public class CodewindApplication {
 
     public URL getMetricsUrl() {
         try {
+			if ((!this.injectMetrics) && this.metricsAvailable) {
             return new URL(getBaseUrl(), projectLanguage.getMetricsRoot());
+			} else {
+				return (connection.getBaseURI().resolve(CoreConstants.PERF_METRICS_DASH + "/" + projectLanguage.getId() + "?theme=dark&projectID=" + projectID)).toURL();
+			}
         } catch (MalformedURLException e) {
             Logger.logWarning("An error occurred trying to construct the application metrics URL", e);
         }
@@ -317,6 +329,10 @@ public class CodewindApplication {
         return autoBuild;
     }
 
+	public synchronized boolean isInjectMetrics() {
+		return injectMetrics;
+	}
+	
     public synchronized boolean isEnabled() {
         return enabled;
     }
@@ -358,6 +374,18 @@ public class CodewindApplication {
         return metricsAvailable;
     }
 
+	public synchronized boolean hasAppMonitor() {
+		// Metrics available is really: metrics are in the package.json/pom.xml/package.swift
+		// thus it can be false even when injectMetrics is true so need to check both
+		return projectLanguage.alwaysHasAppMonitor() || getMetricsAvailable() || injectMetrics;
+	}
+	
+	public synchronized boolean hasPerfDashboard() {
+		// Metrics available is really: metrics are in the package.json/pom.xml/package.swift
+		// thus it can be false even when injectMetrics is true so need to check both
+		return getMetricsAvailable() || injectMetrics;
+	}
+	
     public synchronized void setLastBuild(long timestamp) {
         lastBuild = timestamp;
     }
@@ -438,13 +466,21 @@ public class CodewindApplication {
         return deleteContents;
     }
 
+	public synchronized void setCapabilitiesReady(boolean capabilitiesReady) {
+		this.capabilitiesReady = capabilitiesReady;
+	}
+	
+	public synchronized boolean getCapabilitiesReady() {
+		return capabilitiesReady;
+	}
+
     /**
      * Get the capabilities of a project.  Cache them because they should not change
      * and since they are used to decide which menu items are shown/enabled this method
      * needs to be fast.
      */
     public ProjectCapabilities getProjectCapabilities() {
-        if (projectCapabilities == null) {
+		if (projectCapabilities == null && capabilitiesReady) {
             try {
                 JSONObject obj = connection.requestProjectCapabilities(this);
                 projectCapabilities = new ProjectCapabilities(obj);
@@ -494,6 +530,15 @@ public class CodewindApplication {
     public void buildComplete() {
         // Override to perform actions when a build has completed
     }
+
+	public boolean canInjectMetrics() {
+		List<ProjectType> projectTypesWithMetricInjection = Arrays.asList(
+				ProjectType.TYPE_LIBERTY,
+				ProjectType.TYPE_SPRING,
+				ProjectType.TYPE_NODEJS
+		);
+		return projectTypesWithMetricInjection.contains(projectType);
+	}
 
     @Override
     public String toString() {
