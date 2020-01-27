@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '0.4.15'
-    id "de.undercouch.download" version "4.0.2"
 }
 
 final BUILD_TIME = "${new Date().format('yyyyMMddHHmm')}"
@@ -35,50 +34,62 @@ dependencies {
     implementation fileTree(dir: 'src/main/lib', include: ['*.jar'])
 }
 
-// class Download extends DefaultTask {
-//     @Input
-//     String sourceUrl
+class Download extends DefaultTask {
+    @Input
+    String sourceUrl
 
-//     @OutputFile
-//     File target
+    @OutputFile
+    File target
 
-//     @TaskAction
-//     void download() {
-//         if (!target.exists()) {
-//             println("Downloading $sourceUrl")
-//             ant.get(src: sourceUrl, dest: target)
-//         }
-//     }
-// }
+    @TaskAction
+    void download() {
+        if (!target.exists()) {
+            println("Downloading $sourceUrl")
+            ant.get(src: sourceUrl, dest: target)
+        }
+    }
+}
 
 def excludeJson = 'json-20090211.jar'
 
-task copyDependencies(type: Copy, dependsOn: ['downloadFileWatcherStandalonenio', 'downloadFileWatcherCore']) {
+task downloadJson(type: Download) {
+    sourceUrl = 'https://download.eclipse.org/tools/orbit/downloads/drops/R20190726180751/repository/plugins/org.json_1.0.0.v201011060100.jar'
+    target = file('src/main/lib/org.json_1.0.0.v201011060100.jar')
+}
+
+task copyFileWatchers(type: Copy, dependsOn: 'downloadFileWatchers') {
+    from(zipTree("src/main/lib/codewind.zip")) {
+        include "plugins/org.eclipse.codewind.filewatchers.standalonenio_*"  
+        include "plugins/org.eclipse.codewind.filewatchers.core_*"  
+
+        eachFile { fcd ->
+            fcd.relativePath = new RelativePath(true, fcd.relativePath.segments.drop(1))  
+        }
+        includeEmptyDirs = false  
+    }
+    into "src/main/lib"
+}
+
+task deleteFiles(type: Delete) {
+    delete fileTree("src/main/lib").matching {
+        include "codewind.zip"
+    }
+}
+
+task downloadFileWatchers(type: Download) {
+    sourceUrl = 'http://download.eclipse.org/codewind/codewind-eclipse/master/latest/codewind.zip'
+    target = file('src/main/lib/codewind.zip')
+}
+
+task copyDependencies(type: Copy) {
     from configurations.corelibs {
         exclude excludeJson
     }
     into 'src/main/lib'
 }
 
-task downloadJson(type: Download) {
-    src 'https://download.eclipse.org/tools/orbit/downloads/drops/R20190726180751/repository/plugins/org.json_1.0.0.v201011060100.jar'
-    dest 'src/main/lib'
-    overwrite false
-}
-
-task downloadFileWatcherStandalonenio(type: Download) {
-    src 'https://download.eclipse.org/codewind/codewind-eclipse/master/latest/repository/plugins/org.eclipse.codewind.filewatchers.standalonenio_1.2.1.v202001231707.jar'
-    dest 'src/main/lib'
-    overwrite false
-}
-
-task downloadFileWatcherCore(type: Download) {
-    src 'https://download.eclipse.org/codewind/codewind-eclipse/master/latest/repository/plugins/org.eclipse.codewind.filewatchers.core_1.2.1.v202001231707.jar'
-    dest 'src/main/lib'
-    overwrite false
-}
-
-copyDependencies.finalizedBy downloadJson
+copyDependencies.finalizedBy downloadJson, copyFileWatchers
+copyFileWatchers.finalizedBy deleteFiles
 
 defaultTasks 'copyDependencies', 'compileJava'
 
