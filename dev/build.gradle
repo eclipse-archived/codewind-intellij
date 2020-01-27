@@ -57,6 +57,11 @@ task downloadJson(type: Download) {
     target = file('src/main/lib/org.json_1.0.0.v201011060100.jar')
 }
 
+task downloadFileWatchers(type: Download) {
+    sourceUrl = 'http://download.eclipse.org/codewind/codewind-eclipse/master/latest/codewind.zip'
+    target = file('src/main/lib/codewind.zip')
+}
+
 task copyFileWatchers(type: Copy, dependsOn: 'downloadFileWatchers') {
     from(zipTree("src/main/lib/codewind.zip")) {
         include "plugins/org.eclipse.codewind.filewatchers.standalonenio_*"  
@@ -74,11 +79,6 @@ task deleteFiles(type: Delete) {
     delete fileTree("src/main/lib").matching {
         include "codewind.zip"
     }
-}
-
-task downloadFileWatchers(type: Download) {
-    sourceUrl = 'http://download.eclipse.org/codewind/codewind-eclipse/master/latest/codewind.zip'
-    target = file('src/main/lib/codewind.zip')
 }
 
 task copyDependencies(type: Copy) {
