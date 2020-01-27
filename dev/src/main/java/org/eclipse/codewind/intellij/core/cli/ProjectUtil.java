@@ -46,7 +46,7 @@ public class ProjectUtil {
 		monitor.setIndeterminate(true);
 		Process process = null;
 		try {
-			process = CLIUtil.runCWCTL(CLIUtil.GLOBAL_JSON_INSECURE, CREATE_CMD, new String[] {PATH_OPTION, path, URL_OPTION, url});
+			process = CLIUtil.runCWCTL(CLIUtil.GLOBAL_JSON_INSECURE, CREATE_CMD, new String[] {PATH_OPTION, path, URL_OPTION, url, CLIUtil.CON_ID_OPTION, conid});
 			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 300);
 			if (result.getExitValue() != 0) {
 				Logger.logWarning("Project create failed with rc: " + result.getExitValue() + " and error: " + result.getErrorMsg()); //$NON-NLS-1$ //$NON-NLS-2$
