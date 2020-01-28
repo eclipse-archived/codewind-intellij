@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.codewind.intellij.module;
+package org.eclipse.codewind.intellij.ui.module;
 
 import org.eclipse.codewind.intellij.core.connection.ProjectTemplateInfo;
 import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
@@ -20,6 +20,12 @@ import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
 public class TemplateTableModel extends AbstractTableModel {
+
+    private static String[] COLUMN_NAMES = {
+            CodewindUIBundle.message("NewProjectPage_TemplateColumn"),
+            CodewindUIBundle.message("NewProjectPage_TypeColumn"),
+            CodewindUIBundle.message("NewProjectPage_LanguageColumn")
+    };
 
     private ProjectTemplateInfo[] templates = {};
 
@@ -35,21 +41,12 @@ public class TemplateTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 3;
+        return COLUMN_NAMES.length;
     }
 
     @Override
     public String getColumnName(int column) {
-        switch (column) {
-            case 0:
-                return CodewindUIBundle.message("NewProjectPage_TemplateColumn");
-            case 1:
-                return CodewindUIBundle.message("NewProjectPage_TypeColumn");
-            case 2:
-                return CodewindUIBundle.message("NewProjectPage_LanguageColumn");
-            default:
-                throw new IllegalStateException("Unexpected value: " + column);
-        }
+        return COLUMN_NAMES[column];
     }
 
     @Override

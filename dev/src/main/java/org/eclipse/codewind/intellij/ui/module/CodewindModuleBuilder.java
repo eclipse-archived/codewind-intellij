@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.codewind.intellij.module;
+package org.eclipse.codewind.intellij.ui.module;
 
 import com.intellij.ide.util.projectWizard.*;
 import com.intellij.openapi.Disposable;
@@ -23,6 +23,7 @@ import org.eclipse.codewind.intellij.core.FileUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.eclipse.codewind.intellij.core.cli.ProjectUtil;
+import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.ProjectTemplateInfo;
 import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
@@ -43,8 +44,8 @@ public class CodewindModuleBuilder extends JavaModuleBuilder {
     }
 
     @Override
-    public ModuleType getModuleType() {
-        return CodewindModuleType.CODEWIND_MODULE;
+    public CodewindModuleType getModuleType() {
+        return CodewindModuleType.getInstance();
     }
 
     @Nullable
@@ -87,7 +88,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder {
         String url = template.getUrl();
         String language = template.getLanguage();
         String projectType = template.getProjectType();
-        String conid = "local";
+        String conid = LocalConnection.CONNECTION_ID;
         try {
             // Codewind won't create a project in a non-empty directory, and by this
             // point the IntelliJ project creation framework has already created the .idea

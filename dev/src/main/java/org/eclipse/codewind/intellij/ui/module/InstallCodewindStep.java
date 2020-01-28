@@ -9,45 +9,44 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.codewind.intellij.module;
+package org.eclipse.codewind.intellij.ui.module;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.progress.ProgressManager;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
-import org.eclipse.codewind.intellij.ui.tasks.StartCodewindTask;
 
 import javax.swing.*;
 import java.awt.*;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
-public class StartCodewindStep extends ModuleWizardStep {
+public class InstallCodewindStep extends ModuleWizardStep {
 
     private final JPanel panel;
     private final JLabel label;
     private final JButton button;
-    private boolean isStarted;
+    private boolean isInstalled;
 
-    public StartCodewindStep() {
+    public InstallCodewindStep() {
         this.panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 
-        label = new JLabel(message("CodewindNotStarted"));
+        label = new JLabel(message("CodewindNotInstalled"));
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(label);
 
-        button = new JButton(message("StartCodewind"));
+        button = new JButton(message("InstallCodewind"));
         panel.add(button);
         button.addActionListener(e -> {
             LocalConnection localConnection = ConnectionManager.getManager().getLocalConnection();
             localConnection.refreshInstallStatus();
             if (localConnection.getInstallStatus().isStarted()) {
-                CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindStarted"));
+                CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindInstalledStarted"));
             } else {
-                ProgressManager.getInstance().run(new StartCodewindTask(this::onStart));
+                // ProgressManager.getInstance().run(new InstallCodewindTask(this::onInstall));
+                CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), "Not yet implemented");
             }
         });
     }
@@ -64,12 +63,12 @@ public class StartCodewindStep extends ModuleWizardStep {
 
     @Override
     public boolean validate() throws ConfigurationException {
-        return isStarted;
+        return isInstalled;
     }
 
-    private void onStart() {
-        isStarted = true;
+    private void onInstall() {
+        isInstalled = true;
         button.setEnabled(false);
-        label.setText(message("CodewindStarted"));
+        label.setText(message("CodewindInstalledStarted"));
     }
 }

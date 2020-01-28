@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.codewind.intellij.module;
+package org.eclipse.codewind.intellij.ui.module;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.options.ConfigurationException;
@@ -24,31 +24,30 @@ import java.awt.*;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
-public class InstallCodewindStep extends ModuleWizardStep {
+public class StartCodewindStep extends ModuleWizardStep {
 
     private final JPanel panel;
     private final JLabel label;
     private final JButton button;
-    private boolean isInstalled;
+    private boolean isStarted;
 
-    public InstallCodewindStep() {
+    public StartCodewindStep() {
         this.panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 
-        label = new JLabel(message("CodewindNotInstalled"));
+        label = new JLabel(message("CodewindNotStarted"));
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(label);
 
-        button = new JButton(message("InstallCodewind"));
+        button = new JButton(message("StartCodewind"));
         panel.add(button);
         button.addActionListener(e -> {
             LocalConnection localConnection = ConnectionManager.getManager().getLocalConnection();
             localConnection.refreshInstallStatus();
             if (localConnection.getInstallStatus().isStarted()) {
-                CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindInstalledStarted"));
+                CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindStarted"));
             } else {
-                // ProgressManager.getInstance().run(new InstallCodewindTask(this::onInstall));
-                CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), "Not yet implemented");
+                ProgressManager.getInstance().run(new StartCodewindTask(this::onStart));
             }
         });
     }
@@ -60,17 +59,18 @@ public class InstallCodewindStep extends ModuleWizardStep {
 
     @Override
     public void updateDataModel() {
-
+        // Implement this because it's abstract in superclass.
+        // No model to update, so nothing to do.
     }
 
     @Override
     public boolean validate() throws ConfigurationException {
-        return isInstalled;
+        return isStarted;
     }
 
-    private void onInstall() {
-        isInstalled = true;
+    private void onStart() {
+        isStarted = true;
         button.setEnabled(false);
-        label.setText(message("CodewindInstalledStarted"));
+        label.setText(message("CodewindStarted"));
     }
 }

@@ -31,8 +31,8 @@
                     icon="/META-INF/pluginIcon13x13.svg"
                     factoryClass="org.eclipse.codewind.intellij.ui.WindowToolFactory"/>
 
-        <!-- <moduleType id="CODEWIND_MODULE" implementationClass="org.eclipse.codewind.intellij.module.CodewindModuleType" /> -->
-        <moduleBuilder builderClass="org.eclipse.codewind.intellij.module.CodewindModuleBuilder" />
+        <!-- <moduleType id="CODEWIND_MODULE" implementationClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleType" /> -->
+        <moduleBuilder builderClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleBuilder" />
     </extensions>
 
     <actions>

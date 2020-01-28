@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.codewind.intellij.module;
+package org.eclipse.codewind.intellij.ui.module;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.options.ConfigurationException;
@@ -19,11 +19,14 @@ import com.intellij.ui.table.JBTable;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.TemplateUtil;
 import org.eclipse.codewind.intellij.core.connection.ProjectTemplateInfo;
+import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
 public class NewCodewindProjectStep extends ModuleWizardStep {
 
@@ -37,7 +40,7 @@ public class NewCodewindProjectStep extends ModuleWizardStep {
         this.panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 
-        JLabel label = new JLabel("Create a Codewind Project");
+        JLabel label = new JLabel(message("NewProjectPage_WizardTitle"));
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(label);
 
@@ -61,9 +64,10 @@ public class NewCodewindProjectStep extends ModuleWizardStep {
     @Override
     public void updateStep() {
         try {
+            String javaID = ProjectLanguage.LANGUAGE_JAVA.getId();
             List<ProjectTemplateInfo> templates = TemplateUtil.listTemplates(true, "local", new EmptyProgressIndicator())
                     .stream()
-                    .filter(info -> info.getLanguage().equals("java"))
+                    .filter(info -> info.getLanguage().equals(javaID))
                     .collect(Collectors.toList());
             getTableModel().update(templates);
         } catch (Exception e) {
