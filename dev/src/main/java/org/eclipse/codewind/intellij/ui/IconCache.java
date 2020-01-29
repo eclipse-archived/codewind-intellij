@@ -21,6 +21,7 @@ public class IconCache {
 
     public static final String ICONS_THEMED_LOCAL_PROJECTS_SVG = "/icons/themed/local_projects.svg";
     public static final String ICONS_THEMELESS_CODEWIND_SVG = "/icons/themeless/codewind.svg";
+    public static final String ICONS_THEMELESS_CODEWIND_GREY_SVG = "/icons/themeless/codewind-grey.svg";
     public static final String ICONS_THEMELESS_PROJECT_TYPES_GENERIC_SVG = "/icons/themeless/project-types/generic.svg";
     public static final String ICONS_THEMELESS_PROJECT_TYPES_GO_SVG = "/icons/themeless/project-types/go.svg";
     public static final String ICONS_THEMELESS_PROJECT_TYPES_JAVA_SVG = "/icons/themeless/project-types/java.svg";

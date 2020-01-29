@@ -11,12 +11,13 @@
 
 package org.eclipse.codewind.intellij.core;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.StringTokenizer;
+import java.util.stream.Stream;
 
 public class FileUtil {
 
@@ -103,6 +104,38 @@ public class FileUtil {
 
         if (!isSuccess) {
             throw new IOException("Directory cannot be removed.");
+        }
+    }
+
+    /**
+     * Copy the contents of the given source directory into the given target directory
+     *
+     * @param source
+     *            the directory to copy from
+     * @param target
+     *            the directory to copy into
+     */
+    public static void copyDirectory(Path source, Path target) throws IOException {
+        if (!Files.exists(target)) {
+            Files.createDirectories(target);
+        }
+        try (Stream<Path> files = Files.walk(source)) {
+            files
+                    .filter(file -> !file.equals(source))
+                    .map(source::relativize)
+                    .forEach(file -> copyFile(source.resolve(file), target.resolve(file)));
+        }
+    }
+
+    private static void copyFile(Path source, Path target) {
+        try {
+            if (Files.isDirectory(source)) {
+                Files.createDirectories(target);
+                return;
+            }
+            Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 }

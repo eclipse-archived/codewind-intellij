@@ -22,7 +22,7 @@
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
-    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Codewind"
@@ -30,6 +30,9 @@
                     secondary="true"
                     icon="/META-INF/pluginIcon13x13.svg"
                     factoryClass="org.eclipse.codewind.intellij.ui.WindowToolFactory"/>
+
+        <!-- <moduleType id="CODEWIND_MODULE" implementationClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleType" /> -->
+        <moduleBuilder builderClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleBuilder" />
     </extensions>
 
     <actions>
