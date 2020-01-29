@@ -18,6 +18,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.TemplateUtil;
+import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.ProjectTemplateInfo;
 import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
 
@@ -65,7 +66,7 @@ public class NewCodewindProjectStep extends ModuleWizardStep {
     public void updateStep() {
         try {
             String javaID = ProjectLanguage.LANGUAGE_JAVA.getId();
-            List<ProjectTemplateInfo> templates = TemplateUtil.listTemplates(true, "local", new EmptyProgressIndicator())
+            List<ProjectTemplateInfo> templates = TemplateUtil.listTemplates(true, LocalConnection.CONNECTION_ID, new EmptyProgressIndicator())
                     .stream()
                     .filter(info -> info.getLanguage().equals(javaID))
                     .collect(Collectors.toList());
