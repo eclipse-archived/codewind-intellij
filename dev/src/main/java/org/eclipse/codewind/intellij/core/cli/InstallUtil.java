@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -12,9 +12,11 @@
 package org.eclipse.codewind.intellij.core.cli;
 
 import com.intellij.openapi.progress.ProgressIndicator;
+import org.eclipse.codewind.intellij.core.CodewindManager;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.ProcessHelper;
 import org.eclipse.codewind.intellij.core.ProcessHelper.ProcessResult;
+import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
@@ -51,6 +53,7 @@ public class InstallUtil {
     private static final String INSTALL_VERSION_KEY = "install-version";
     private static final String INSTALL_VERSION;
     private static final String TAG_OPTION = "-t";
+    private static final String WORKSPACE_OPTION = "--workspace";
 
     static {
         String version;
@@ -124,6 +127,52 @@ public class InstallUtil {
             }
             ConnectionManager.getManager().getLocalConnection().refreshInstallStatus();
             ConnectionManager.getManager().getLocalConnection().setInstallerStatus(null);
+        }
+    }
+
+    public static ProcessResult installCodewind(String version) throws IOException, TimeoutException {
+        Process process = null;
+        try {
+            CodewindManager.getManager().setInstallerStatus(CodewindManager.InstallerStatus.INSTALLING);
+            process = CLIUtil.runCWCTL(null, INSTALL_CMD, new String[] {TAG_OPTION, version});
+            return ProcessHelper.waitForProcess(process, 1000, 300);
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroy();
+            }
+            CodewindManager.getManager().refreshInstallStatus();
+            CodewindManager.getManager().setInstallerStatus(null);
+        }
+    }
+
+    public static ProcessResult removeCodewind(String version) throws IOException, TimeoutException {
+        Process process = null;
+        try {
+            CodewindManager.getManager().setInstallerStatus(CodewindManager.InstallerStatus.UNINSTALLING);
+            if (version != null) {
+                process = CLIUtil.runCWCTL(null, REMOVE_CMD, new String[]{TAG_OPTION, version});
+            } else {
+                process = CLIUtil.runCWCTL(null, REMOVE_CMD, null);
+            }
+            return ProcessHelper.waitForProcess(process, 500, 60);
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroy();;
+            }
+            CodewindManager.getManager().refreshInstallStatus();
+            CodewindManager.getManager().setInstallerStatus(null);
+        }
+    }
+
+    public static ProcessResult upgradeWorkspace(String path) throws IOException, TimeoutException {
+        Process process = null;
+        try {
+            process = CLIUtil.runCWCTL(null, UPGRADE_CMD, new String[] {WORKSPACE_OPTION, path});
+            return ProcessHelper.waitForProcess(process, 500, 300);
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroy();
+            }
         }
     }
 
