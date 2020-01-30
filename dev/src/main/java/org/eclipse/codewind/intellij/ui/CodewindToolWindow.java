@@ -51,6 +51,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction refreshAction;
     private final AnAction openPerformanceDashboardAction;
     private final AnAction openTektonDashboardAction;
+    private final AnAction removeProjectAction;
 
     public CodewindToolWindow() {
         treeModel = new CodewindTreeModel();
@@ -66,6 +67,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         refreshAction = new RefreshAction();
         openPerformanceDashboardAction = new OpenPerformanceDashboardAction();
         openTektonDashboardAction = new OpenTektonDashboardAction();
+        removeProjectAction = new RemoveProjectAction();
 
         debugAction = new AnAction("* debug *") {
             @Override
@@ -186,13 +188,6 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private void handleApplicationPopup(CodewindApplication application, Component component, int x, int y) {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindApplicationGroup", true);
         actions.add(openApplicationAction);
-        actions.addSeparator();
-        actions.add(openIdeaProjectAction);
-        actions.addSeparator();
-        actions.add(startBuildAction);
-        actions.addSeparator();
-        actions.add(refreshAction);
-        actions.addSeparator();
         actions.add(openPerformanceDashboardAction);
         CodewindConnection connection = application.getConnection();
         if (connection != null) {
@@ -202,6 +197,14 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
                 actions.add(openTektonDashboardAction);
             }
         }
+        actions.addSeparator();
+        actions.add(openIdeaProjectAction);
+        actions.addSeparator();
+        actions.add(startBuildAction);
+        actions.addSeparator();
+        actions.add(refreshAction);
+        actions.addSeparator();
+        actions.add(removeProjectAction);
         ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("CodewindTree", actions);
         popupMenu.getComponent().show(component, x, y);
     }

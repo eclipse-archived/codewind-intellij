@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -119,7 +119,7 @@ public class ProcessHelper {
         int n = stream.available();
         while (n > 0) {
             int len = stream.read(buffer, 0, Math.min(n, buffer.length));
-            builder.append(new String(buffer, 0, len));
+            builder.append(new String(buffer, 0, len, "UTF-8"));
             n = stream.available();
         }
         return builder.toString();
