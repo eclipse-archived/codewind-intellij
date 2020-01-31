@@ -17,14 +17,11 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.Logger;
-import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
-import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.ui.tasks.RefreshTask;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeModel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.tree.TreePath;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -35,7 +32,7 @@ import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message
 public class OpenPerformanceDashboardAction extends AnAction {
 
     public OpenPerformanceDashboardAction() {
-        super("Open Performance Dashboard");
+        super(message("ActionOpenPerformanceMonitor"));
     }
 
     @Override

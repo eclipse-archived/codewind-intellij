@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -42,7 +42,7 @@ public abstract class TreeAction<T> extends AnAction {
         getSelection(e).ifPresent(value -> ProgressManager.getInstance().run(taskFactory.apply(value)));
     }
 
-    private Optional<T> getSelection(@NotNull AnActionEvent e) {
+    protected Optional<T> getSelection(@NotNull AnActionEvent e) {
         Object data = e.getData(CONTEXT_COMPONENT);
         if (!(data instanceof Tree)) {
             Logger.logWarning("unrecognized component for action " + text + ": " + data);
