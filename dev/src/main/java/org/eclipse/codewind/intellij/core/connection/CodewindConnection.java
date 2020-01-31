@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corporation and others.
+ * Copyright (c) 2018, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -14,14 +14,17 @@ package org.eclipse.codewind.intellij.core.connection;
 import org.eclipse.codewind.intellij.core.*;
 import org.eclipse.codewind.intellij.core.HttpUtil.HttpResult;
 import org.eclipse.codewind.intellij.core.cli.AuthToken;
+import org.eclipse.codewind.intellij.core.cli.CLIUtil;
 import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.eclipse.codewind.intellij.core.connection.ConnectionEnv.TektonDashboard;
 import org.eclipse.codewind.intellij.core.console.ProjectLogInfo;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
+import org.eclipse.codewind.intellij.core.filewatcher.CodewindIntelliJFilewatcherdConnection;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
@@ -48,6 +51,7 @@ public abstract class CodewindConnection {
     private String connectionErrorMsg = null;
 
     private CodewindSocket socket;
+    private CodewindIntelliJFilewatcherdConnection filewatcher;
 
     private volatile boolean isConnected = false;
 
@@ -85,8 +89,11 @@ public abstract class CodewindConnection {
             throw new CodewindConnectionException(socket.socketUri);
         }
 
-//        File cwctl = new File(CLIUtil.getCWCTLExecutable());
-//        filewatcher = new CodewindFilewatcherdConnection(baseUri.toString(), cwctl, new ICodewindProjectTranslator() {
+        File cwctl = new File(CLIUtil.getCWCTLExecutable());
+        // TODO: For Remote Connection support, implement ICodewindProjectTranslator for authTokenProvider
+        filewatcher = new CodewindIntelliJFilewatcherdConnection(baseUri.toString(), cwctl, null);
+
+//        ....(baseUri.toString(), cwctl, new ICodewindProjectTranslator() {
 //            @Override
 //            public Optional<String> getProjectId(IProject project) {
 //                if (project != null) {
@@ -128,9 +135,9 @@ public abstract class CodewindConnection {
         if (socket != null) {
             socket.close();
         }
-//		if (filewatcher != null) {
-//			filewatcher.dispose();
-//		}
+		if (filewatcher != null) {
+			filewatcher.dispose();
+		}
         for (CodewindApplication app : appMap.values()) {
             app.dispose();
         }
