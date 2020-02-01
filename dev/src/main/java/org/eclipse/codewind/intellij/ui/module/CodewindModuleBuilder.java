@@ -12,6 +12,7 @@
 package org.eclipse.codewind.intellij.ui.module;
 
 import com.intellij.ide.util.projectWizard.*;
+import com.intellij.ide.wizard.CommitStepException;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
@@ -24,24 +25,29 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.util.InvalidDataException;
+import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.FileUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.eclipse.codewind.intellij.core.cli.ProjectUtil;
+import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.ProjectTemplateInfo;
 import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONException;
 
+import javax.swing.*;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeoutException;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.eclipse.codewind.intellij.core.constants.IntelliJConstants.IDEA_FOLDER;
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
 public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBuilderListener {
@@ -60,29 +66,35 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
     @Nullable
     @Override
     public ModuleWizardStep getCustomOptionsStep(WizardContext context, Disposable parentDisposable) {
-        try {
-            if (!InstallUtil.getInstallStatus().isInstalled()) {
-                return new InstallCodewindStep();
+        // The custom options step's #onWizardFinished() method doesn't get called, so we can't use
+        // this step to do any validation when the user click's 'finish'.  Since we only have one real
+        // step to do the validation, that step has to be created in #createWizardSteps.
+        // We still need to provide a custom option step so the user can select the JDK for the project.
+        return new ModuleWizardStep() {
+            private final JPanel panel = new JPanel();
+            @Override
+            public JComponent getComponent() {
+                return panel;
             }
-            if (!InstallUtil.getInstallStatus().isStarted()) {
-                return new StartCodewindStep();
-            }
-            return createNewCodewindProjectStep();
-        } catch (Exception e) {
-            Logger.logWarning(e);
-        }
-        return null;
-    }
 
-    private ModuleWizardStep createNewCodewindProjectStep() throws JSONException, TimeoutException, IOException {
-        return new NewCodewindProjectStep(this);
+            @Override
+            public void updateDataModel() {
+
+            }
+        };
     }
 
     @Override
     public ModuleWizardStep[] createWizardSteps(@NotNull WizardContext wizardContext, @NotNull ModulesProvider modulesProvider) {
         try {
-            if (!InstallUtil.getInstallStatus().isStarted())
-                return new ModuleWizardStep[]{createNewCodewindProjectStep()};
+            List<ModuleWizardStep> steps = new ArrayList<>();
+            if (!InstallUtil.getInstallStatus().isInstalled()) {
+                steps.add(new InstallCodewindStep());
+            } else if (!InstallUtil.getInstallStatus().isStarted()) {
+                steps.add(new StartCodewindStep());
+            }
+            steps.add(new NewCodewindProjectStep(this));
+            return steps.toArray(new ModuleWizardStep[0]);
         } catch (Exception e) {
             Logger.logWarning(e);
         }
@@ -158,5 +170,23 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
             }
         };
         ProgressManager.getInstance().run(task);
+    }
+
+    void onWizardFinished() throws CommitStepException {
+        // This method will get called even if the IntelliJ project being created is not a
+        // Codewind project.  In that case a call to getName() will return nulll.
+        if (getName() == null)
+            return;
+
+        // Check that the project folder is empty except for the '.idea' folder
+        File projectFolder = new File(getModuleFileDirectory());
+        File[] files = projectFolder.listFiles();
+        if (files.length > 1 || (files.length == 1 && !files[0].getName().equals(IDEA_FOLDER)))
+            throw new CommitStepException(message("ProjectFolderNotEmpty", projectFolder));
+
+        // Check if there is already a Codewind project with the given name
+        List<CodewindApplication> applications = ConnectionManager.getManager().getLocalConnection().getApps();
+        if (applications.stream().anyMatch(a -> a.getName().equals(getName())))
+            throw new CommitStepException(message("NewProjectPage_ProjectExistsError", getName()));
     }
 }
