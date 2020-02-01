@@ -4,6 +4,7 @@
       <option name="env">
         <map>
           <entry key="CW_TAG" value="latest" />
+          <entry key="filewatcher_log_level" value="ERROR" />
         </map>
       </option>
       <option name="executionName" />
