@@ -66,4 +66,11 @@ public class Logger {
     public static void log(Throwable t) {
         getLogger().info(t);
     }
+
+    public static Throwable unwrap(Throwable error) {
+        Throwable t = error;
+        while (t.getCause() != null)
+            t = t.getCause();
+        return t;
+    }
 }
