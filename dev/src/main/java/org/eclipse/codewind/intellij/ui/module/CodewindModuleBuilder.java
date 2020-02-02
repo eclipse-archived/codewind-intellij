@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.codewind.intellij.core.constants.IntelliJConstants.IDEA_FOLDER;
@@ -66,39 +65,41 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
     @Nullable
     @Override
     public ModuleWizardStep getCustomOptionsStep(WizardContext context, Disposable parentDisposable) {
-        // The custom options step's #onWizardFinished() method doesn't get called, so we can't use
-        // this step to do any validation when the user clicks 'finish'.  Since we only have one real
-        // step to do the validation, that step has to be created in #createWizardSteps.
-        // We still need to provide a custom option step so the user can select the JDK for the project.
-        return new ModuleWizardStep() {
-            private final JPanel panel = new JPanel();
-            @Override
-            public JComponent getComponent() {
-                return panel;
+        try {
+            if (!InstallUtil.getInstallStatus().isInstalled()) {
+                return new InstallCodewindStep();
             }
 
-            @Override
-            public void updateDataModel() {
-
+            if (!InstallUtil.getInstallStatus().isStarted()) {
+                return new StartCodewindStep();
             }
-        };
+
+            // The custom options step's #onWizardFinished() method doesn't get called, so we can't use
+            // this step to do any validation when the user clicks 'finish'.  Since we only have one real
+            // step to do the validation, that step has to be created in #createWizardSteps.
+            // We still need to provide a custom option step so the user can select the JDK for the project.
+            return new ModuleWizardStep() {
+                private final JPanel panel = new JPanel();
+
+                @Override
+                public JComponent getComponent() {
+                    return panel;
+                }
+
+                @Override
+                public void updateDataModel() {
+
+                }
+            };
+        } catch (Exception e) {
+            Logger.logWarning(e);
+        }
+        return null;
     }
 
     @Override
     public ModuleWizardStep[] createWizardSteps(@NotNull WizardContext wizardContext, @NotNull ModulesProvider modulesProvider) {
-        try {
-            List<ModuleWizardStep> steps = new ArrayList<>();
-            if (!InstallUtil.getInstallStatus().isInstalled()) {
-                steps.add(new InstallCodewindStep());
-            } else if (!InstallUtil.getInstallStatus().isStarted()) {
-                steps.add(new StartCodewindStep());
-            }
-            steps.add(new NewCodewindProjectStep(this));
-            return steps.toArray(new ModuleWizardStep[0]);
-        } catch (Exception e) {
-            Logger.logWarning(e);
-        }
-        return ModuleWizardStep.EMPTY_ARRAY;
+        return new ModuleWizardStep[]{new NewCodewindProjectStep(this)};
     }
 
     @NotNull
