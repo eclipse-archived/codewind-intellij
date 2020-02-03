@@ -48,6 +48,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction openApplicationAction;
     private final AnAction openIdeaProjectAction;
     private final AnAction startBuildAction;
+    private final AnAction enableAutoBuildAction;
+    private final AnAction disableAutoBuildAction;
     private final AnAction refreshAction;
     private final AnAction openPerformanceDashboardAction;
     private final AnAction openTektonDashboardAction;
@@ -64,6 +66,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         openApplicationAction = new OpenApplicationAction();
         openIdeaProjectAction = new OpenIdeaProjectAction();
         startBuildAction = new StartBuildAction();
+        enableAutoBuildAction = new EnableAutoBuildAction();
+        disableAutoBuildAction = new DisableAutoBuildAction();
         refreshAction = new RefreshAction();
         openPerformanceDashboardAction = new OpenPerformanceDashboardAction();
         openTektonDashboardAction = new OpenTektonDashboardAction();
@@ -187,6 +191,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
     private void handleApplicationPopup(CodewindApplication application, Component component, int x, int y) {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindApplicationGroup", true);
+
         actions.add(openApplicationAction);
         actions.add(openPerformanceDashboardAction);
         CodewindConnection connection = application.getConnection();
@@ -197,14 +202,24 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
                 actions.add(openTektonDashboardAction);
             }
         }
+
         actions.addSeparator();
         actions.add(openIdeaProjectAction);
+
         actions.addSeparator();
         actions.add(startBuildAction);
-        actions.addSeparator();
-        actions.add(refreshAction);
+        if (application.isAutoBuild()) {
+            actions.add(disableAutoBuildAction);
+        } else {
+            actions.add(enableAutoBuildAction);
+        }
+
         actions.addSeparator();
         actions.add(removeProjectAction);
+
+        actions.addSeparator();
+        actions.add(refreshAction);
+
         ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("CodewindTree", actions);
         popupMenu.getComponent().show(component, x, y);
     }
