@@ -13,12 +13,19 @@ package org.eclipse.codewind.intellij.ui.module;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.progress.ProgressManager;
 import org.eclipse.codewind.intellij.core.CoreUtil;
+import org.eclipse.codewind.intellij.core.Logger;
+import org.eclipse.codewind.intellij.core.ProcessHelper;
+import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
+import org.eclipse.codewind.intellij.ui.tasks.InstallCodewindTask;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
@@ -42,11 +49,10 @@ public class InstallCodewindStep extends ModuleWizardStep {
         button.addActionListener(e -> {
             LocalConnection localConnection = ConnectionManager.getManager().getLocalConnection();
             localConnection.refreshInstallStatus();
-            if (localConnection.getInstallStatus().isStarted()) {
+            if (localConnection.getInstallStatus().isInstalled()) {
                 CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindInstalledStarted"));
             } else {
-                // ProgressManager.getInstance().run(new InstallCodewindTask(this::onInstall));
-                CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), "Not yet implemented");
+                ProgressManager.getInstance().run(new InstallCodewindTask(this::onInstall));
             }
         });
     }
@@ -58,7 +64,8 @@ public class InstallCodewindStep extends ModuleWizardStep {
 
     @Override
     public void updateDataModel() {
-
+        // Implement this because it's abstract in superclass.
+        // No model to update, so nothing to do.
     }
 
     @Override
