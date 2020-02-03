@@ -69,6 +69,7 @@ public class InstallCodewindStep extends ModuleWizardStep {
     private void onInstall() {
         isInstalled = true;
         button.setEnabled(false);
-        label.setText(message("CodewindInstalledStarted"));
+        String txt = "<html>" + message("CodewindInstalledStarted") + "</html>";
+        label.setText(txt);
     }
 }
