@@ -20,10 +20,16 @@
     url - path to download the plugin JAR/ZIP file. Required. Must be HTTPS
     version - version of this plugin. Required. Must match <version> in plugin.xml
   -->
-    <plugin id="okhttp" url="https://download.eclipse.org/codewind/codewind-intellij/testPR/latest/repository/okhttp-3.8.1.jar" version="3.8.1">
-        <!--
+
+    <plugin id="codewind-intellij-latest" url="https://download.eclipse.org/codewind/codewind-intellij/testPR/latest/repository/codewind-intellij-latest-202001291457.zip" version="202001291457">
+        <idea-version since-build="191.3" until-build="194.*" />
+    </plugin>
+
+    <!--
       The <idea-version> element must match the same element in plugin.xml. Required.
     -->
+
+    <!-- <plugin id="okhttp" url="https://download.eclipse.org/codewind/codewind-intellij/testPR/latest/repository/okhttp-3.8.1.jar" version="3.8.1">
         <idea-version since-build="191.3" until-build="194.*" />
     </plugin>
     <plugin id="org.json" url="https://download.eclipse.org/codewind/codewind-intellij/testPR/latest/repository/org.json_1.0.0.v201011060100.jar" version="1.0.0">
@@ -49,5 +55,5 @@
     </plugin>
     <plugin id="searchableOptions-latest" url="https://download.eclipse.org/codewind/codewind-intellij/testPR/latest/repository/searchableOptions-latest-202001311821.jar" version="202001311821">
         <idea-version since-build="191.3" until-build="194.*" />
-    </plugin>
+    </plugin> -->
 </plugins>
