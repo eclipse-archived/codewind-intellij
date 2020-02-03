@@ -130,7 +130,8 @@ public class InstallUtil {
         }
     }
 
-    public static ProcessResult installCodewind(String version) throws IOException, TimeoutException {
+    public static ProcessResult installCodewind(String version, ProgressIndicator indicator) throws IOException, TimeoutException {
+        indicator.setIndeterminate(true);
         Process process = null;
         try {
             CodewindManager.getManager().setInstallerStatus(CodewindManager.InstallerStatus.INSTALLING);
