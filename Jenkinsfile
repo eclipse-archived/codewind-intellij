@@ -126,12 +126,12 @@ pipeline {
                             scp $OUTPUT_DIR/$BUILD_INFO $sshHost:$deployDir/$GIT_BRANCH/$LATEST_DIR/$BUILD_INFO
 
                             echo "<!-- # Build date: $TIMESTAMP -->" >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
-                            echo '<?xml version="1.0" encoding="UTF-8"?>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
-                            echo '<plugins>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
-                            echo '    <plugin id="codewind-intellij" url="$DOWNLOAD_AREA_URL/$GIT_BRANCH/$LATEST_DIR/$OUTPUT_NAME.zip" version="latest">' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
-                            echo '        <idea-version since-build="191.3" until-build="999.*"/>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+                            echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+                            echo "<plugins>" >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+                            echo '    <plugin id=\"codewind-intellij\" url=\"$DOWNLOAD_AREA_URL/$GIT_BRANCH/$LATEST_DIR/$OUTPUT_NAME.zip\" version=\"latest\">" >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+                            echo '        <idea-version since-build=\"191.3\" until-build=\"999.*\"/>" >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '    </plugin> >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
-                            echo '</plugins>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML    
+                            echo "</plugins>" >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML    
                             scp $OUTPUT_DIR/$UPDATE_PLUGINS_XML $sshHost:$deployDir/$GIT_BRANCH/$LATEST_DIR/$UPDATE_PLUGINS_XML
                 
                             rm $OUTPUT_DIR/$BUILD_INFO
