@@ -14,6 +14,7 @@ package org.eclipse.codewind.intellij.ui.module;
 import com.intellij.ide.util.projectWizard.*;
 import com.intellij.ide.wizard.CommitStepException;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
@@ -166,7 +167,13 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
                     CoreUtil.openDialog(CoreUtil.DialogType.ERROR, message("CodewindLabel"), message("StartBuildError", name, thrown.getLocalizedMessage()));
                 }
 
-                // Reload the project so the maven importer will run
+                // Reload the project so the maven importer will run.  However, if the project is reloaded too
+                // soon the project sdk might not have been configured yet.
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 ProjectManager.getInstance().reloadProject(ideaProject);
             }
         };
