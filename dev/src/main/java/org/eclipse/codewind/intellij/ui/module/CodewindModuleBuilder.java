@@ -82,7 +82,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder {
 
     @NotNull
     @Override
-    public Module createModule(@NotNull ModifiableModuleModel moduleModel) throws InvalidDataException, IOException, ModuleWithNameAlreadyExists, JDOMException, ConfigurationException {
+    public com.intellij.openapi.module.Module createModule(@NotNull ModifiableModuleModel moduleModel) throws InvalidDataException, IOException, ModuleWithNameAlreadyExists, JDOMException, ConfigurationException {
         String path = getModuleFileDirectory();
         String name = getName();
         String url = template.getUrl();
@@ -108,7 +108,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder {
         // See super.createModule(moduleModel);
         String moduleFilePath = getModuleFilePath();
         deleteModuleFile(moduleFilePath);
-        Module module = moduleModel.newModule(moduleFilePath, StdModuleTypes.JAVA.getId());
+        com.intellij.openapi.module.Module module = moduleModel.newModule(moduleFilePath, StdModuleTypes.JAVA.getId());
         setupModule(module);
 
         return module;
