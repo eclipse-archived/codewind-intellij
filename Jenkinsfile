@@ -70,6 +70,10 @@ pipeline {
         }
 
         stage('Build') {
+            options {
+                timeout(time: 30, unit: 'MINUTES') 
+            }
+            
             steps {
                 script {
                     println("Starting codewind-intellij build ...")
