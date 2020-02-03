@@ -21,7 +21,7 @@
     version - version of this plugin. Required. Must match <version> in plugin.xml
   -->
 
-    <plugin id="codewind-intellij-latest" url="https://download.eclipse.org/codewind/codewind-intellij/testPR/latest/repository/codewind-intellij-latest-202001291457.zip" version="202001291457">
+    <plugin id="codewind-intellij-latest" url="https://download.eclipse.org/codewind/codewind-intellij/testPR/latest/codewind-intellij-latest.zip" version="latest">
         <idea-version since-build="191.3" until-build="194.*" />
     </plugin>
 
