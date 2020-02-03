@@ -25,7 +25,7 @@ import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message
 public class InstallCodewindTask extends CodewindProcessTask {
 
     public InstallCodewindTask(Runnable onSuccess) {
-        super(null, message("StartingCodewindJobLabel"), onSuccess);
+        super(null, message("InstallCodewindJobLabel"), onSuccess);
     }
 
     @Override
