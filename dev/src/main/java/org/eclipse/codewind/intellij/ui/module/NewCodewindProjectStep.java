@@ -12,6 +12,7 @@
 package org.eclipse.codewind.intellij.ui.module;
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
+import com.intellij.ide.wizard.CommitStepException;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.ui.components.JBScrollPane;
@@ -79,6 +80,11 @@ public class NewCodewindProjectStep extends ModuleWizardStep {
     @Override
     public boolean validate() throws ConfigurationException {
         return table.getSelectedRow() >= 0;
+    }
+
+    @Override
+    public void onWizardFinished() throws CommitStepException {
+        builder.onWizardFinished();
     }
 
     private TemplateTableModel getTableModel() {

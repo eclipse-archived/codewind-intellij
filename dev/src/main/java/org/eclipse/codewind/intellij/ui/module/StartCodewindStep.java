@@ -71,6 +71,7 @@ public class StartCodewindStep extends ModuleWizardStep {
     private void onStart() {
         isStarted = true;
         button.setEnabled(false);
-        label.setText(message("CodewindStarted"));
+        String txt = "<html>" + message("CodewindStarted") + "</html>";
+        label.setText(txt);
     }
 }

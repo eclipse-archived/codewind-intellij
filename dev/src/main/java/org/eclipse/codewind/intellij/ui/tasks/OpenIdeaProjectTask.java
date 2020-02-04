@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.eclipse.codewind.intellij.core.constants.IntelliJConstants.IDEA_FOLDER;
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
 public class OpenIdeaProjectTask extends Task.Backgroundable {
@@ -56,7 +57,7 @@ public class OpenIdeaProjectTask extends Task.Backgroundable {
             System.out.println("*** creating idea project for: application" + application.getName());
             // If we don't create the '.idea' folder, the openOrImport() call fails (but weirdly, only
             // the first time)
-            Files.createDirectory(application.fullLocalPath.resolve(".idea"));
+            Files.createDirectory(application.fullLocalPath.resolve(IDEA_FOLDER));
             String project = application.fullLocalPath.toString();
             CoreUtil.invokeLater(
                     () -> {
