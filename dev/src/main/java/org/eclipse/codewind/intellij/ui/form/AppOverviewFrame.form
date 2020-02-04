@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.eclipse.codewind.intellij.ui.form.AppOverviewFrame">
+  <grid id="27dc6" binding="overviewPanel" custom-create="true" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="651" height="831"/>
+    </constraints>
+    <properties/>
+    <border type="empty"/>
+    <children>
+      <scrollpane id="7b29a" binding="overviewScrollPanel">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="empty"/>
+        <children>
+          <grid id="9746c" binding="contentPanel" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="3" left="3" bottom="3" right="3"/>
+            <constraints/>
+            <properties/>
+            <border type="empty">
+              <font/>
+            </border>
+            <children>
+              <component id="dd3de" class="javax.swing.JLabel" binding="appLabel" custom-create="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <component id="55199" class="javax.swing.JSeparator" binding="separatorSpace">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <grid id="b2a4b" binding="columnPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <splitpane id="afc59" binding="splitPanel">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <background color="-1"/>
+                      <continuousLayout value="true"/>
+                      <resizeWeight value="0.5"/>
+                    </properties>
+                    <border type="empty"/>
+                    <children>
+                      <grid id="c6f4e" binding="generalPanel" layout-manager="GridLayoutManager" row-count="18" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                        <margin top="3" left="3" bottom="3" right="3"/>
+                        <constraints>
+                          <splitpane position="left"/>
+                        </constraints>
+                        <properties/>
+                        <border type="etched" title="General" title-justification="1">
+                          <font style="1"/>
+                        </border>
+                        <children>
+                          <component id="b5b95" class="javax.swing.JLabel" binding="typeLabel">
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                                <preferred-size width="255" height="16"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <font style="1"/>
+                              <labelFor value="13dcf"/>
+                              <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorTypeEntry"/>
+                            </properties>
+                          </component>
+                          <component id="13dcf" class="javax.swing.JTextField" binding="typeField" custom-create="true">
+                            <constraints>
+                              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                <preferred-size width="255" height="30"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <editable value="false"/>
+                            </properties>
+                          </component>
+                          <component id="fa3b7" class="javax.swing.JLabel" binding="languageLabel">
+                            <constraints>
+                              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                                <preferred-size width="255" height="16"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <font style="1"/>
+                              <labelFor value="5c495"/>
+                              <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorLanguageEntry"/>
+                            </properties>
+                          </component>
+                          <component id="5c495" class="javax.swing.JTextField" binding="languageField" custom-create="true">
+                            <constraints>
+                              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                <preferred-size width="255" height="30"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <editable value="false"/>
+                            </properties>
+                          </component>
+                          <component id="28a4a" class="javax.swing.JLabel" binding="locationOnDiskLabel">
+                            <constraints>
+                              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                                <preferred-size width="255" height="16"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <font style="1"/>
+                              <labelFor value="32298"/>
+                              <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorLocationEntry"/>
+                            </properties>
+                          </component>
+                          <component id="246ae" class="javax.swing.JLabel" binding="applicationEndpointLabel">
+                            <constraints>
+                              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <font style="1"/>
+                              <labelFor value="c2164"/>
+                              <text value="Application Endpoint"/>
+                            </properties>
+                          </component>
+                          <component id="f54d5" class="javax.swing.JLabel" binding="externalApplicationPortLabel">
+                            <constraints>
+                              <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <font style="1"/>
+                              <labelFor value="e9446"/>
+                              <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorHostAppPortEntry"/>
+                            </properties>
+                          </component>
+                          <component id="e9446" class="javax.swing.JTextField" binding="externalApplicationPortField" custom-create="true">
+                            <constraints>
+                              <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                <preferred-size width="150" height="-1"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <editable value="false"/>
+                            </properties>
+                          </component>
+                          <component id="79b90" class="javax.swing.JLabel" binding="externalDebugPortLabel">
+                            <constraints>
+                              <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <font style="1"/>
+                              <labelFor value="973c9"/>
+                              <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorHostDebugPortEntry"/>
+                            </properties>
+                          </component>
+                          <component id="973c9" class="javax.swing.JTextField" binding="externalDebugPortField" custom-create="true">
+                            <constraints>
+                              <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                <preferred-size width="150" height="-1"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <editable value="false"/>
+                            </properties>
+                          </component>
+                          <component id="43a3c" class="javax.swing.JLabel" binding="projectIdLabel">
+                            <constraints>
+                              <grid row="12" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <font style="1"/>
+                              <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorProjectIdEntry"/>
+                            </properties>
+                          </component>
+                          <component id="14cd0" class="javax.swing.JLabel" binding="containerIdLabel">
+                            <constraints>
+                              <grid row="14" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <font style="1"/>
+                              <labelFor value="fc62c"/>
+                              <text value="Container ID"/>
+                            </properties>
+                          </component>
+                          <component id="df9cf" class="javax.swing.JLabel" binding="statusLabel">
+                            <constraints>
+                              <grid row="16" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties>
+                              <font style="1"/>
+                              <labelFor value="242a5"/>
+                              <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorStatusEntry"/>
+                            </properties>
+                          </component>
+                          <component id="242a5" class="javax.swing.JTextField" binding="statusField" custom-create="true">
+                            <constraints>
+                              <grid row="17" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                <preferred-size width="150" height="-1"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <editable value="false"/>
+                            </properties>
+                          </component>
+                          <component id="32298" class="javax.swing.JTextArea" binding="locationOnDiskTextArea" custom-create="true">
+                            <constraints>
+                              <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                                <minimum-size width="10" height="-1"/>
+                                <preferred-size width="10" height="-1"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <editable value="false"/>
+                              <lineWrap value="true"/>
+                              <opaque value="false"/>
+                            </properties>
+                          </component>
+                          <component id="fc62c" class="javax.swing.JTextArea" binding="containerIdTextArea" custom-create="true">
+                            <constraints>
+                              <grid row="15" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                                <minimum-size width="10" height="-1"/>
+                                <preferred-size width="10" height="-1"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <editable value="false"/>
+                              <lineWrap value="true"/>
+                              <opaque value="false"/>
+                            </properties>
+                          </component>
+                          <component id="c2164" class="javax.swing.JEditorPane" binding="applicationUrlLink" custom-create="true">
+                            <constraints>
+                              <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                                <minimum-size width="10" height="-1"/>
+                                <preferred-size width="10" height="-1"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <contentType value="text/html"/>
+                              <editable value="false"/>
+                              <opaque value="false"/>
+                            </properties>
+                          </component>
+                          <component id="961fb" class="javax.swing.JTextArea" binding="projectIdTextArea" custom-create="true">
+                            <constraints>
+                              <grid row="13" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                                <minimum-size width="10" height="-1"/>
+                                <preferred-size width="10" height="-1"/>
+                              </grid>
+                            </constraints>
+                            <properties>
+                              <editable value="false"/>
+                              <lineWrap value="true"/>
+                              <opaque value="false"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="aee87" binding="rightPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                        <margin top="0" left="0" bottom="0" right="0"/>
+                        <constraints>
+                          <splitpane position="right"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty"/>
+                        <children>
+                          <grid id="e964b" binding="projectSettingsPanel" layout-manager="GridLayoutManager" row-count="7" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                            <margin top="3" left="3" bottom="3" right="3"/>
+                            <constraints>
+                              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties/>
+                            <border type="etched" title="Project Settings" title-justification="1">
+                              <font style="1"/>
+                            </border>
+                            <children>
+                              <component id="795fd" class="javax.swing.JLabel" binding="applicationContextRootLabel">
+                                <constraints>
+                                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                </constraints>
+                                <properties>
+                                  <font style="1"/>
+                                  <labelFor value="4e641"/>
+                                  <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorContextRootEntry"/>
+                                </properties>
+                              </component>
+                              <component id="4e641" class="javax.swing.JTextField" binding="applicationContextRootField" custom-create="true">
+                                <constraints>
+                                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                    <preferred-size width="150" height="-1"/>
+                                  </grid>
+                                </constraints>
+                                <properties>
+                                  <editable value="false"/>
+                                </properties>
+                              </component>
+                              <component id="a40a8" class="javax.swing.JLabel" binding="internalApplicationPortLabel">
+                                <constraints>
+                                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                </constraints>
+                                <properties>
+                                  <font style="1"/>
+                                  <labelFor value="919ae"/>
+                                  <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorAppPortEntry"/>
+                                </properties>
+                              </component>
+                              <component id="919ae" class="javax.swing.JTextField" binding="internalApplicationPortField" custom-create="true">
+                                <constraints>
+                                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                    <preferred-size width="150" height="-1"/>
+                                  </grid>
+                                </constraints>
+                                <properties>
+                                  <editable value="false"/>
+                                </properties>
+                              </component>
+                              <component id="a83aa" class="javax.swing.JLabel" binding="internalDebugPortLabel">
+                                <constraints>
+                                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                </constraints>
+                                <properties>
+                                  <font style="1"/>
+                                  <labelFor value="e859e"/>
+                                  <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorDebugPortEntry"/>
+                                </properties>
+                              </component>
+                              <component id="e859e" class="javax.swing.JTextField" binding="internalDebugPortField" custom-create="true">
+                                <constraints>
+                                  <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                    <preferred-size width="150" height="-1"/>
+                                  </grid>
+                                </constraints>
+                                <properties>
+                                  <editable value="false"/>
+                                </properties>
+                              </component>
+                              <grid id="a5828" binding="buttonPanel" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="true" same-size-vertically="false" hgap="-1" vgap="-1">
+                                <margin top="3" left="3" bottom="3" right="3"/>
+                                <constraints>
+                                  <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="2" indent="0" use-parent-layout="false"/>
+                                </constraints>
+                                <properties/>
+                                <border type="none"/>
+                                <children>
+                                  <component id="b628" class="javax.swing.JButton" binding="editProjectSettingsButton" custom-create="true">
+                                    <constraints>
+                                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                                    </constraints>
+                                    <properties/>
+                                  </component>
+                                  <component id="68f68" class="javax.swing.JButton" binding="moreInformationButton" custom-create="true">
+                                    <constraints>
+                                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                                    </constraints>
+                                    <properties/>
+                                  </component>
+                                </children>
+                              </grid>
+                            </children>
+                          </grid>
+                          <grid id="f3680" binding="buildPanel" layout-manager="GridLayoutManager" row-count="8" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                            <margin top="3" left="3" bottom="3" right="3"/>
+                            <constraints>
+                              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="1" fill="1" indent="0" use-parent-layout="false"/>
+                            </constraints>
+                            <properties/>
+                            <border type="etched" title="Build" title-justification="1">
+                              <font style="1"/>
+                            </border>
+                            <children>
+                              <component id="99958" class="javax.swing.JLabel" binding="autoBuildLabel">
+                                <constraints>
+                                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                </constraints>
+                                <properties>
+                                  <font style="1"/>
+                                  <labelFor value="7993e"/>
+                                  <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorAutoBuildEntry"/>
+                                </properties>
+                              </component>
+                              <component id="7993e" class="javax.swing.JTextField" binding="autoBuildField" custom-create="true">
+                                <constraints>
+                                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                    <preferred-size width="150" height="-1"/>
+                                  </grid>
+                                </constraints>
+                                <properties>
+                                  <editable value="false"/>
+                                </properties>
+                              </component>
+                              <component id="d3fa5" class="javax.swing.JLabel" binding="autoMetricsInjectionLabel">
+                                <constraints>
+                                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                </constraints>
+                                <properties>
+                                  <font style="1"/>
+                                  <labelFor value="387a5"/>
+                                  <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorInjectMetricsEntry"/>
+                                </properties>
+                              </component>
+                              <component id="387a5" class="javax.swing.JTextField" binding="autoMetricsInjectionField" custom-create="true">
+                                <constraints>
+                                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                    <preferred-size width="150" height="-1"/>
+                                  </grid>
+                                </constraints>
+                                <properties>
+                                  <editable value="false"/>
+                                </properties>
+                              </component>
+                              <component id="892e4" class="javax.swing.JLabel" binding="lastBuildLabel">
+                                <constraints>
+                                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                </constraints>
+                                <properties>
+                                  <font style="1"/>
+                                  <labelFor value="5c9e2"/>
+                                  <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorLastBuildEntry"/>
+                                </properties>
+                              </component>
+                              <component id="5c9e2" class="javax.swing.JFormattedTextField" binding="lastBuildField" custom-create="true">
+                                <constraints>
+                                  <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                    <preferred-size width="150" height="-1"/>
+                                  </grid>
+                                </constraints>
+                                <properties>
+                                  <editable value="false"/>
+                                </properties>
+                              </component>
+                              <component id="469f8" class="javax.swing.JLabel" binding="lastImageBuildLabel">
+                                <constraints>
+                                  <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                                </constraints>
+                                <properties>
+                                  <font style="1"/>
+                                  <labelFor value="539e8"/>
+                                  <text resource-bundle="messages/ui/CodewindUIBundle" key="AppOverviewEditorLastImageBuildEntry"/>
+                                </properties>
+                              </component>
+                              <component id="539e8" class="javax.swing.JTextField" binding="lastImageBuildField" custom-create="true">
+                                <constraints>
+                                  <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                                    <preferred-size width="150" height="-1"/>
+                                  </grid>
+                                </constraints>
+                                <properties>
+                                  <editable value="false"/>
+                                </properties>
+                              </component>
+                            </children>
+                          </grid>
+                        </children>
+                      </grid>
+                    </children>
+                  </splitpane>
+                </children>
+              </grid>
+              <component id="53ebc" class="javax.swing.JSeparator">
+                <constraints>
+                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+              </component>
+              <grid id="1aa19" binding="footerPanel" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                <margin top="3" left="5" bottom="3" right="5"/>
+                <constraints>
+                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="4644b" class="javax.swing.JLabel" binding="preferencesLink" custom-create="true">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+                        <preferred-size width="10" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties/>
+                  </component>
+                  <grid id="b1" binding="horizontalFiller" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                    <margin top="0" left="0" bottom="0" right="0"/>
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="7" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <opaque value="false"/>
+                    </properties>
+                    <border type="none"/>
+                    <children/>
+                  </grid>
+                  <component id="7d03f" class="javax.swing.JButton" binding="refreshButton" custom-create="true">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                        <preferred-size width="10" height="-1"/>
+                      </grid>
+                    </constraints>
+                    <properties/>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
+        </children>
+      </scrollpane>
+    </children>
+  </grid>
+</form>
