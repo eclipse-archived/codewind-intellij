@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,8 @@ import java.util.List;
 
 public class CodewindTreeModel extends BaseTreeModel<Object> implements IUpdateHandler {
 
+    private static final CodewindTreeModel INSTANCE = new CodewindTreeModel();
+
     private Object root = ConnectionManager.getManager();
 
     @Override
@@ -42,10 +44,6 @@ public class CodewindTreeModel extends BaseTreeModel<Object> implements IUpdateH
 
     private List<CodewindApplication> getChildren(CodewindConnection connection) {
         return connection.getSortedApps();
-    }
-
-    public void setRoot(ConnectionManager root) {
-        this.root = root;
     }
 
     @Override
@@ -93,5 +91,15 @@ public class CodewindTreeModel extends BaseTreeModel<Object> implements IUpdateH
 
     private static TreePath treePathFrom(Object... objects) {
         return new TreePath(objects);
+    }
+
+    @Override
+    public void dispose() {
+        System.out.println("CodewindTreeModel.dispose");
+        super.dispose();
+    }
+
+    public static CodewindTreeModel getInstance() {
+        return INSTANCE;
     }
 }

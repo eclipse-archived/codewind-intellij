@@ -53,7 +53,7 @@ public class CodewindSocket {
     // private Set<SocketConsole> socketConsoles = new HashSet<>();
 
     // Track the previous Exception so we don't spam the logs with the same connection failure message
-    private Exception previousException;
+    private Throwable previousException;
 
     // SocketIO Event names
     @NonNls
@@ -120,7 +120,7 @@ public class CodewindSocket {
             @Override
             public void call(Object... arg0) {
                 if (arg0[0] instanceof Exception) {
-                    Exception e = (Exception) arg0[0];
+                    Throwable e = Logger.unwrap((Exception) arg0[0]);
                     if (previousException == null || !e.getMessage().equals(previousException.getMessage())) {
                         previousException = e;
                         Logger.logWarning("SocketIO Connect Error @ " + socketUri, e); //$NON-NLS-1$
@@ -134,7 +134,7 @@ public class CodewindSocket {
             public void call(Object... arg0) {
                 if (arg0[0] instanceof Exception) {
 					Exception e = (Exception) arg0[0];
-					Logger.logWarning("SocketIO Error @ " + socketUri, e); //$NON-NLS-1$
+					Logger.logWarning("SocketIO Error @ " + socketUri, Logger.unwrap(e)); //$NON-NLS-1$
                 }
             }
         }).on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
