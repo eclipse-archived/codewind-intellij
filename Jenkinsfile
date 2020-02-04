@@ -107,7 +107,7 @@ pipeline {
                         export UPDATE_PLUGINS_XML="updatePlugins.xml"
                         export sshHost="genie.codewind@projects-storage.eclipse.org"
                         export deployDir="/home/data/httpd/download.eclipse.org/codewind/$REPO_NAME"
-                        export TIMESTAMP="$(date +%Y%m$d-%H%M%S)"
+                        export TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
                     
                         if [ -z $CHANGE_ID ]; then
                             UPLOAD_DIR="$GIT_BRANCH/$BUILD_ID"
