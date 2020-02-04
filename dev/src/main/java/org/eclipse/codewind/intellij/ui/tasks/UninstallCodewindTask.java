@@ -22,24 +22,24 @@ import java.util.concurrent.TimeoutException;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
-public class InstallCodewindTask extends CodewindProcessTask {
+public class UninstallCodewindTask extends CodewindProcessTask {
 
-    public InstallCodewindTask(Runnable onSuccess) {
-        super(null, message("InstallCodewindJobLabel"), onSuccess);
+    public UninstallCodewindTask(Runnable onSuccess) {
+        super(null, message("RemovingCodewindJobLabel"), onSuccess);
     }
 
     @Override
     protected ProcessHelper.ProcessResult runProcess(@NotNull ProgressIndicator indicator) throws Exception {
         ProcessHelper.ProcessResult result = null;
-        result = InstallUtil.installCodewind(InstallUtil.getVersion(), indicator);
+        result = InstallUtil.stopCodewind(indicator);
         if (result.getExitValue()!= 0) {
-            Logger.log("Error occurred installing Codewind: " + result.getErrorMsg());
-            System.out.println("*** Error occurred installing Codewind: " + result.getErrorMsg());
+            Logger.log("Error occurred stopping Codewind: " + result.getErrorMsg());
+            System.out.println("*** Error occurred stopping Codewind: " + result.getErrorMsg());
         } else {
-            result = InstallUtil.startCodewind(InstallUtil.getVersion(), indicator);
+            result = InstallUtil.removeCodewind(null, indicator);
             if (result.getExitValue()!= 0) {
-                Logger.log("Error occurred starting Codewind after install: " + result.getErrorMsg());
-                System.out.println("*** Error occurred starting Codewind after install: " + result.getErrorMsg());
+                Logger.log("Error occurred removing Codewind after install: " + result.getErrorMsg());
+                System.out.println("*** Error occurred removing Codewind after install: " + result.getErrorMsg());
             }
         }
         return result;
@@ -47,7 +47,7 @@ public class InstallCodewindTask extends CodewindProcessTask {
 
     @Override
     protected String getExceptionMessageKey() {
-        String key = "InstallCodewindFailNoMessage";
+        String key = "InstallCodewindFailNoMessage";  // This message is generic to the installer, so we use it for install and uninstall
         message(key, "dummy");  // Tell IntelliJ this key is used.
         return key;
     }
