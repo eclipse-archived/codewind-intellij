@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corporation and others.
+ * Copyright (c) 2018, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -26,6 +26,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.eclipse.codewind.intellij.core.constants.IntelliJConstants.IDEA_FOLDER;
+import static org.eclipse.codewind.intellij.core.constants.IntelliJConstants.IPR_FOLDER;
 
 /**
  * Represents a Codewind Application / Project
@@ -550,10 +553,10 @@ public class CodewindApplication {
 	public Path ideaProjectPath() {
 		// The IntelliJ project path is either the path to the (old) .ipr file,
 		// or the path to the parent folder of the .idea folder.
-		Path path = fullLocalPath.resolve(".idea");
+		Path path = fullLocalPath.resolve(IDEA_FOLDER);
 		if (Files.exists(path))
 			return fullLocalPath;
-		path = fullLocalPath.resolve(".ipr");
+		path = fullLocalPath.resolve(IPR_FOLDER);
 		if (Files.exists(path))
 			return path;
 		return null;

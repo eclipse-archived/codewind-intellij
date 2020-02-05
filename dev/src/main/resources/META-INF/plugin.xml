@@ -33,6 +33,9 @@
 
         <!-- <moduleType id="CODEWIND_MODULE" implementationClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleType" /> -->
         <moduleBuilder builderClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleBuilder" />
+        <fileType name="CwSettingsFileType" implementationClass="org.eclipse.codewind.intellij.core.filetypes.CwSettingsFileType" fieldName="INSTANCE"
+                  language="JSON"/>
+        <fileTypeDetector implementation="org.eclipse.codewind.intellij.core.filetypes.CwSettingsFileTypeDetector" order="first"/>
     </extensions>
 
     <actions>

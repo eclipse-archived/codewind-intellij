@@ -36,7 +36,6 @@ import java.util.Arrays;
 
 public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
-    private CodewindTreeModel treeModel;
     private Tree tree;
 
     // TODO remove this
@@ -59,8 +58,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction removeProjectAction;
 
     public CodewindToolWindow() {
-        treeModel = new CodewindTreeModel();
-        tree = new Tree(treeModel);
+        tree = new Tree();
         tree.setCellRenderer(new CodewindTreeNodeCellRenderer());
 
         installCodewindAction = new InstallCodewindAction(this::expandLocalTree);
@@ -105,19 +103,22 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         this.add(new JBScrollPane(tree), BorderLayout.CENTER);
     }
 
+    private static CodewindTreeModel getTreeModel() {
+        return CodewindTreeModel.getInstance();
+    }
+
     public void init() {
         CoreUtil.runAsync(() -> {
-            ConnectionManager manager = ConnectionManager.getManager();
-            CoreUtil.setUpdateHandler(treeModel);
-            treeModel.setRoot(manager);
-            treeModel.updateAll();
+            tree.setModel(getTreeModel());
+            CoreUtil.setUpdateHandler(getTreeModel());
+            getTreeModel().updateAll();
         });
     }
 
     public void expandLocalTree() {
         // Expand the tree for the local connection
-        Object root = treeModel.getRoot();
-        Object child = treeModel.getChild(root, 0);
+        Object root = getTreeModel().getRoot();
+        Object child = getTreeModel().getChild(root, 0);
         if (child == null) {
             tree.expandPath(new TreePath(root));
         } else {
