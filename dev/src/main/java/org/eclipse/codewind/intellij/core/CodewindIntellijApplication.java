@@ -12,6 +12,7 @@
 package org.eclipse.codewind.intellij.core;
 
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
+import org.eclipse.codewind.intellij.core.constants.ProjectCapabilities;
 import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
 import org.eclipse.codewind.intellij.core.constants.ProjectType;
 
@@ -25,4 +26,14 @@ public class CodewindIntellijApplication extends CodewindApplication {
         super(connection, id, name, projectType, language, localPath);
     }
 
+    @Override
+    public boolean supportsDebug() {
+        // Only supported for certain languages
+        if (projectLanguage == ProjectLanguage.LANGUAGE_JAVA || projectLanguage == ProjectLanguage.LANGUAGE_NODEJS) {
+            // And only if the project supports it
+            ProjectCapabilities capabilities = getProjectCapabilities();
+            return (capabilities.supportsDebugMode() || capabilities.supportsDebugNoInitMode()) && capabilities.canRestart();
+        }
+        return false;
+    }
 }

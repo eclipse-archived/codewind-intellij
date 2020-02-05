@@ -48,6 +48,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction stopCodewindAction;
 
     private final AnAction openApplicationAction;
+    private final AnAction openAppOverviewAction;
     private final AnAction openIdeaProjectAction;
     private final AnAction startBuildAction;
     private final AnAction enableAutoBuildAction;
@@ -65,6 +66,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         stopCodewindAction = new StopCodewindAction(this::expandLocalTree);
 
         openApplicationAction = new OpenApplicationAction();
+        openAppOverviewAction = new OpenAppOverviewAction();
         openIdeaProjectAction = new OpenIdeaProjectAction();
         startBuildAction = new StartBuildAction();
         enableAutoBuildAction = new EnableAutoBuildAction();
@@ -197,6 +199,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindApplicationGroup", true);
 
         actions.add(openApplicationAction);
+        actions.add(openAppOverviewAction);
         actions.add(openPerformanceDashboardAction);
         CodewindConnection connection = application.getConnection();
         if (connection != null) {
