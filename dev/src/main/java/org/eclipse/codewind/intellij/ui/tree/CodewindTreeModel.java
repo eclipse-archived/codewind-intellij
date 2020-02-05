@@ -93,12 +93,6 @@ public class CodewindTreeModel extends BaseTreeModel<Object> implements IUpdateH
         return new TreePath(objects);
     }
 
-    @Override
-    public void dispose() {
-        System.out.println("CodewindTreeModel.dispose");
-        super.dispose();
-    }
-
     public static CodewindTreeModel getInstance() {
         return INSTANCE;
     }
