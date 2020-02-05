@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -31,6 +31,7 @@ public class IconCache {
     public static final String ICONS_THEMELESS_PROJECT_TYPES_PYTHON_SVG = "/icons/themeless/project-types/python.svg";
     public static final String ICONS_THEMELESS_PROJECT_TYPES_SPRING_SVG = "/icons/themeless/project-types/spring.svg";
     public static final String ICONS_THEMELESS_PROJECT_TYPES_SWIFT_SVG = "/icons/themeless/project-types/swift.svg";
+    public static final String ICONS_CODEWIND_13PX_SVG = "/META-INF/pluginIcon13x13.svg";
 
     private static final Map<String, Icon> iconCache = new HashMap<>();
 
