@@ -63,8 +63,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         tree.setCellRenderer(new CodewindTreeNodeCellRenderer());
 
         installCodewindAction = new InstallCodewindAction(this::expandLocalTree);
-        updateCodewindAction = new InstallCodewindAction(this::expandLocalTree);
-        uninstallCodewindAction = new InstallCodewindAction(this::expandLocalTree);
+        updateCodewindAction = new UpdateCodewindAction(this::expandLocalTree);
+        uninstallCodewindAction = new UninstallCodewindAction(this::expandLocalTree);
         startCodewindAction = new StartCodewindAction(this::expandLocalTree);
         stopCodewindAction = new StopCodewindAction(this::expandLocalTree);
 
