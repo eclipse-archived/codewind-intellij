@@ -105,12 +105,12 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
 
     @NotNull
     @Override
-    public Module createModule(@NotNull ModifiableModuleModel moduleModel) throws InvalidDataException, IOException, ModuleWithNameAlreadyExists, JDOMException, ConfigurationException {
+    public com.intellij.openapi.module.Module createModule(@NotNull ModifiableModuleModel moduleModel) throws InvalidDataException, IOException, ModuleWithNameAlreadyExists, JDOMException, ConfigurationException {
         // Set the module type to Java, because that's really what it is.
         // See super.createModule(moduleModel);
         String moduleFilePath = getModuleFilePath();
         deleteModuleFile(moduleFilePath);
-        Module module = moduleModel.newModule(moduleFilePath, StdModuleTypes.JAVA.getId());
+        com.intellij.openapi.module.Module module = moduleModel.newModule(moduleFilePath, StdModuleTypes.JAVA.getId());
         setupModule(module);
 
         return module;

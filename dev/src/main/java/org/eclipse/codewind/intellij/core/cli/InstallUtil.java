@@ -130,7 +130,8 @@ public class InstallUtil {
         }
     }
 
-    public static ProcessResult installCodewind(String version) throws IOException, TimeoutException {
+    public static ProcessResult installCodewind(String version, ProgressIndicator indicator) throws IOException, TimeoutException {
+        indicator.setIndeterminate(true);
         Process process = null;
         try {
             CodewindManager.getManager().setInstallerStatus(CodewindManager.InstallerStatus.INSTALLING);
@@ -145,7 +146,8 @@ public class InstallUtil {
         }
     }
 
-    public static ProcessResult removeCodewind(String version) throws IOException, TimeoutException {
+    public static ProcessResult removeCodewind(String version, ProgressIndicator indicator) throws IOException, TimeoutException {
+        indicator.setIndeterminate(true);
         Process process = null;
         try {
             CodewindManager.getManager().setInstallerStatus(CodewindManager.InstallerStatus.UNINSTALLING);
@@ -164,7 +166,8 @@ public class InstallUtil {
         }
     }
 
-    public static ProcessResult upgradeWorkspace(String path) throws IOException, TimeoutException {
+    public static ProcessResult upgradeWorkspace(String path, ProgressIndicator indicator) throws IOException, TimeoutException {
+        indicator.setIndeterminate(true);
         Process process = null;
         try {
             process = CLIUtil.runCWCTL(null, UPGRADE_CMD, new String[] {WORKSPACE_OPTION, path});

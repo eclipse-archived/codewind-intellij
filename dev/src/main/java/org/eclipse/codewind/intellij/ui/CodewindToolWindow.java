@@ -20,10 +20,7 @@ import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.InstallStatus;
-import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
-import org.eclipse.codewind.intellij.core.connection.ConnectionEnv;
-import org.eclipse.codewind.intellij.core.connection.LocalConnection;
-import org.eclipse.codewind.intellij.core.connection.RemoteConnection;
+import org.eclipse.codewind.intellij.core.connection.*;
 import org.eclipse.codewind.intellij.ui.actions.*;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeModel;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeNodeCellRenderer;
@@ -44,6 +41,9 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     // TODO remove this
     private final AnAction debugAction;
 
+    private final AnAction installCodewindAction;
+    private final AnAction updateCodewindAction;
+    private final AnAction uninstallCodewindAction;
     private final AnAction startCodewindAction;
     private final AnAction stopCodewindAction;
 
@@ -62,6 +62,9 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         tree = new Tree();
         tree.setCellRenderer(new CodewindTreeNodeCellRenderer());
 
+        installCodewindAction = new InstallCodewindAction(this::expandLocalTree);
+        updateCodewindAction = new UpdateCodewindAction(this::expandLocalTree);
+        uninstallCodewindAction = new UninstallCodewindAction(this::expandLocalTree);
         startCodewindAction = new StartCodewindAction(this::expandLocalTree);
         stopCodewindAction = new StopCodewindAction(this::expandLocalTree);
 
@@ -160,15 +163,10 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         if (node instanceof LocalConnection) {
             LocalConnection connection = (LocalConnection) node;
             handleLocalConnectionPopup((LocalConnection) node, component, x, y);
-            return;
-        }
-        if (node instanceof RemoteConnection) {
+        } else if (node instanceof RemoteConnection) {
             handleRemoteConnectionPopup((RemoteConnection) node, component, x, y);
-            return;
-        }
-        if (node instanceof CodewindApplication) {
+        } else if (node instanceof CodewindApplication) {
             handleApplicationPopup((CodewindApplication) node, component, x, y);
-            return;
         }
     }
 
@@ -176,6 +174,16 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindGroup", true);
 
         InstallStatus status = connection.getInstallStatus();
+        if (status.isInstalled()) {
+            // a supported version of Codewind is installed
+            actions.add(uninstallCodewindAction);
+        } else if (status.hasInstalledVersions()) {
+            // an older version of Codewind is installed
+            actions.add(updateCodewindAction);
+        } else {
+            // No version of Codewind is installed
+            actions.add(installCodewindAction);
+        }
         if (status.isStarted()) {
             actions.add(stopCodewindAction);
         } else if (status.isInstalled()) {
