@@ -167,8 +167,6 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
             handleRemoteConnectionPopup((RemoteConnection) node, component, x, y);
         } else if (node instanceof CodewindApplication) {
             handleApplicationPopup((CodewindApplication) node, component, x, y);
-        } else if (node instanceof ConnectionManager) {
-            handleConnectionManagerPopup((ConnectionManager) node, component, x, y);
         }
     }
 
@@ -176,6 +174,16 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindGroup", true);
 
         InstallStatus status = connection.getInstallStatus();
+        if (status.isInstalled()) {
+            // a supported version of Codewind is installed
+            actions.add(uninstallCodewindAction);
+        } else if (status.hasInstalledVersions()) {
+            // an older version of Codewind is installed
+            actions.add(updateCodewindAction);
+        } else {
+            // No version of Codewind is installed
+            actions.add(installCodewindAction);
+        }
         if (status.isStarted()) {
             actions.add(stopCodewindAction);
         } else if (status.isInstalled()) {
@@ -227,20 +235,6 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         actions.addSeparator();
         actions.add(refreshAction);
 
-        ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("CodewindTree", actions);
-        popupMenu.getComponent().show(component, x, y);
-    }
-
-    private void handleConnectionManagerPopup(ConnectionManager manager, Component component, int x, int y) {
-        DefaultActionGroup actions = new DefaultActionGroup("CodewindApplicationGroup", true);
-
-        InstallStatus status = manager.getLocalConnection().getInstallStatus();
-        if (status.isInstalled()) {
-            actions.add(updateCodewindAction);
-            actions.add(uninstallCodewindAction);
-        } else {
-            actions.add(installCodewindAction);
-        }
         ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("CodewindTree", actions);
         popupMenu.getComponent().show(component, x, y);
     }

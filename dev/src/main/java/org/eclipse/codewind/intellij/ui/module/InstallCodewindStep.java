@@ -17,10 +17,12 @@ import com.intellij.openapi.progress.ProgressManager;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.ProcessHelper;
+import org.eclipse.codewind.intellij.core.cli.InstallStatus;
 import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.ui.tasks.InstallCodewindTask;
+import org.eclipse.codewind.intellij.ui.tasks.UpgradeCodewindTask;
 
 import javax.swing.*;
 import java.awt.*;
@@ -44,13 +46,22 @@ public class InstallCodewindStep extends ModuleWizardStep {
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(label);
 
-        button = new JButton(message("InstallCodewind"));
+        String buttonLabel = null;
+        LocalConnection localConnection = ConnectionManager.getManager().getLocalConnection();
+        InstallStatus status = localConnection.getInstallStatus();
+        if (status.hasInstalledVersions()) {
+            buttonLabel = message("UpgradeCodewind");
+        } else {
+            buttonLabel = message("InstallCodewind");
+        }
+        button = new JButton(buttonLabel);
         panel.add(button);
         button.addActionListener(e -> {
-            LocalConnection localConnection = ConnectionManager.getManager().getLocalConnection();
             localConnection.refreshInstallStatus();
-            if (localConnection.getInstallStatus().isInstalled()) {
+            if (status.isInstalled()) {
                 CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindInstalledStarted"));
+            } else if (status.hasInstalledVersions()) {
+                ProgressManager.getInstance().run(new UpgradeCodewindTask(this::onInstall));
             } else {
                 ProgressManager.getInstance().run(new InstallCodewindTask(this::onInstall));
             }
