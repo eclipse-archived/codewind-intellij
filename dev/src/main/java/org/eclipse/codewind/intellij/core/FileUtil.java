@@ -107,6 +107,16 @@ public class FileUtil {
         }
     }
 
+    public static String getCanonicalPath(String path) {
+        String canonicalPath = path;
+        try {
+            canonicalPath = (new File(path)).getCanonicalPath();
+        } catch (Exception e) {
+            Logger.log("Failed to get the canonical path for: " + path + ". " + e.getMessage());
+        }
+        return canonicalPath;
+    }
+
     /**
      * Copy the contents of the given source directory into the given target directory
      *
