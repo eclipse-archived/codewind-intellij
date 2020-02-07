@@ -36,6 +36,7 @@ import java.util.Arrays;
 
 public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
+    public static String ID = "Codewind";
     private Tree tree;
 
     // TODO remove this
@@ -57,6 +58,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction openPerformanceDashboardAction;
     private final AnAction openTektonDashboardAction;
     private final AnAction removeProjectAction;
+    private final AnAction addExistingProjectAction;
 
     public CodewindToolWindow() {
         tree = new Tree();
@@ -78,6 +80,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         openPerformanceDashboardAction = new OpenPerformanceDashboardAction();
         openTektonDashboardAction = new OpenTektonDashboardAction();
         removeProjectAction = new RemoveProjectAction();
+        addExistingProjectAction = new AddExistingProjectAction();
 
         debugAction = new AnAction("* debug *") {
             @Override
@@ -173,6 +176,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private void handleLocalConnectionPopup(LocalConnection connection, Component component, int x, int y) {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindGroup", true);
 
+        actions.add(addExistingProjectAction);
+        actions.addSeparator();
         InstallStatus status = connection.getInstallStatus();
         if (status.isInstalled()) {
             // a supported version of Codewind is installed

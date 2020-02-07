@@ -339,6 +339,23 @@ public abstract class CodewindConnection {
         return null;
     }
 
+    public CodewindApplication getAppByLocation(String location) {
+        if (location == null) {
+            return null;
+        }
+        String canonicalLocation = FileUtil.getCanonicalPath(location);
+        synchronized(appMap) {
+            for (CodewindApplication app : getApps()) {
+                // toString() ?  Test on windows
+                if (FileUtil.getCanonicalPath(app.fullLocalPath.toString()).equals(canonicalLocation)) {
+                    return app;
+                }
+            }
+        }
+        Logger.log("No application found for location: " + location); //$NON-NLS-1$
+        return null;
+    }    
+
     public boolean waitForReady() throws IOException {
         IOException exception = null;
         for (int i = 0; i < 10; i++) {
