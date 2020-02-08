@@ -14,7 +14,6 @@ package org.eclipse.codewind.intellij.ui.module;
 import com.intellij.ide.util.projectWizard.*;
 import com.intellij.ide.wizard.CommitStepException;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
@@ -23,7 +22,9 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.util.InvalidDataException;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
@@ -139,8 +140,16 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
         String language = template.getLanguage();
         String projectType = template.getProjectType();
         String conid = LocalConnection.CONNECTION_ID;
-
         Project ideaProject = module.getProject();
+
+        // The 'appsody init' command will fail to initialize the maven cache if there is no JDK on the PATH and
+        // JAVA_HOME is not set.  We set JAVA_HOME for the process running 'cwctl create' to ensure this doesn't happen.
+        Sdk sdk = ProjectRootManager.getInstance(ideaProject).getProjectSdk();
+        String javaHome = sdk == null ? null : sdk.getHomePath();
+        if (javaHome == null) {
+            Logger.log("createProject: no sdk set for project: " + ideaProject.getName());
+        }
+
         Task.Backgroundable task = new Task.Backgroundable(ideaProject, message("CodewindLabel"), false, PerformInBackgroundOption.DEAF) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
@@ -155,7 +164,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
 
                     Path projectPath = Paths.get(path);
                     Path tmpProjectPath = Files.createTempDirectory("codewind").resolve(projectPath.getFileName());
-                    ProjectUtil.createProject(name, tmpProjectPath.toString(), url, conid, new EmptyProgressIndicator());
+                    ProjectUtil.createProject(name, tmpProjectPath.toString(), url, conid, javaHome, new EmptyProgressIndicator());
 
                     FileUtil.copyDirectory(tmpProjectPath, projectPath);
 
