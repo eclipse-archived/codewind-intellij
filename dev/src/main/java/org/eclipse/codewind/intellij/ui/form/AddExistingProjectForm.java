@@ -14,11 +14,13 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.ui.wizard.AbstractBindProjectWizardStep;
+import org.jetbrains.annotations.SystemIndependent;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -27,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
@@ -60,7 +63,16 @@ public class AddExistingProjectForm {
                 singleFolderDescriptor.setTitle(message("SelectProjectPageFilesystemProject"));
                 singleFolderDescriptor.setHideIgnored(true);
                 singleFolderDescriptor.setShowFileSystemRoots(false);
-                VirtualFile file = FileChooser.chooseFile(singleFolderDescriptor, browseButton.getParent(), project, project.getBaseDir().getParent());
+                @SystemIndependent String basePath = project.getBasePath();
+                VirtualFile file = null;
+                if (basePath != null) {
+                    File projectFolder = new File(basePath);
+                    VirtualFile virtualFile = VfsUtil.findFileByIoFile(projectFolder, false);
+                    file = FileChooser.chooseFile(singleFolderDescriptor, browseButton.getParent(), project, virtualFile.getParent());
+                } else {
+                    VirtualFile homeFolder = VfsUtil.getUserHomeDir();
+                    file = FileChooser.chooseFile(singleFolderDescriptor, browseButton.getParent(), project, homeFolder);
+                }
                 if (file != null && file.getPath() != null) {
                     pathTextField.setText(file.getPath());
                 }
