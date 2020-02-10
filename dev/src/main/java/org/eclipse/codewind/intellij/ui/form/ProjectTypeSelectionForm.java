@@ -38,15 +38,15 @@ import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message
 public class ProjectTypeSelectionForm {
     private AbstractBindProjectWizardStep step;
     private JLabel chooseProjectTypeLabel;
-    private JList projectTypeList;
+    private JList<ProjectTypeInfo> projectTypeList;
     private JLabel subtypeLabel;
-    private JList subtypeList;
+    private JList<ProjectSubtypeInfo> subtypeList;
     private JLabel preferencesLabel;
     private JLabel manageTemplateSourcesLink;
     private JPanel contentPane;
 
-    private DefaultListModel projectTypeListModel;
-    private DefaultListModel subTypeListModel;
+    private DefaultListModel<ProjectTypeInfo> projectTypeListModel;
+    private DefaultListModel<ProjectSubtypeInfo> subTypeListModel;
     private Map<String, ProjectTypeInfo> projectTypes;
     private ProjectInfo initialProjectInfo;
     private ProjectSubtypeInfo projectSubtypeInfo = null;
@@ -56,15 +56,14 @@ public class ProjectTypeSelectionForm {
     }
 
     private void createUIComponents() {
-        // TODO: place custom component creation code here
         if (projectTypeListModel == null) {
-            projectTypeListModel = new DefaultListModel();
+            projectTypeListModel = new DefaultListModel<>();
         }
         if (subTypeListModel == null) {
-            subTypeListModel = new DefaultListModel();
+            subTypeListModel = new DefaultListModel<>();
         }
-        projectTypeList = new JBList(projectTypeListModel);
-        projectTypeList.setCellRenderer(new ProjectTypeListCellRenderer());
+        projectTypeList = new JBList<ProjectTypeInfo>(projectTypeListModel);
+        projectTypeList.setCellRenderer(new ProjectTypeListCellRenderer<ProjectTypeInfo>());
         projectTypeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectTypeList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -73,23 +72,23 @@ public class ProjectTypeSelectionForm {
                     if (projectTypeList.getSelectedIndex() >= 0) {
                         Object selectedValue = projectTypeList.getSelectedValue();
                         int selectedIndex = projectTypeList.getSelectedIndex();
-                        Object selectedType = projectTypeListModel.getElementAt(selectedIndex);
+                        ProjectTypeInfo selectedType = projectTypeListModel.getElementAt(selectedIndex);
                         subtypeList.removeAll();
-                        fillSubTypesList(false, (ProjectTypeInfo) selectedType);
+                        fillSubTypesList(false, selectedType);
                         step.fireStateChanging();
                     }
                 }
             }
         });
         subtypeLabel = new JLabel(message("SelectProjectTypePageLanguageLabel"));
-        subtypeList = new JBList(subTypeListModel);
+        subtypeList = new JBList<ProjectSubtypeInfo>(subTypeListModel);
         subtypeList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
                 step.fireStateChanging();
             }
         });
-        subtypeList.setCellRenderer(new SubTypeListCellRenderer());
+        subtypeList.setCellRenderer(new SubTypeListCellRenderer<ProjectSubtypeInfo>());
         manageTemplateSourcesLink = WidgetUtils.createHyperlinkUsingLabel(message("SelectProjectTypeManageRepoLink"));
     }
 
@@ -111,7 +110,7 @@ public class ProjectTypeSelectionForm {
     private void fillSubTypesList(boolean init, ProjectTypeInfo projectTypeInfo) {
         subtypeList.clearSelection();
         if (subTypeListModel == null) {
-            subTypeListModel = new DefaultListModel();
+            subTypeListModel = new DefaultListModel<ProjectSubtypeInfo>();
         } else {
             subTypeListModel.removeAllElements();
         }
@@ -168,7 +167,7 @@ public class ProjectTypeSelectionForm {
     public void updateProjectTypesList(boolean init, Map<String, ProjectTypeInfo> types) {
         Set<String> keys = types.keySet();
         if (projectTypeListModel == null) {
-            projectTypeListModel = new DefaultListModel();
+            projectTypeListModel = new DefaultListModel<ProjectTypeInfo>();
         }
         if (init) {
             for (String s : keys) {
@@ -183,7 +182,7 @@ public class ProjectTypeSelectionForm {
         int selectIndex = -1;
         int length = projectTypeListModel.size();
         for (int i = 0; i < length; i++) {
-            ProjectTypeInfo info = (ProjectTypeInfo) projectTypeListModel.get(i);
+            ProjectTypeInfo info = projectTypeListModel.get(i);
             if (info.getId().equals(initialProjectInfo.type.getId())) {
                 selectIndex = i;
                 break;
@@ -228,7 +227,7 @@ public class ProjectTypeSelectionForm {
         }
     }
 
-    private static class SubTypeListCellRenderer extends DefaultListCellRenderer {
+    private static class SubTypeListCellRenderer<P> extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
             Component comp = super.getListCellRendererComponent(jList, o, i, b, b1);
@@ -238,7 +237,7 @@ public class ProjectTypeSelectionForm {
         }
     }
 
-    private static class ProjectTypeListCellRenderer extends DefaultListCellRenderer {
+    private static class ProjectTypeListCellRenderer<P> extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
             Component comp = super.getListCellRendererComponent(jList, o, i, b, b1);
