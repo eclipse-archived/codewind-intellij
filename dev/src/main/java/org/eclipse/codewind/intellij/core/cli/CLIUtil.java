@@ -16,6 +16,7 @@ import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.PlatformUtil;
 import org.eclipse.codewind.intellij.core.PlatformUtil.OperatingSystem;
 import org.eclipse.codewind.intellij.core.ProcessHelper.ProcessResult;
+import org.eclipse.codewind.intellij.core.constants.CoreConstants;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -96,14 +97,14 @@ public class CLIUtil {
         addOptions(cmdList, cmd);
         addOptions(cmdList, options);
         addOptions(cmdList, args);
-        Logger.log("*** " + cmdList.stream().collect(Collectors.joining(" ")));
+        Logger.log(cmdList.stream().collect(Collectors.joining(" ")));
         String[] command = cmdList.toArray(new String[cmdList.size()]);
         ProcessBuilder builder = new ProcessBuilder(command);
         if (PlatformUtil.getOS() == PlatformUtil.OperatingSystem.MAC) {
-            String pathVar = System.getenv("PATH");
-            pathVar = "/usr/local/bin:" + pathVar;
+            String pathVar = System.getenv(CoreConstants.PATH);
+            pathVar = CoreConstants.USR_LOCAL_BIN + File.pathSeparator + pathVar;
             Map<String, String> env = builder.environment();
-            env.put("PATH", pathVar);
+            env.put(CoreConstants.PATH, pathVar);
         }
         return builder;
     }

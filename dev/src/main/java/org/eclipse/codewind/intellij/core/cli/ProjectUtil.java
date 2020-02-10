@@ -20,11 +20,11 @@ import org.eclipse.codewind.intellij.core.constants.ProjectInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 public class ProjectUtil {
-	
 
 	private static final String PROJECT_CMD = "project";
 	private static final String[] CREATE_CMD = new String[] {PROJECT_CMD, "create"};
@@ -40,13 +40,20 @@ public class ProjectUtil {
 	private static final String PROJECT_ID_OPTION = "--id";
 
 	public static void createProject(String name, String path, String url, String conid, String javaHome, ProgressIndicator monitor) throws IOException, JSONException, TimeoutException {
-		Logger.log("*** createProject: javaHome = " + javaHome);
+		Logger.log("createProject: javaHome = " + javaHome);
 		monitor.setIndeterminate(true);
 		Process process = null;
 		try {
 			ProcessBuilder builder = CLIUtil.createCWCTLProcess(CLIUtil.GLOBAL_JSON_INSECURE, CREATE_CMD, new String[] {PATH_OPTION, path, URL_OPTION, url, CLIUtil.CON_ID_OPTION, conid}, null);
-			if (javaHome != null)
-				builder.environment().put("JAVA_HOME", javaHome);
+			if (javaHome != null) {
+				builder.environment().put(CoreConstants.JAVA_HOME, javaHome);
+				String pathVar = builder.environment().get(CoreConstants.PATH);
+				if (pathVar == null || pathVar.isEmpty()) {
+					pathVar = System.getenv(CoreConstants.PATH);
+				}
+				pathVar = javaHome + File.separator + CoreConstants.BIN_DIR + File.pathSeparator + pathVar;
+				builder.environment().put(CoreConstants.PATH, pathVar);
+			}
 			process = builder.start();
 			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 600);
 			if (result.getExitValue() != 0) {
@@ -65,7 +72,7 @@ public class ProjectUtil {
 				throw new IOException(msg);
 			}
 			if (result.getError() != null && !result.getError().trim().isEmpty()) {
-				Logger.log("*** createProject stderr: " + result.getError().trim());
+				Logger.log("createProject stderr: " + result.getError().trim());
 			}
 		} finally {
 			if (process != null && process.isAlive()) {
@@ -86,7 +93,7 @@ public class ProjectUtil {
 				throw new IOException(result.getErrorMsg());
 			}
 			if (result.getError() != null && !result.getError().trim().isEmpty()) {
-				Logger.log("*** bindProject stderr: " + result.getError().trim());
+				Logger.log("bindProject stderr: " + result.getError().trim());
 			}
 		} finally {
 			if (process != null && process.isAlive()) {
@@ -113,7 +120,7 @@ public class ProjectUtil {
 				throw new IOException("The output from project validate is empty."); //$NON-NLS-1$
 			}
 			if (result.getError() != null && !result.getError().trim().isEmpty()) {
-				Logger.log("*** validateProject stderr: " + result.getError().trim());
+				Logger.log("validateProject stderr: " + result.getError().trim());
 			}
 
 			JSONObject resultJson = new JSONObject(result.getOutput());
@@ -142,7 +149,7 @@ public class ProjectUtil {
 			process = CLIUtil.runCWCTL(CLIUtil.GLOBAL_JSON_INSECURE, REMOVE_CMD, new String[] {PROJECT_ID_OPTION, projectId});
 			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 300);
 			if (result.getError() != null && !result.getError().trim().isEmpty()) {
-				Logger.log("*** removeProject stderr: " + result.getError().trim());
+				Logger.log("removeProject stderr: " + result.getError().trim());
 			}
 			CLIUtil.checkResult(REMOVE_CMD, result, false);
 		} finally {
