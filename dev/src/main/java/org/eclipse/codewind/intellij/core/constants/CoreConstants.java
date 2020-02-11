@@ -169,7 +169,13 @@ public class CoreConstants {
 			VIEW_MONITOR = "monitor",
 			VIEW_OVERVIEW = "overview",
 			PERF_MONITOR = "performance/charts",
-			PERF_METRICS_DASH = "performance/monitor/dashboard"
+			PERF_METRICS_DASH = "performance/monitor/dashboard",
+
+
+			BIN_DIR = "bin",
+			JAVA_HOME =  "JAVA_HOME",
+			USR_LOCAL_BIN = "/usr/local/bin",
+			PATH = "PATH"
 
 			;
 }
