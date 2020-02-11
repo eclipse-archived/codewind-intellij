@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 
 package org.eclipse.codewind.intellij.ui.tasks;
 
+import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import org.eclipse.codewind.intellij.core.cli.InstallStatus;
 import org.eclipse.codewind.intellij.core.cli.InstallUtil;
@@ -23,7 +24,7 @@ import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message
 public class StartCodewindTask extends CodewindProcessTask {
 
     public StartCodewindTask(Runnable onSuccess) {
-        super(null, message("StartingCodewindJobLabel"), onSuccess);
+        super(null, message("StartingCodewindJobLabel"), false, PerformInBackgroundOption.DEAF, onSuccess);
     }
 
     @Override
