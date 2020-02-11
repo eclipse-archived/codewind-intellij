@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 
 package org.eclipse.codewind.intellij.ui.tasks;
 
+import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -31,7 +32,16 @@ public abstract class CodewindProcessTask extends Task.Backgroundable {
     public CodewindProcessTask(@Nullable Project project,
                                @Nls(capitalization = Nls.Capitalization.Title) @NotNull String title,
                                Runnable onSuccess) {
-        super(project, title);
+
+        this(project, title, true, null, onSuccess);
+    }
+
+    public CodewindProcessTask(@Nullable Project project,
+                               @Nls(capitalization = Nls.Capitalization.Title) @NotNull String title,
+                               boolean canBeCancelled,
+                               @Nullable PerformInBackgroundOption backgroundOption,
+                               Runnable onSuccess) {
+        super(project, title, canBeCancelled, backgroundOption);
         this.onSuccess = onSuccess;
     }
 
