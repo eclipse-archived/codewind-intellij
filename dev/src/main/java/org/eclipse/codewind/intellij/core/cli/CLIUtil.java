@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,8 @@ import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.PlatformUtil;
 import org.eclipse.codewind.intellij.core.PlatformUtil.OperatingSystem;
 import org.eclipse.codewind.intellij.core.ProcessHelper.ProcessResult;
+import org.eclipse.codewind.intellij.core.constants.CoreConstants;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,6 +31,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CLIUtil {
 
@@ -77,6 +80,11 @@ public class CLIUtil {
     }
 
 	public static Process runCWCTL(String[] globalOptions, String[] cmd, String[] options, String[] args) throws IOException {
+        return createCWCTLProcess(globalOptions, cmd, options, args).start();
+    }
+
+    @NotNull
+    public static ProcessBuilder createCWCTLProcess(String[] globalOptions, String[] cmd, String[] options, String[] args) throws IOException {
         // Make sure the executables are installed
         for (int i = 0; i < cliInfos.length; i++) {
             if (cliInfos[i] != null)
@@ -85,19 +93,20 @@ public class CLIUtil {
 
         List<String> cmdList = new ArrayList<String>();
         cmdList.add(codewindInfo.getInstallPath());
-		addOptions(cmdList, globalOptions);
-		addOptions(cmdList, cmd);
-		addOptions(cmdList, options);
-		addOptions(cmdList, args);
+        addOptions(cmdList, globalOptions);
+        addOptions(cmdList, cmd);
+        addOptions(cmdList, options);
+        addOptions(cmdList, args);
+        Logger.log(cmdList.stream().collect(Collectors.joining(" ")));
         String[] command = cmdList.toArray(new String[cmdList.size()]);
         ProcessBuilder builder = new ProcessBuilder(command);
         if (PlatformUtil.getOS() == PlatformUtil.OperatingSystem.MAC) {
-            String pathVar = System.getenv("PATH");
-            pathVar = "/usr/local/bin:" + pathVar;
+            String pathVar = System.getenv(CoreConstants.PATH);
+            pathVar = CoreConstants.USR_LOCAL_BIN + File.pathSeparator + pathVar;
             Map<String, String> env = builder.environment();
-            env.put("PATH", pathVar);
+            env.put(CoreConstants.PATH, pathVar);
         }
-        return builder.start();
+        return builder;
     }
 
 	private static void addOptions(List<String> cmdList, String[] options) {
