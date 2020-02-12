@@ -35,6 +35,7 @@ public class CoreUtil {
     private static final String ENV_PATH_PROPERTY = "org.eclipse.codewind.envPath";
 
     private static IUpdateHandler updateHandler;
+    private static IUpdateHandler toolWindowUpdateHandler;
 
 	public enum DialogType {
 		ERROR,
@@ -156,8 +157,12 @@ public class CoreUtil {
      */
     public static void updateAll() {
         IUpdateHandler handler = getUpdateHandler();
+        IUpdateHandler toolWindowHandler = getToolWindowUpdateHandler();
         if (handler != null) {
             invokeLater(handler::updateAll);
+        }
+        if (toolWindowHandler != null) {
+            invokeLater(toolWindowHandler::updateAll);
         }
     }
 
@@ -167,8 +172,12 @@ public class CoreUtil {
      */
     public static void updateConnection(CodewindConnection connection) {
         IUpdateHandler handler = getUpdateHandler();
+        IUpdateHandler toolWindowHandler = getToolWindowUpdateHandler();
         if (handler != null) {
             invokeLater(() -> handler.updateConnection(connection));
+        }
+        if (toolWindowHandler != null) {
+            invokeLater(() -> toolWindowHandler.updateConnection(connection));
         }
     }
 
@@ -179,8 +188,12 @@ public class CoreUtil {
      */
     public static void removeConnection(List<CodewindApplication> apps) {
         IUpdateHandler handler = getUpdateHandler();
+        IUpdateHandler toolWindowHandler = getToolWindowUpdateHandler();
         if (handler != null) {
             invokeLater(() -> handler.removeConnection(apps));
+        }
+        if (toolWindowHandler != null) {
+            invokeLater(() -> toolWindowHandler.removeConnection(apps));
         }
     }
 
@@ -190,8 +203,12 @@ public class CoreUtil {
      */
     public static void updateApplication(CodewindApplication app) {
         IUpdateHandler handler = getUpdateHandler();
+        IUpdateHandler handlers = getToolWindowUpdateHandler();
         if (handler != null) {
             invokeLater(() -> handler.updateApplication(app));
+        }
+        if (handlers != null) {
+            invokeLater(() -> handlers.updateApplication(app));
         }
     }
 
@@ -201,8 +218,12 @@ public class CoreUtil {
      */
     public static void removeApplication(CodewindApplication app) {
         IUpdateHandler handler = getUpdateHandler();
+        IUpdateHandler toolWindowHandler = getToolWindowUpdateHandler();
         if (handler != null) {
             invokeLater(() -> handler.removeApplication(app));
+        }
+        if (toolWindowHandler != null) {
+            invokeLater(() -> toolWindowHandler.removeApplication(app));
         }
     }
 
@@ -239,7 +260,16 @@ public class CoreUtil {
         updateHandler = handler;
     }
 
+    public static void setToolWindowUpdateHandler(IUpdateHandler handler) {
+        toolWindowUpdateHandler = handler;
+    }
+
     public static IUpdateHandler getUpdateHandler() {
         return updateHandler;
     }
+
+    public static IUpdateHandler getToolWindowUpdateHandler() {
+        return toolWindowUpdateHandler;
+    }
+
 }

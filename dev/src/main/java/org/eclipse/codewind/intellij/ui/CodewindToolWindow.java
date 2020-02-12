@@ -11,7 +11,13 @@
 
 package org.eclipse.codewind.intellij.ui;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.ActionPopupMenu;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
@@ -20,14 +26,34 @@ import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.InstallStatus;
-import org.eclipse.codewind.intellij.core.connection.*;
-import org.eclipse.codewind.intellij.ui.actions.*;
+import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
+import org.eclipse.codewind.intellij.core.connection.ConnectionEnv;
+import org.eclipse.codewind.intellij.core.connection.LocalConnection;
+import org.eclipse.codewind.intellij.core.connection.RemoteConnection;
+import org.eclipse.codewind.intellij.ui.actions.AddExistingProjectAction;
+import org.eclipse.codewind.intellij.ui.actions.DisableAutoBuildAction;
+import org.eclipse.codewind.intellij.ui.actions.EnableAutoBuildAction;
+import org.eclipse.codewind.intellij.ui.actions.InstallCodewindAction;
+import org.eclipse.codewind.intellij.ui.actions.OpenAppOverviewAction;
+import org.eclipse.codewind.intellij.ui.actions.OpenApplicationAction;
+import org.eclipse.codewind.intellij.ui.actions.OpenIdeaProjectAction;
+import org.eclipse.codewind.intellij.ui.actions.OpenPerformanceDashboardAction;
+import org.eclipse.codewind.intellij.ui.actions.OpenTektonDashboardAction;
+import org.eclipse.codewind.intellij.ui.actions.RefreshAction;
+import org.eclipse.codewind.intellij.ui.actions.RemoveProjectAction;
+import org.eclipse.codewind.intellij.ui.actions.StartBuildAction;
+import org.eclipse.codewind.intellij.ui.actions.StartCodewindAction;
+import org.eclipse.codewind.intellij.ui.actions.StopCodewindAction;
+import org.eclipse.codewind.intellij.ui.actions.UninstallCodewindAction;
+import org.eclipse.codewind.intellij.ui.actions.UpdateCodewindAction;
+import org.eclipse.codewind.intellij.ui.toolwindow.UpdateHandler;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeModel;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeNodeCellRenderer;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.tree.TreePath;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URISyntaxException;
@@ -112,12 +138,23 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         return CodewindTreeModel.getInstance();
     }
 
+    // The CodewindToolWindow will hold the handle to UpdateHandler containing all the update listeners
+    // It should be at the 'plugin' level.
+    private static UpdateHandler updateHandler;
+
     public void init() {
+        updateHandler = UpdateHandler.getInstance();
         CoreUtil.runAsync(() -> {
             tree.setModel(getTreeModel());
             CoreUtil.setUpdateHandler(getTreeModel());
+            // Potentially, the Codewind tree model could be moved to the below handler
+            CoreUtil.setToolWindowUpdateHandler(updateHandler);
             getTreeModel().updateAll();
         });
+    }
+
+    public static UpdateHandler getToolWindowUpdateHandler() {
+        return updateHandler;
     }
 
     public void expandLocalTree() {
