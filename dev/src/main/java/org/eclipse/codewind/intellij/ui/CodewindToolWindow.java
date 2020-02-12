@@ -224,8 +224,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         }
 
         actions.addSeparator();
-        actions.add(openIdeaProjectAction);
-
+        // Todo: Change this to Open in New Window or Current Window
+        //        actions.add(openIdeaProjectAction);
         actions.addSeparator();
         actions.add(startBuildAction);
         if (application.isAutoBuild()) {
