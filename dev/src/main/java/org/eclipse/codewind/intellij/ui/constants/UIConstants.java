@@ -11,10 +11,11 @@
 package org.eclipse.codewind.intellij.ui.constants;
 
 public class UIConstants {
+
     // Documentation links
     public static final String
             DOC_BASE_URL = "https://www.eclipse.org/codewind",
-            GETTING_STARTED_INFO_URL = DOC_BASE_URL + "/gettingstarted.html",
+            GETTING_STARTED_INFO_URL = DOC_BASE_URL + "/mdt-intellij-getting-started.md.html",
             CWSETTINGS_INFO_URL = DOC_BASE_URL + "/mdteclipsemanagingprojects.html",
             TEMPLATES_INFO_URL = DOC_BASE_URL + "/mdteclipseworkingwithtemplates.html",
             REGISTRY_INFO_URL = DOC_BASE_URL + "/image-registry-credentials.html",
