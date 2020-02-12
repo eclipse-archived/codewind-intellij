@@ -12,7 +12,11 @@ package org.eclipse.codewind.intellij.ui.tasks;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.browsers.BrowserLauncher;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -24,13 +28,18 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.ui.content.ContentManagerAdapter;
+import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.content.tabs.TabbedContentAction;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
+import org.eclipse.codewind.intellij.core.connection.LocalConnection;
+import org.eclipse.codewind.intellij.ui.CodewindToolWindow;
 import org.eclipse.codewind.intellij.ui.IconCache;
 import org.eclipse.codewind.intellij.ui.actions.RefreshAction;
 import org.eclipse.codewind.intellij.ui.constants.UIConstants;
 import org.eclipse.codewind.intellij.ui.form.AppOverviewFrame;
+import org.eclipse.codewind.intellij.ui.toolwindow.UpdateHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
@@ -62,6 +71,21 @@ public class OpenAppOverviewTask extends Task.Backgroundable {
                     overviewToolWindow.setContentUiType(ToolWindowContentUiType.TABBED, null);
                     overviewToolWindow.setIcon(IconCache.getCachedIcon(IconCache.ICONS_CODEWIND_13PX_SVG));
                     contentManager = overviewToolWindow.getContentManager();
+                    contentManager.addContentManagerListener(new ContentManagerAdapter() {
+                        // Manually closing the overview page.  Remove the UpdateHandler listener
+                        public void contentRemoved(@NotNull ContentManagerEvent event) {
+                            ContentManagerEvent.ContentOperation operation = event.getOperation();
+                            Content content = event.getContent();
+                            if (operation.equals(ContentManagerEvent.ContentOperation.remove)) {
+                                String connectionId = application.connection.getConid();
+                                String projectId = application.projectID;
+                                if (connectionId != null && projectId != null) {
+                                    CodewindToolWindow.getToolWindowUpdateHandler().removeAppUpdateListener(content, connectionId, projectId);
+                                }
+                            }
+                        }
+                    });
+
                 } else { // tool window created already but the project overview was not added
                     contentManager = overviewToolWindow.getContentManager();
                     content = contentManager.findContent(application.name);
@@ -112,6 +136,44 @@ public class OpenAppOverviewTask extends Task.Backgroundable {
                     closeTabAction.getTemplatePresentation().setIcon(AllIcons.Actions.Cancel);
                     toolbarGroup.add(closeTabAction);
                     simplePanel.setToolbar(ActionManager.getInstance().createActionToolbar(ActionPlaces.TODO_VIEW_TOOLBAR, toolbarGroup, false).getComponent());
+
+                    String connectionId = application.connection.getConid();
+                    if (connectionId == null) {
+                        connectionId = LocalConnection.CONNECTION_ID;
+                    }
+                    final Content finalContent = content;
+                    CodewindToolWindow.getToolWindowUpdateHandler().addAppUpdateListener(content, connectionId, application.projectID, new UpdateHandler.AppUpdateListener() {
+                        @Override
+                        public void update() {
+                            final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(getProject());
+                            ToolWindow overviewToolWindow = toolWindowManager.getToolWindow(OpenAppOverviewTask.PROJECT_OVERVIEW_TOOLWINDOW_ID);
+                            if (overviewToolWindow != null) {
+                                ContentManager contentManager = overviewToolWindow.getContentManager();
+                                Content content = contentManager.findContent(application.name);
+                                if (content != null) {
+                                    form.update(application);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void remove() {
+                            final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(getProject());
+                            ToolWindow overviewToolWindow = toolWindowManager.getToolWindow(OpenAppOverviewTask.PROJECT_OVERVIEW_TOOLWINDOW_ID);
+                            if (overviewToolWindow != null) {
+                                ContentManager contentManager = overviewToolWindow.getContentManager();
+                                Content content = contentManager.findContent(application.name);
+                                CoreUtil.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (finalContent == content && content != null) {  // null check here in case it gets cleared
+                                            contentManager.removeContent(content, true);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    });
                 }
                 overviewToolWindow.show(null);
                 overviewToolWindow.activate(null, true, true);
