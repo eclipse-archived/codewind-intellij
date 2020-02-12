@@ -18,6 +18,7 @@ import okhttp3.OkHttpClient;
 import org.eclipse.codewind.intellij.core.*;
 import org.eclipse.codewind.intellij.core.cli.AuthToken;
 import org.eclipse.codewind.intellij.core.console.ProjectLogInfo;
+import org.eclipse.codewind.intellij.core.console.SocketConsole;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
 import org.eclipse.codewind.intellij.core.constants.ProjectType;
 import org.eclipse.codewind.intellij.core.constants.StartMode;
@@ -26,8 +27,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.URI;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
@@ -50,7 +54,7 @@ public class CodewindSocket {
 
     private volatile boolean hasConnected = false;
 
-    // private Set<SocketConsole> socketConsoles = new HashSet<>();
+     private Set<SocketConsole> socketConsoles = new HashSet<>();
 
     // Track the previous Exception so we don't spam the logs with the same connection failure message
     private Throwable previousException;
@@ -444,33 +448,32 @@ public class CodewindSocket {
         connection.removeApp(projectID);
     }
 
-//    public void registerSocketConsole(SocketConsole console) {
-//        Logger.log("Register socketConsole for project: " + console.app.name); //$NON-NLS-1$
-//        this.socketConsoles.add(console);
-//    }
+    public void registerSocketConsole(SocketConsole console) {
+        Logger.log("Register socketConsole for project: " + console.app.name); //$NON-NLS-1$
+        this.socketConsoles.add(console);
+    }
 
-//    public void deregisterSocketConsole(SocketConsole console) {
-//        this.socketConsoles.remove(console);
-//    }
+    public void deregisterSocketConsole(SocketConsole console) {
+        this.socketConsoles.remove(console);
+    }
 
     private void onLogUpdate(JSONObject event) throws JSONException {
         String projectID = event.getString(CoreConstants.KEY_PROJECT_ID);
         String type = event.getString(CoreConstants.KEY_LOG_TYPE);
         String logName = event.getString(CoreConstants.KEY_LOG_NAME);
-        Logger.log("Update the " + logName + " log for project: " + projectID); //$NON-NLS-1$ //$NON-NLS-2$
+        Logger.log("Update the " + logName + " log for project: " + projectID);
 
-        // TODO: implememnt this
-//        for (SocketConsole console : this.socketConsoles) {
-//            if (console.app.projectID.equals(projectID) && console.logInfo.isThisLogInfo(type, logName)) {
-//                try {
-//                    String logContents = event.getString(CoreConstants.KEY_LOGS);
-//                    boolean reset = event.getBoolean(CoreConstants.KEY_LOG_RESET);
-//                    console.update(logContents, reset);
-//                } catch (IOException e) {
-//                    Logger.logError("Error updating console " + console.getName(), e);    // $NON-NLS-1$
-//                }
-//            }
-//        }
+        for (SocketConsole console : this.socketConsoles) {
+            if (console.app.projectID.equals(projectID) && console.logInfo.isThisLogInfo(type, logName)) {
+                try {
+                    String logContents = event.getString(CoreConstants.KEY_LOGS);
+                    boolean reset = event.getBoolean(CoreConstants.KEY_LOG_RESET);
+                    console.update(logContents, reset);
+                } catch (IOException e) {
+                    Logger.logWarning("Error updating console " + logName, e);
+                }
+            }
+        }
     }
 
     private void onProjectLogsListChanged(JSONObject event) throws JSONException {
