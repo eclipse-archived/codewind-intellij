@@ -15,6 +15,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.ProcessHelper;
 import org.eclipse.codewind.intellij.core.cli.InstallUtil;
+import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class UpgradeCodewindTask extends CodewindProcessTask {
             Logger.log("Error occurred stopping Codewind: " + result.getErrorMsg());
             System.out.println("*** Error occurred stopping Codewind: " + result.getErrorMsg());
         } else {
-            result = InstallUtil.removeCodewind(null, indicator);
+            result = InstallUtil.removeCodewind(ConnectionManager.getManager().getLocalConnection().getInstallStatus().getInstalledVersions(), indicator);
             if (result.getExitValue()!= 0) {
                 Logger.log("Error occurred removing Codewind after install: " + result.getErrorMsg());
                 System.out.println("*** Error occurred removing Codewind after install: " + result.getErrorMsg());
@@ -52,6 +53,7 @@ public class UpgradeCodewindTask extends CodewindProcessTask {
                         System.out.println("*** Error occurred starting Codewind after install: " + result.getErrorMsg());
                     } else {
                         // go through each project and upgrade its workspace
+
 
                     }
                 }
