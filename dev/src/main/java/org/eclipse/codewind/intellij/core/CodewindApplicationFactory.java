@@ -299,18 +299,5 @@ public class CodewindApplicationFactory {
 		} catch (Exception e) {
 			Logger.logWarning("An error occurred while updating the log information for project: " + app.name, e);
 		}
-
-		// Check for metrics support
-		boolean metricsAvailable = true;
-		try {
-			JSONObject obj = app.connection.requestProjectMetricsStatus(app);
-			if (obj != null && obj.has(CoreConstants.KEY_METRICS_AVAILABLE)) {
-				metricsAvailable = obj.getBoolean(CoreConstants.KEY_METRICS_AVAILABLE);
-			}
-		} catch (Exception e) {
-			Logger.logWarning("An error occurred checking if metrics are available: " + app.name, e);
-		}
-		app.setMetricsAvailable(metricsAvailable);
-
 	}
 }

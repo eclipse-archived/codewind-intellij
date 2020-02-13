@@ -92,7 +92,17 @@ public class CoreConstants {
 			KEY_INTERNAL_DEBUG_PORT = "internalDebugPort",
 			KEY_AUTO_BUILD = "autoBuild",
 			KEY_APP_BASE_URL = "appBaseURL",
+
 			KEY_INJECT_METRICS = "enable",
+			KEY_INJECTION = "injection",
+			KEY_INJECTABLE = "injectable",
+			KEY_INJECTED = "injected",
+			KEY_METRICS_DASHBOARD = "metricsDashboard",
+			KEY_METRICS_HOSTING = "hosting",
+			VALUE_METRICS_HOSTING_PROJECT = "project",
+			VALUE_METRICS_HOSTING_PERF_CONTAINER = "performanceContainer",
+			KEY_METRICS_PATH = "path",
+			KEY_PERF_DASHBOARD_PATH = "perfDashboardPath",
 			
 			VALUE_INFO = "INFO",
 			VALUE_WARN = "WARN",
@@ -137,8 +147,7 @@ public class CoreConstants {
 			KEY_CAPABILIITES = "capabilities",
 			KEY_START_MODES = "startModes",
 			KEY_CONTROL_COMMANDS = "controlCommands",
-			KEY_METRICS_AVAILABLE = "metricsAvailable",
-			
+
 			KEY_AUTO_GENERATE = "autoGenerate",
 			
 			// Registry
@@ -169,8 +178,6 @@ public class CoreConstants {
 			VIEW_MONITOR = "monitor",
 			VIEW_OVERVIEW = "overview",
 			PERF_MONITOR = "performance/charts",
-			PERF_METRICS_DASH = "performance/monitor/dashboard",
-
 
 			BIN_DIR = "bin",
 			JAVA_HOME =  "JAVA_HOME",

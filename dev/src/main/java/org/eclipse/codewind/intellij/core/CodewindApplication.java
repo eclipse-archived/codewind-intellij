@@ -48,15 +48,19 @@ public class CodewindApplication {
     private BuildStatus buildStatus;
     private String buildDetails;
     private boolean autoBuild = true;
-	private boolean injectMetrics = false;
+    private boolean canInjectMetrics = false;
+    private boolean metricsInjected = false;
+    private String metricsHosting = null;
+    private String metricsPath = null;
+    private String perfPath = null;
+    private boolean metricsAvailable = false;
+    private boolean hasConfirmedMetrics = false; 		// see confirmMetricsAvailable
     private boolean enabled = true;
     private String containerId;
 	private boolean capabilitiesReady = false;
     private ProjectCapabilities projectCapabilities;
     private String action;
     private List<ProjectLogInfo> logInfos = new ArrayList<ProjectLogInfo>();
-    private boolean metricsAvailable = false;
-    private boolean hasConfirmedMetrics = false;        // see confirmMetricsAvailable
     private long lastBuild = -1;
     private long lastImageBuild = -1;
     private boolean isHttps = false;
@@ -178,11 +182,6 @@ public class CodewindApplication {
         this.autoBuild = enabled;
         CoreUtil.updateApplication(this);
     }
-
-	public synchronized void setInjectMetrics(boolean enabled) {
-		this.injectMetrics = enabled;
-		CoreUtil.updateApplication(this);
-	}
 	
     public synchronized void setEnabled(boolean enabled) {
         boolean reenabled = enabled && !this.enabled;
@@ -238,14 +237,18 @@ public class CodewindApplication {
         this.logInfos = logInfos;
     }
 
-    public synchronized void setMetricsAvailable(boolean value) {
-        metricsAvailable = value;
-    }
-
     /**
      * Can return null if this project hasn't started yet (ie httpPort == -1)
      */
     public URL getBaseUrl() {
+        return baseUrl;
+    }
+
+    public URL getAppBaseUrl() throws MalformedURLException {
+        // If the app url was set in the project info, use it
+        if (appBaseUrl != null && !appBaseUrl.isEmpty()) {
+            return new URL(appBaseUrl);
+        }
         return baseUrl;
     }
 
@@ -256,21 +259,38 @@ public class CodewindApplication {
         return rootUrl;
     }
 
-    public URL getMetricsUrl() {
+    public URL getMetricsDashboardUrl() {
+        if (!hasMetricsDashboard()) {
+            return null;
+        }
         try {
-			if ((!this.injectMetrics) && this.metricsAvailable) {
-            return new URL(getBaseUrl(), projectLanguage.getMetricsRoot());
+            if (CoreConstants.VALUE_METRICS_HOSTING_PROJECT.equals(metricsHosting)) {
+                return new URL(getAppBaseUrl(), metricsPath);
+            } else if (CoreConstants.VALUE_METRICS_HOSTING_PERF_CONTAINER.equals(metricsHosting)) {
+                return (connection.getBaseURI().resolve(metricsPath)).toURL();
 			} else {
-				return (connection.getBaseURI().resolve(CoreConstants.PERF_METRICS_DASH + "/" + projectLanguage.getId() + "?theme=dark&projectID=" + projectID)).toURL();
+                Logger.logWarning("Unrecognized metrics hosting type: " + metricsHosting);
 			}
         } catch (MalformedURLException e) {
-            Logger.logWarning("An error occurred trying to construct the application metrics URL", e);
+            Logger.logWarning("An error occurred trying to construct the metrics dashboard URL", e);
+        }
+        return null;
+    }
+
+    public URL getPerfDashboardUrl() {
+        if (!hasPerfDashboard()) {
+            return null;
+        }
+        try {
+            return (connection.getBaseURI().resolve(perfPath)).toURL();
+        } catch (MalformedURLException e) {
+            Logger.logWarning("An error occurred trying to construct the performance dashboard URL", e);
         }
         return null;
     }
 
     /**
-     * For extension projects, the metricsAvailable may not be incorrectly 'true'.
+     * For extension projects, the metricsAvailable may be incorrectly 'true'.
      * So after the application is running, GET that page to make sure. If it fails, we set metricsAvailable to false.
      * <p>
      * Workaround for https://github.com/eclipse/codewind/issues/258
@@ -288,7 +308,7 @@ public class CodewindApplication {
         }
 
         try {
-            URL metricsUrl = this.getMetricsUrl();
+            URL metricsUrl = this.getMetricsDashboardUrl();
             if (metricsUrl == null) {
                 // we should not have made it this far
                 return;
@@ -332,8 +352,8 @@ public class CodewindApplication {
         return autoBuild;
     }
 
-	public synchronized boolean isInjectMetrics() {
-		return injectMetrics;
+	public synchronized boolean isMetricsInjected() {
+		return metricsInjected;
 	}
 	
     public synchronized boolean isEnabled() {
@@ -373,21 +393,35 @@ public class CodewindApplication {
         return (projectType != ProjectType.TYPE_NODEJS);
     }
 
-    public synchronized boolean getMetricsAvailable() {
+    public synchronized boolean hasMetricsDashboard() {
         return metricsAvailable;
     }
 
-	public synchronized boolean hasAppMonitor() {
-		// Metrics available is really: metrics are in the package.json/pom.xml/package.swift
-		// thus it can be false even when injectMetrics is true so need to check both
-		return projectLanguage.alwaysHasAppMonitor() || getMetricsAvailable() || injectMetrics;
+    public synchronized boolean hasPerfDashboard() {
+        return metricsAvailable && perfPath != null;
+    }
+
+    public synchronized void setMetricsInjectionInfo(boolean injectable, boolean injected) {
+        this.canInjectMetrics = injectable;
+        this.metricsInjected = injected;
 	}
-	
-	public synchronized boolean hasPerfDashboard() {
-		// Metrics available is really: metrics are in the package.json/pom.xml/package.swift
-		// thus it can be false even when injectMetrics is true so need to check both
-		return getMetricsAvailable() || injectMetrics;
-	}
+
+    public synchronized void setMetricsDashboardInfo(String hosting, String path) {
+        // If there is no change then just return
+        if ((hosting == null ? this.metricsHosting == null : hosting.equals(this.metricsHosting)) &&
+                (path == null ? this.metricsPath == null : path.equals(this.metricsPath))) {
+            return;
+        }
+        Logger.log("Updating metrics dashboard info, hosting: " + hosting + ", path: " + path); //$NON-NLS-1$ //$NON-NLS-2$
+        this.metricsHosting = hosting;
+        this.metricsPath = path;
+        this.metricsAvailable = hosting != null && path != null;
+        this.hasConfirmedMetrics = false;
+    }
+
+    public synchronized void setPerfDashboardInfo(String path) {
+        this.perfPath = path;
+    }
 	
     public synchronized void setLastBuild(long timestamp) {
         lastBuild = timestamp;
@@ -535,12 +569,7 @@ public class CodewindApplication {
     }
 
 	public boolean canInjectMetrics() {
-		List<ProjectType> projectTypesWithMetricInjection = Arrays.asList(
-				ProjectType.TYPE_LIBERTY,
-				ProjectType.TYPE_SPRING,
-				ProjectType.TYPE_NODEJS
-		);
-		return projectTypesWithMetricInjection.contains(projectType);
+		return canInjectMetrics;
 	}
 
     @Override
