@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -20,6 +20,9 @@ public class ProjectTemplateInfo extends JSONObjectResult {
 	public static final String URL_KEY = "url";
 	public static final String LANGUAGE_KEY = "language";
 	public static final String PROJECT_TYPE_KEY = "projectType";
+	public static final String PROJECT_STYLE_KEY = "projectStyle";
+
+	public static final String CODEWIND_STYLE = "Codewind";
 	
 	public ProjectTemplateInfo(JSONObject projectInfo) {
 		super(projectInfo, "project template");
@@ -43,5 +46,17 @@ public class ProjectTemplateInfo extends JSONObjectResult {
 	
 	public String getProjectType() {
 		return getString(PROJECT_TYPE_KEY);
+	}
+
+	public String getProjectStyle() {
+		// Get the style if it is there otherwise default to Codewind style
+		String style = null;
+		if (hasKey(PROJECT_STYLE_KEY)) {
+			style = getString(PROJECT_STYLE_KEY);
+		}
+		if (style == null || style.isEmpty()) {
+			style = CODEWIND_STYLE;
+		}
+		return style;
 	}
 }

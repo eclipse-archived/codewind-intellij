@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corporation and others.
+ * Copyright (c) 2018, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -288,14 +288,21 @@ public class CodewindApplicationFactory {
 				boolean autoBuild = appJso.getBoolean(CoreConstants.KEY_AUTO_BUILD);
 				app.setAutoBuild(autoBuild);
 			}
+
+			// Set capabilities ready
+			if (appJso.has(CoreConstants.KEY_CAPABILITIES_READY)) {
+				app.setCapabilitiesReady(appJso.getBoolean(CoreConstants.KEY_CAPABILITIES_READY));
+			}
 		} catch (JSONException e) {
 			Logger.logWarning("Error parsing project json: " + appJso, e); //$NON-NLS-1$
 		}
 
 		try {
-			// Set the log information
-			List<ProjectLogInfo> logInfos = app.connection.requestProjectLogs(app);
-			app.setLogInfos(logInfos);
+			if (appJso.has(CoreConstants.KEY_LOGS) && appJso.getJSONObject(CoreConstants.KEY_LOGS).length() > 0) {
+				// Set the log information
+				List<ProjectLogInfo> logInfos = app.connection.requestProjectLogs(app);
+				app.setLogInfos(logInfos);
+			}
 		} catch (Exception e) {
 			Logger.logWarning("An error occurred while updating the log information for project: " + app.name, e);
 		}
