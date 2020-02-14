@@ -175,10 +175,22 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         Object node = treePath.getLastPathComponent();
         if (node instanceof LocalConnection) {
             InstallStatus status = ((LocalConnection) node).getInstallStatus();
-            if (status.isInstalled() && !status.isStarted()) {
+            if (status.isInstalled()) {
+                if (!status.isStarted()) {
+                    AnActionEvent actionEvent = AnActionEvent.createFromInputEvent(e, ActionPlaces.POPUP,
+                            null, DataContext.EMPTY_CONTEXT, true, false);
+                    startCodewindAction.actionPerformed(actionEvent);
+                }
+            } else if (status.hasInstalledVersions()) {
+                // An older version of Codewind is installed
                 AnActionEvent actionEvent = AnActionEvent.createFromInputEvent(e, ActionPlaces.POPUP,
                         null, DataContext.EMPTY_CONTEXT, true, false);
-                startCodewindAction.actionPerformed(actionEvent);
+                updateCodewindAction.actionPerformed(actionEvent);
+            } else {
+                // No version of Codewind is installed
+                AnActionEvent actionEvent = AnActionEvent.createFromInputEvent(e, ActionPlaces.POPUP,
+                        null, DataContext.EMPTY_CONTEXT, true, false);
+                installCodewindAction.actionPerformed(actionEvent);
             }
         } else if (node instanceof CodewindApplication) {
             CodewindApplication app = (CodewindApplication)node;
