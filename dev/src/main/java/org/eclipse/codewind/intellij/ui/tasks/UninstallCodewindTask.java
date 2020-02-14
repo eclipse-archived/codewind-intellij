@@ -11,6 +11,7 @@
 
 package org.eclipse.codewind.intellij.ui.tasks;
 
+import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import org.eclipse.codewind.intellij.core.CodewindManager;
 import org.eclipse.codewind.intellij.core.Logger;
@@ -28,7 +29,7 @@ import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message
 public class UninstallCodewindTask extends CodewindProcessTask {
 
     public UninstallCodewindTask(Runnable onSuccess) {
-        super(null, message("RemovingCodewindJobLabel"), onSuccess);
+        super(null, message("RemovingCodewindJobLabel"), false, PerformInBackgroundOption.DEAF, onSuccess);
     }
 
     @Override
