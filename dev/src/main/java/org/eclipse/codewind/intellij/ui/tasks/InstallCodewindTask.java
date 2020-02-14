@@ -11,21 +11,19 @@
 
 package org.eclipse.codewind.intellij.ui.tasks;
 
+import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.ProcessHelper;
 import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
 public class InstallCodewindTask extends CodewindProcessTask {
 
     public InstallCodewindTask(Runnable onSuccess) {
-        super(null, message("InstallCodewindJobLabel"), onSuccess);
+        super(null, message("InstallCodewindJobLabel"), false, PerformInBackgroundOption.DEAF, onSuccess);
     }
 
     @Override
