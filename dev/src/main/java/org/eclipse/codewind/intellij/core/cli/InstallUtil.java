@@ -89,7 +89,7 @@ public class InstallUtil {
         try {
             ConnectionManager.getManager().getLocalConnection().setInstallerStatus(LocalConnection.InstallerStatus.STARTING);
             process = CLIUtil.runCWCTL(null, START_CMD, new String[] {TAG_OPTION, version});
-            ProcessResult result = ProcessHelper.waitForProcess(process, 500, 120);
+            ProcessResult result = ProcessHelper.waitForProcess(process, 500, 240);
             return result;
         } finally {
             if (process != null && process.isAlive()) {
@@ -120,7 +120,7 @@ public class InstallUtil {
         try {
             ConnectionManager.getManager().getLocalConnection().setInstallerStatus(LocalConnection.InstallerStatus.STOPPING);
             process = CLIUtil.runCWCTL(null, STOP_ALL_CMD, null);
-            return ProcessHelper.waitForProcess(process, 500, 120);
+            return ProcessHelper.waitForProcess(process, 500, 240);
         } finally {
             if (process != null && process.isAlive()) {
                 process.destroy();
@@ -136,7 +136,7 @@ public class InstallUtil {
         try {
             CodewindManager.getManager().setInstallerStatus(CodewindManager.InstallerStatus.INSTALLING);
             process = CLIUtil.runCWCTL(null, INSTALL_CMD, new String[] {TAG_OPTION, version});
-            return ProcessHelper.waitForProcess(process, 1000, 300);
+            return ProcessHelper.waitForProcess(process, 1000, 600);
         } finally {
             if (process != null && process.isAlive()) {
                 process.destroy();
@@ -156,7 +156,7 @@ public class InstallUtil {
             } else {
                 process = CLIUtil.runCWCTL(null, REMOVE_CMD, null);
             }
-            return ProcessHelper.waitForProcess(process, 500, 60);
+            return ProcessHelper.waitForProcess(process, 500, 120);
         } finally {
             if (process != null && process.isAlive()) {
                 process.destroy();;

@@ -55,7 +55,7 @@ public class ProjectUtil {
 				builder.environment().put(CoreConstants.PATH, pathVar);
 			}
 			process = builder.start();
-			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 600);
+			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 1200);
 			if (result.getExitValue() != 0) {
 				Logger.logWarning("Project create failed with rc: " + result.getExitValue() + " and error: " + result.getErrorMsg()); //$NON-NLS-1$ //$NON-NLS-2$
 				throw new IOException(result.getErrorMsg());
@@ -87,7 +87,7 @@ public class ProjectUtil {
 		try {
 			String[] options = new String[] {NAME_OPTION, name, LANGUAGE_OPTION, language, TYPE_OPTION, projectType, PATH_OPTION, path, CLIUtil.CON_ID_OPTION, conid};
 			process = CLIUtil.runCWCTL(CLIUtil.GLOBAL_INSECURE, BIND_CMD, options);
-			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 300);
+			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 600);
 			if (result.getExitValue() != 0) {
 				Logger.logWarning("Project bind failed with rc: " + result.getExitValue() + " and error: " + result.getErrorMsg()); //$NON-NLS-1$ //$NON-NLS-2$
 				throw new IOException(result.getErrorMsg());
@@ -109,7 +109,7 @@ public class ProjectUtil {
 			process = (hint == null) ?
 					CLIUtil.runCWCTL(CLIUtil.GLOBAL_INSECURE, VALIDATE_CMD, new String[] {PATH_OPTION, path, CLIUtil.CON_ID_OPTION, conid}) :
 					CLIUtil.runCWCTL(CLIUtil.GLOBAL_INSECURE, VALIDATE_CMD, new String[] {TYPE_OPTION, hint, PATH_OPTION, path, CLIUtil.CON_ID_OPTION, conid});
-			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 300);
+			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 600);
 			if (result.getExitValue() != 0) {
 				Logger.logWarning("Project validate failed with rc: " + result.getExitValue() + " and error: " + result.getErrorMsg()); //$NON-NLS-1$ //$NON-NLS-2$
 				throw new IOException(result.getErrorMsg());
@@ -147,7 +147,7 @@ public class ProjectUtil {
 		Process process = null;
 		try {
 			process = CLIUtil.runCWCTL(CLIUtil.GLOBAL_JSON_INSECURE, REMOVE_CMD, new String[] {PROJECT_ID_OPTION, projectId});
-			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 300);
+			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 600);
 			if (result.getError() != null && !result.getError().trim().isEmpty()) {
 				Logger.log("removeProject stderr: " + result.getError().trim());
 			}
