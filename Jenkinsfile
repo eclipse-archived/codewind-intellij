@@ -17,7 +17,7 @@ pipeline {
     }
 
     parameters {
-        string(name: "APPSODY_VERSION", defaultValue: "0.5.8", description: "Appsody executable version to download")
+        string(name: "APPSODY_VERSION", defaultValue: "0.5.4", description: "Appsody executable version to download")
     }
 
     stages {
@@ -107,8 +107,9 @@ pipeline {
                         export UPDATE_PLUGINS_XML="updatePlugins.xml"
                         export sshHost="genie.codewind@projects-storage.eclipse.org"
                         export deployDir="/home/data/httpd/download.eclipse.org/codewind/$REPO_NAME"
-                        export TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
-                    
+                        
+                        DIR=`pwd`;
+
                         if [ -z $CHANGE_ID ]; then
                             UPLOAD_DIR="$GIT_BRANCH/$BUILD_ID"
                             BUILD_URL="$DOWNLOAD_AREA_URL/$UPLOAD_DIR"
@@ -116,20 +117,26 @@ pipeline {
                             ssh $sshHost rm -rf $deployDir/$GIT_BRANCH/$LATEST_DIR
                             ssh $sshHost mkdir -p $deployDir/$GIT_BRANCH/$LATEST_DIR
                             
+                            cd $OUTPUT_DIR
+                            export TIMESTAMP=$(ls codewind-intellij*.zip | sed 's/codewind-intellij-\(.*\)\.zip/\1/')
+                            cd $DIR
+                            
                             cp $OUTPUT_DIR/$OUTPUT_NAME*.zip $OUTPUT_DIR/$OUTPUT_NAME.zip
                             scp $OUTPUT_DIR/$OUTPUT_NAME.zip $sshHost:$deployDir/$GIT_BRANCH/$LATEST_DIR/$OUTPUT_NAME.zip
-                            
-                            echo "# Build date: $TIMESTAMP" >> $OUTPUT_DIR/$BUILD_INFO
+
+                            echo "# Build version: $TIMESTAMP" >> $OUTPUT_DIR/$BUILD_INFO
                             echo "build_info.url=$BUILD_URL" >> $OUTPUT_DIR/$BUILD_INFO
                             SHA1=$(sha1sum ${OUTPUT_DIR}/${OUTPUT_NAME}.zip | cut -d ' ' -f 1)
                             echo "build_info.SHA-1=${SHA1}" >> $OUTPUT_DIR/$BUILD_INFO
                             scp $OUTPUT_DIR/$BUILD_INFO $sshHost:$deployDir/$GIT_BRANCH/$LATEST_DIR/$BUILD_INFO
 
                             echo '<?xml version="1.0" encoding="UTF-8"?>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
-                            echo '<!-- Build date: '$TIMESTAMP '-->' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+                            echo '<!-- Build version: '$TIMESTAMP '-->' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '<plugins>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '    <plugin id="codewind-intellij" url="'$DOWNLOAD_AREA_URL/$GIT_BRANCH/$LATEST_DIR/$OUTPUT_NAME.zip'" version="'$TIMESTAMP'">' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '        <idea-version since-build="193.5233.102" until-build="999.*"/>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+                            echo '        <name>Codewind</name>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+                            echo '        <description>Adds support for developing cloud-native, containerized web applications.</description>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '    </plugin>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '</plugins>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML    
 
