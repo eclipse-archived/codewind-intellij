@@ -130,6 +130,8 @@ pipeline {
                             echo '<plugins>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '    <plugin id="codewind-intellij" url="'$DOWNLOAD_AREA_URL/$GIT_BRANCH/$LATEST_DIR/$OUTPUT_NAME.zip'" version="'$TIMESTAMP'">' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '        <idea-version since-build="193.5233.102" until-build="999.*"/>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+                            echo '        <name>Codewind</name>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+                            echo '        <description>Adds support for developing cloud-native, containerized web applications.</description>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '    </plugin>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '</plugins>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML    
 
