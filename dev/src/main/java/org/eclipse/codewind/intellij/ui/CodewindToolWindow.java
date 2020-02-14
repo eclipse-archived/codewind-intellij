@@ -213,11 +213,11 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private void handleLocalConnectionPopup(LocalConnection connection, Component component, int x, int y) {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindGroup", true);
 
-        actions.add(addExistingProjectAction);
-        actions.addSeparator();
         InstallStatus status = connection.getInstallStatus();
         if (status.isInstalled()) {
             // a supported version of Codewind is installed
+            actions.add(addExistingProjectAction);
+            actions.addSeparator();
             actions.add(uninstallCodewindAction);
         } else if (status.hasInstalledVersions()) {
             // an older version of Codewind is installed
