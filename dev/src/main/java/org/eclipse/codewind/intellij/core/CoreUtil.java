@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corporation and others.
+ * Copyright (c) 2018, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -64,6 +64,16 @@ public class CoreUtil {
                 break;
         }
 	}
+
+    /**
+     * Must use with invokeLater
+     * @param title
+     * @param msg
+     * @return
+     */
+    public static int showYesNoDialog(String title, String msg) {
+        return Messages.showYesNoDialog(msg, title, Messages.getQuestionIcon());
+    }
 
     public static String readAllFromStream(InputStream stream) {
         Scanner s = new Scanner(stream);

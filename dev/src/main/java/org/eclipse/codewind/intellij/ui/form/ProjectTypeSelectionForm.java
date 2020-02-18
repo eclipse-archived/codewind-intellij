@@ -181,11 +181,13 @@ public class ProjectTypeSelectionForm {
         }
         int selectIndex = -1;
         int length = projectTypeListModel.size();
-        for (int i = 0; i < length; i++) {
-            ProjectTypeInfo info = projectTypeListModel.get(i);
-            if (info.getId().equals(initialProjectInfo.type.getId())) {
-                selectIndex = i;
-                break;
+        if (initialProjectInfo != null) {
+            for (int i = 0; i < length; i++) {
+                ProjectTypeInfo info = projectTypeListModel.get(i);
+                if (info.getId().equals(initialProjectInfo.type.getId())) {
+                    selectIndex = i;
+                    break;
+                }
             }
         }
         if (selectIndex >= 0) {
@@ -211,6 +213,9 @@ public class ProjectTypeSelectionForm {
             projectInfoChanged = false;
         }
         this.initialProjectInfo = info;
+        if (info == null) {
+            return;
+        }
         if (projectInfoChanged && projectTypes != null) {
             Set<String> keys = projectTypes.keySet();
             int i = 0;
