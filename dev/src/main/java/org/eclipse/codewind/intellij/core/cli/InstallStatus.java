@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -38,6 +38,7 @@ public class InstallStatus {
 		UNINSTALLED("uninstalled"),
 		STOPPED("stopped"),
 		STARTED("started"),
+		ERROR("error"),
 		UNKNOWN("unknown");
 
 		private String value;
@@ -54,11 +55,11 @@ public class InstallStatus {
 			}
 			// This should not happen
 			Logger.logWarning("Unrecognized installer status: " + statusStr);
-			return UNKNOWN;
+			return ERROR;
 		}
 
 		public boolean isInstalled() {
-			return (this != UNINSTALLED && this != UNKNOWN);
+			return this == STARTED || this == STOPPED;
 		}
 	}
    
@@ -85,7 +86,7 @@ public class InstallStatus {
 			
 		} catch (JSONException e) {
 			Logger.logWarning("The Codewind installer status format is not recognized", e); //$NON-NLS-1$
-			status = Status.UNKNOWN;
+			status = Status.ERROR;
 			url = null;
 		}
 	}
@@ -107,7 +108,11 @@ public class InstallStatus {
 	public boolean isUnknown() {
 		return status == Status.UNKNOWN;
 	}
-	
+
+	public boolean isError() {
+		return status == Status.ERROR;
+	}
+
 	public boolean isInstalled() {
 		return supportedVersion != null;
 	}
