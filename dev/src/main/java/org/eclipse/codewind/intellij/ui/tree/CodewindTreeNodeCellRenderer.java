@@ -195,7 +195,7 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
             } else if (status.isError()) {
                 return text + " [" + message("CodewindErrorQualifier") + "] (" + message("CodewindErrorMsg") + ")";
             } else if (status.isUnknown()) {
-                return text;
+                return text + " [ " + message("RefreshingCodewindStatus") + " ]";
             } else {
                 // Only remaining possibility is that codewind isn't installed.
                 return text + " [" + message("CodewindNotInstalledQualifier") + "] (" + message("CodewindNotInstalledMsg") + ")";
