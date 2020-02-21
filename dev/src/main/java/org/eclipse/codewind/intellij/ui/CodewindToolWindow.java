@@ -11,6 +11,7 @@
 
 package org.eclipse.codewind.intellij.ui;
 
+import com.intellij.ide.actions.NewProjectAction;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.ActionPopupMenu;
@@ -96,6 +97,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction showAllLogFilesAction;
     private final AnAction closeAllLogFilesAction;
 
+    private final AnAction newProjectAction;
+
     public CodewindToolWindow() {
         tree = new Tree();
         tree.setCellRenderer(new CodewindTreeNodeCellRenderer());
@@ -119,6 +122,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         addExistingProjectAction = new AddExistingProjectAction();
         showAllLogFilesAction = new ShowAllLogsAction();
         closeAllLogFilesAction = new CloseAllLogsAction();
+
+        newProjectAction = new NewProjectAction();
 
         debugAction = new AnAction("* debug *") {
             @Override
@@ -243,6 +248,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         InstallStatus status = connection.getInstallStatus();
         if (status.isInstalled()) {
             // a supported version of Codewind is installed
+            actions.add(newProjectAction);
             actions.add(addExistingProjectAction);
             actions.addSeparator();
             actions.add(uninstallCodewindAction);
