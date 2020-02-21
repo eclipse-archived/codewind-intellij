@@ -10,12 +10,14 @@
  *******************************************************************************/
 package org.eclipse.codewind.intellij.core.filetypes;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileTypes.ExactFileNameMatcher;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.FileTypeRegistry;
 import com.intellij.openapi.util.io.ByteSequence;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +28,17 @@ import java.util.Collections;
 public class CwSettingsFileTypeDetector implements FileTypeRegistry.FileTypeDetector {
 
     public CwSettingsFileTypeDetector() {
-        FileTypeManager.getInstance().associate(CwSettingsFileType.INSTANCE, new ExactFileNameMatcher(CoreConstants.SETTINGS_FILE));
+        CoreUtil.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        FileTypeManager.getInstance().associate(CwSettingsFileType.INSTANCE, new ExactFileNameMatcher(CoreConstants.SETTINGS_FILE));
+                    }
+                });
+            }
+        });
     }
 
     @Nullable
