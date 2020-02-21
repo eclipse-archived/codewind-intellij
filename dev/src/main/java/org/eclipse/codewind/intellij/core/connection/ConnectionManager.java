@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 IBM Corporation and others.
+ * Copyright (c) 2018, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -44,6 +44,7 @@ public class ConnectionManager {
 			try {
 				// This will connect if Codewind is running
 				localConnection.refreshInstallStatus();
+				CoreUtil.updateAll();
 			} catch (Exception e) {
 				Logger.logWarning("An error occurred trying to connect to the local Codewind instance at:" + localConnection.getBaseURI(), e); //$NON-NLS-1$
 			}
