@@ -18,9 +18,11 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.util.Key;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.content.Content;
 import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
@@ -30,7 +32,9 @@ import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.ConnectionEnv;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.RemoteConnection;
+import org.eclipse.codewind.intellij.core.console.SocketConsole;
 import org.eclipse.codewind.intellij.ui.actions.AddExistingProjectAction;
+import org.eclipse.codewind.intellij.ui.actions.CloseAllLogsAction;
 import org.eclipse.codewind.intellij.ui.actions.DisableAutoBuildAction;
 import org.eclipse.codewind.intellij.ui.actions.EnableAutoBuildAction;
 import org.eclipse.codewind.intellij.ui.actions.InstallCodewindAction;
@@ -41,11 +45,13 @@ import org.eclipse.codewind.intellij.ui.actions.OpenPerformanceDashboardAction;
 import org.eclipse.codewind.intellij.ui.actions.OpenTektonDashboardAction;
 import org.eclipse.codewind.intellij.ui.actions.RefreshAction;
 import org.eclipse.codewind.intellij.ui.actions.RemoveProjectAction;
+import org.eclipse.codewind.intellij.ui.actions.ShowAllLogsAction;
 import org.eclipse.codewind.intellij.ui.actions.StartBuildAction;
 import org.eclipse.codewind.intellij.ui.actions.StartCodewindAction;
 import org.eclipse.codewind.intellij.ui.actions.StopCodewindAction;
 import org.eclipse.codewind.intellij.ui.actions.UninstallCodewindAction;
 import org.eclipse.codewind.intellij.ui.actions.UpdateCodewindAction;
+import org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle;
 import org.eclipse.codewind.intellij.ui.toolwindow.UpdateHandler;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeModel;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeNodeCellRenderer;
@@ -59,6 +65,8 @@ import java.awt.event.MouseEvent;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
@@ -85,6 +93,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction openTektonDashboardAction;
     private final AnAction removeProjectAction;
     private final AnAction addExistingProjectAction;
+    private final AnAction showAllLogFilesAction;
+    private final AnAction closeAllLogFilesAction;
 
     public CodewindToolWindow() {
         tree = new Tree();
@@ -107,11 +117,12 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         openTektonDashboardAction = new OpenTektonDashboardAction();
         removeProjectAction = new RemoveProjectAction();
         addExistingProjectAction = new AddExistingProjectAction();
+        showAllLogFilesAction = new ShowAllLogsAction();
+        closeAllLogFilesAction = new CloseAllLogsAction();
 
         debugAction = new AnAction("* debug *") {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
-                System.out.println("*** in debugAction");
                 String[] ids = ActionManager.getInstance().getActionIds("");
                 Arrays.stream(ids).sorted().forEach(System.out::println);
             }
@@ -155,6 +166,22 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
     public static UpdateHandler getToolWindowUpdateHandler() {
         return updateHandler;
+    }
+
+    // A unique Key used in conjunction with Project.getUserData and Project.putUserData to hold the SocketConsole references connected
+    // to each console log.  This unique key is used to look up the SocketConsole related to each ToolWindow Content object.
+    // Usage:
+    // PUT:  Given a Content, create a new Key<SocketConsole> and add to this list.  putUserData(Key, SocketConsole) to be retrieved later
+    //       at any time the Project is available.
+    // GET:  Get the Key from the list, based on the Content, and then call getUserData to retrieve the SocketConsole
+    private static final Map<Content, Key<SocketConsole>> KEY_SOCKETCONSOLE_MAP = new HashMap<>();
+
+    // This does not necessarily have to be static since then, each IDE Window will have its own Map.
+    public static Map<Content, Key<SocketConsole>> getLogsKeyMap() {
+        // if (debug) // TODO for test purposes
+        //    get all content logs from all Window instances
+        //       ensure the size accurately reflects this number
+        return KEY_SOCKETCONSOLE_MAP;
     }
 
     public void expandLocalTree() {
@@ -264,6 +291,11 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         // Todo: Change this to Open in New Window or Current Window
         //        actions.add(openIdeaProjectAction);
         // actions.addSeparator();
+        DefaultActionGroup logGroup = new DefaultActionGroup(CodewindUIBundle.message("ShowLogFilesMenu"), true);
+        actions.add(logGroup);
+        logGroup.add(showAllLogFilesAction);
+        logGroup.add(closeAllLogFilesAction);
+        actions.addSeparator();
         actions.add(startBuildAction);
         if (application.isAutoBuild()) {
             actions.add(disableAutoBuildAction);

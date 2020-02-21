@@ -11,14 +11,17 @@
 package org.eclipse.codewind.intellij.ui.tree;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.openapi.wm.WindowManager;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.ui.CodewindToolWindow;
 
+import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
+
 public class CodewindToolWindowHelper {
+
+    // ID for the Log Files Tool Window
+    public final static String SHOW_LOG_FILES_TOOLWINDOW_ID = message("LogFilesToolWindow");  // Note this ID is actually the UI displayed string in the ToolWindow
 
     public static void openWindow(Project project) {
         CoreUtil.invokeLater(new Runnable() {

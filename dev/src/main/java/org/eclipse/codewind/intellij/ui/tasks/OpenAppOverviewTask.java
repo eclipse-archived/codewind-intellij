@@ -158,7 +158,14 @@ public class OpenAppOverviewTask extends Task.Backgroundable {
 
                         @Override
                         public void remove() {
-                            final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(getProject());
+                            ToolWindowManager toolWindowManager = null;
+                            if (!getProject().isDisposed()) {
+                                toolWindowManager = ToolWindowManager.getInstance(getProject());
+                            }
+                            if (toolWindowManager == null) {
+                                // It is possible that the project was already disposed of if the IDE was closed
+                                return; // In this case, it is unnecessary to try to close the overview tool window
+                            }
                             ToolWindow overviewToolWindow = toolWindowManager.getToolWindow(OpenAppOverviewTask.PROJECT_OVERVIEW_TOOLWINDOW_ID);
                             if (overviewToolWindow != null) {
                                 ContentManager contentManager = overviewToolWindow.getContentManager();
