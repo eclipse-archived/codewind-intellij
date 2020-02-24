@@ -27,6 +27,7 @@ public class InstallStatus {
 	public static final String WS_UPGRADE_VERSION = "0.6.0";
 
 	public static final InstallStatus UNKNOWN = new InstallStatus(Status.UNKNOWN);
+	public static final InstallStatus ERROR = new InstallStatus(Status.ERROR);
 
 	private Status status;
 	private String url;

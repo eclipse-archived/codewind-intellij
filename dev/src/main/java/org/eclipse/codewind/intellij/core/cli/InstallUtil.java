@@ -41,13 +41,13 @@ public class InstallUtil {
     public static final int START_TIMEOUT_DEFAULT = 60;
     public static final int STOP_TIMEOUT_DEFAULT = 300;
 
-	private static final String[] INSTALL_CMD = new String[] {"install"};
-	private static final String[] START_CMD = new String[] {"start"};
-	private static final String[] STOP_CMD = new String[] {"stop"};
-	private static final String[] STOP_ALL_CMD = new String[] {"stop-all"};
-	private static final String[] STATUS_CMD = new String[] {"status"};
-	private static final String[] REMOVE_CMD = new String[] {"remove", "local"};
-	private static final String[] UPGRADE_CMD = new String[] {"upgrade"};
+    private static final String[] INSTALL_CMD = new String[]{"install"};
+    private static final String[] START_CMD = new String[]{"start"};
+    private static final String[] STOP_CMD = new String[]{"stop"};
+    private static final String[] STOP_ALL_CMD = new String[]{"stop-all"};
+    private static final String[] STATUS_CMD = new String[]{"status"};
+    private static final String[] REMOVE_CMD = new String[]{"remove", "local"};
+    private static final String[] UPGRADE_CMD = new String[]{"upgrade"};
 
     private static final String INSTALL_VERSION_PROPERTIES = "install-version.properties";
     private static final String INSTALL_VERSION_KEY = "install-version";
@@ -69,18 +69,18 @@ public class InstallUtil {
     }
 
     public static InstallStatus getInstallStatus() throws IOException, JSONException, TimeoutException {
-        ProcessResult result = statusCodewind();
-        if (result.getExitValue() != 0) {
-            String error = result.getError();
-            if (error == null || error.isEmpty()) {
-                error = result.getOutput();
+        Process process = null;
+        try {
+            process = CLIUtil.runCWCTL(CLIUtil.GLOBAL_JSON, STATUS_CMD, null);
+            ProcessResult result = ProcessHelper.waitForProcess(process, 500, 120);
+            CLIUtil.checkResult(STATUS_CMD, result, true);
+            JSONObject status = new JSONObject(result.getOutput());
+            return new InstallStatus(status);
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroy();
             }
-            String msg = "Installer status command failed with rc: " + result.getExitValue() + " and error: " + error;  //$NON-NLS-1$ //$NON-NLS-2$
-            Logger.logWarning(msg);
-            throw new IOException(msg);
         }
-        JSONObject status = new JSONObject(result.getOutput());
-        return new InstallStatus(status);
     }
 
     public static ProcessResult startCodewind(String version, ProgressIndicator indicator) throws IOException, TimeoutException, JSONException {
@@ -88,7 +88,7 @@ public class InstallUtil {
         Process process = null;
         try {
             ConnectionManager.getManager().getLocalConnection().setInstallerStatus(LocalConnection.InstallerStatus.STARTING);
-            process = CLIUtil.runCWCTL(null, START_CMD, new String[] {TAG_OPTION, version});
+            process = CLIUtil.runCWCTL(null, START_CMD, new String[]{TAG_OPTION, version});
             ProcessResult result = ProcessHelper.waitForProcess(process, 500, 240);
             return result;
         } finally {
@@ -135,7 +135,7 @@ public class InstallUtil {
         Process process = null;
         try {
             CodewindManager.getManager().setInstallerStatus(CodewindManager.InstallerStatus.INSTALLING);
-            process = CLIUtil.runCWCTL(null, INSTALL_CMD, new String[] {TAG_OPTION, version});
+            process = CLIUtil.runCWCTL(null, INSTALL_CMD, new String[]{TAG_OPTION, version});
             return ProcessHelper.waitForProcess(process, 1000, 600);
         } finally {
             if (process != null && process.isAlive()) {
@@ -159,7 +159,8 @@ public class InstallUtil {
             return ProcessHelper.waitForProcess(process, 500, 120);
         } finally {
             if (process != null && process.isAlive()) {
-                process.destroy();;
+                process.destroy();
+                ;
             }
             CodewindManager.getManager().refreshInstallStatus();
             CodewindManager.getManager().setInstallerStatus(null);
@@ -170,30 +171,8 @@ public class InstallUtil {
         indicator.setIndeterminate(true);
         Process process = null;
         try {
-            process = CLIUtil.runCWCTL(null, UPGRADE_CMD, new String[] {WORKSPACE_OPTION, path});
+            process = CLIUtil.runCWCTL(null, UPGRADE_CMD, new String[]{WORKSPACE_OPTION, path});
             return ProcessHelper.waitForProcess(process, 500, 300);
-        } finally {
-            if (process != null && process.isAlive()) {
-                process.destroy();
-            }
-        }
-    }
-
-    private static ProcessResult statusCodewind() throws IOException, TimeoutException {
-        Process process = null;
-        try {
-            process = CLIUtil.runCWCTL(CLIUtil.GLOBAL_JSON, STATUS_CMD, null);
-            ProcessResult result = ProcessHelper.waitForProcess(process, 500, 120);
-            return result;
-        } catch (Throwable t) {
-            t.printStackTrace();
-            if (t instanceof RuntimeException)
-                throw (RuntimeException) t;
-            if (t instanceof IOException)
-                throw (IOException) t;
-            if (t instanceof TimeoutException)
-                throw (TimeoutException) t;
-            throw new RuntimeException(t);
         } finally {
             if (process != null && process.isAlive()) {
                 process.destroy();

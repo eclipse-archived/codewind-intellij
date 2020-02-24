@@ -11,6 +11,7 @@
 
 package org.eclipse.codewind.intellij.core.cli;
 
+import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.FileUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.PlatformUtil;
@@ -176,45 +177,41 @@ public class CLIUtil {
 	}
 	
 	public static void checkResult(String[] command, ProcessResult result, boolean checkOutput) throws IOException {
-		// Check for json error output (may still get a 0 return code in this case)
-		// Throws an exception if there is an error
-		checkErrorResult(command, result);
-
-		if (result.getExitValue() != 0) {
-			String msg;
-			String error = result.getError() != null && !result.getError().isEmpty() ? result.getError() : result.getOutput();
-			if (error == null || error.isEmpty()) {
-				msg = String.format("The %s command exited with return code %d", Arrays.toString(command), result.getExitValue()); //$NON-NLS-1$
-			} else {
-				msg = String.format("The %s command exited with return code %d and error: %s", Arrays.toString(command), result.getExitValue(), error); //$NON-NLS-1$
-			}
-			Logger.logWarning(msg);
-			throw new IOException(msg);
-		} else if (checkOutput && (result.getOutput() == null || result.getOutput().isEmpty())) {
-			String msg = String.format("The %s command exited with return code 0 but the output was empty", Arrays.toString(command));  //$NON-NLS-1$
-			Logger.logWarning(msg);
-			throw new IOException(msg);
-		}
-	}
-
-	private static void checkErrorResult(String[] command, ProcessResult result) throws IOException {
+		// Check for json error output (may still get a 0 return code in this case). If it is in the expected format
+		// then use this for the error message, otherwise fall back to using the system error if not empty or the
+		// system output.
+		// Expected format:
+		//    {"error":"con_not_found","error_description":"Connection AGALJKAFD not found"}
 		try {
 			if (result.getOutput() != null && !result.getOutput().isEmpty()) {
 				JSONObject obj = new JSONObject(result.getOutput());
-				if (obj.has(ERROR_KEY)) {
-					String msg = String.format("The %s command failed with error: %s", Arrays.toString(command), obj.getString(ERROR_DESCRIPTION_KEY)); //$NON-NLS-1$
+				if (obj.has(ERROR_KEY) && obj.has(ERROR_DESCRIPTION_KEY)) {
+					String msg = String.format("The cwctl '%s' command failed with error: %s", CoreUtil.formatString(command, " "), obj.getString(ERROR_DESCRIPTION_KEY)); //$NON-NLS-1$
 					Logger.logWarning(msg);
-					throw new IOException(msg);
-				}
-				if (obj.has(STATUS_KEY) && !STATUS_OK_VALUE.equals(obj.getString(STATUS_KEY))) {
-					String msg = String.format("The %s command failed with error: %s", Arrays.toString(command), obj.getString(STATUS_MSG_KEY)); //$NON-NLS-1$
-					Logger.logWarning(msg);
-					throw new IOException(msg);
+					throw new IOException(obj.getString(ERROR_DESCRIPTION_KEY));
 				}
 			}
 		} catch (JSONException e) {
 			// Ignore
 		}
+
+		if (result.getExitValue() != 0) {
+			String msg;
+			String error = result.getError() != null && !result.getError().isEmpty() ? result.getError() : result.getOutput();
+			if (error == null || error.isEmpty()) {
+				msg = String.format("The cwctl '%s' command exited with return code %d", CoreUtil.formatString(command, " "), result.getExitValue()); //$NON-NLS-1$
+			} else {
+				msg = String.format("The cwctl '%s' command exited with return code %d and error: %s", CoreUtil.formatString(command, " "), result.getExitValue(), error); //$NON-NLS-1$
+			}
+			Logger.logWarning(msg);
+			throw new IOException(msg);
+		} else if (checkOutput && (result.getOutput() == null || result.getOutput().isEmpty())) {
+			String msg = String.format("The cwctl '%s' command exited with return code 0 but the output was empty", CoreUtil.formatString(command, " "));  //$NON-NLS-1$
+			Logger.logWarning(msg);
+			throw new IOException(msg);
+		}
+
+		Logger.log(String.format("Result of the cwctl '%s' command: \n%s", CoreUtil.formatString(command, " "), Optional.ofNullable(result.getOutput()).orElse("<empty>")));
 	}
 
 }
