@@ -11,19 +11,17 @@
 
 package org.eclipse.codewind.intellij.core.connection;
 
+import com.intellij.openapi.progress.EmptyProgressIndicator;
+import org.eclipse.codewind.intellij.core.CodewindApplication;
+import org.eclipse.codewind.intellij.core.CodewindManager;
+import org.eclipse.codewind.intellij.core.CoreUtil;
+import org.eclipse.codewind.intellij.core.Logger;
+import org.eclipse.codewind.intellij.core.cli.ConnectionUtil;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
-// import org.eclipse.codewind.core.internal.CodewindObjectFactory;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.progress.EmptyProgressIndicator;
-import org.eclipse.codewind.intellij.core.CodewindApplication;
-import org.eclipse.codewind.intellij.core.CoreUtil;
-import org.eclipse.codewind.intellij.core.Logger;
-import org.eclipse.codewind.intellij.core.cli.ConnectionInfo;
-import org.eclipse.codewind.intellij.core.cli.ConnectionUtil;
 
 /**
  * Singleton class to keep track of the list of current Codewind connections,
@@ -43,7 +41,7 @@ public class ConnectionManager {
 		CoreUtil.runAsync( () -> {
 			try {
 				// This will connect if Codewind is running
-				localConnection.refreshInstallStatus();
+				CodewindManager.getManager().refreshInstallStatus();
 				CoreUtil.updateAll();
 			} catch (Exception e) {
 				Logger.logWarning("An error occurred trying to connect to the local Codewind instance at:" + localConnection.getBaseURI(), e); //$NON-NLS-1$

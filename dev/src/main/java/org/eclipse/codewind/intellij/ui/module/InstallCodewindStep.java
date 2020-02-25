@@ -14,6 +14,7 @@ package org.eclipse.codewind.intellij.ui.module;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
+import org.eclipse.codewind.intellij.core.CodewindManager;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.ProcessHelper;
@@ -48,7 +49,7 @@ public class InstallCodewindStep extends ModuleWizardStep {
 
         String buttonLabel = null;
         LocalConnection localConnection = ConnectionManager.getManager().getLocalConnection();
-        InstallStatus status = localConnection.getInstallStatus();
+        InstallStatus status = CodewindManager.getManager().getInstallStatus();
         if (status.hasInstalledVersions()) {
             buttonLabel = message("UpgradeCodewind");
         } else {
@@ -57,7 +58,7 @@ public class InstallCodewindStep extends ModuleWizardStep {
         button = new JButton(buttonLabel);
         panel.add(button);
         button.addActionListener(e -> {
-            localConnection.refreshInstallStatus();
+            CodewindManager.getManager().refreshInstallStatus();
             if (status.isInstalled()) {
                 CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindInstalledStarted"));
             } else if (status.hasInstalledVersions()) {

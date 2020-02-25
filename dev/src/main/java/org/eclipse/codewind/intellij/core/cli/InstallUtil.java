@@ -87,7 +87,7 @@ public class InstallUtil {
         indicator.setIndeterminate(true);
         Process process = null;
         try {
-            ConnectionManager.getManager().getLocalConnection().setInstallerStatus(LocalConnection.InstallerStatus.STARTING);
+            CodewindManager.getManager().setInstallerStatus(CodewindManager.InstallerStatus.STARTING);
             process = CLIUtil.runCWCTL(null, START_CMD, new String[]{TAG_OPTION, version});
             ProcessResult result = ProcessHelper.waitForProcess(process, 500, 240);
             return result;
@@ -95,8 +95,8 @@ public class InstallUtil {
             if (process != null && process.isAlive()) {
                 process.destroy();
             }
-            ConnectionManager.getManager().getLocalConnection().refreshInstallStatus();
-            ConnectionManager.getManager().getLocalConnection().setInstallerStatus(null);
+            CodewindManager.getManager().refreshInstallStatus();
+            CodewindManager.getManager().setInstallerStatus(null);
         }
     }
 
@@ -118,15 +118,15 @@ public class InstallUtil {
 
         Process process = null;
         try {
-            ConnectionManager.getManager().getLocalConnection().setInstallerStatus(LocalConnection.InstallerStatus.STOPPING);
+            CodewindManager.getManager().setInstallerStatus(CodewindManager.InstallerStatus.STOPPING);
             process = CLIUtil.runCWCTL(null, STOP_ALL_CMD, null);
             return ProcessHelper.waitForProcess(process, 500, 240);
         } finally {
             if (process != null && process.isAlive()) {
                 process.destroy();
             }
-            ConnectionManager.getManager().getLocalConnection().refreshInstallStatus();
-            ConnectionManager.getManager().getLocalConnection().setInstallerStatus(null);
+            CodewindManager.getManager().refreshInstallStatus();
+            CodewindManager.getManager().setInstallerStatus(null);
         }
     }
 

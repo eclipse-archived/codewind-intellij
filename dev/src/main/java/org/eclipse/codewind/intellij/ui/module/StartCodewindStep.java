@@ -14,6 +14,7 @@ package org.eclipse.codewind.intellij.ui.module;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
+import org.eclipse.codewind.intellij.core.CodewindManager;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
@@ -42,9 +43,8 @@ public class StartCodewindStep extends ModuleWizardStep {
         button = new JButton(message("StartCodewind"));
         panel.add(button);
         button.addActionListener(e -> {
-            LocalConnection localConnection = ConnectionManager.getManager().getLocalConnection();
-            localConnection.refreshInstallStatus();
-            if (localConnection.getInstallStatus().isStarted()) {
+            CodewindManager.getManager().refreshInstallStatus();
+            if (CodewindManager.getManager().getInstallStatus().isStarted()) {
                 CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindStarted"));
             } else {
                 ProgressManager.getInstance().run(new StartCodewindTask(this::onStart));

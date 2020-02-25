@@ -166,8 +166,8 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
     @NotNull
     private String getText(LocalConnection connection) {
         String text = connection.getName();
-        if (connection.getInstallerStatus() != null) {
-            switch (connection.getInstallerStatus()) {
+        if (CodewindManager.getManager().getInstallerStatus() != null) {
+            switch (CodewindManager.getManager().getInstallerStatus()) {
                 case INSTALLING:
                     return text + " [" + message("CodewindInstallingQualifier") + "]";
                 case UNINSTALLING:
@@ -178,7 +178,7 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
                     return text + " [" + message("CodewindStoppingQualifier") + "]";
             }
         } else {
-            InstallStatus status = connection.getInstallStatus();
+            InstallStatus status = CodewindManager.getManager().getInstallStatus();
             if (status.isStarted()) {
                 return text + " [" + message("CodewindRunningQualifier") + "]";
             } else if (status.isInstalled()) {
@@ -193,7 +193,10 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
                 return text + " [" + message("CodewindWrongVersionQualifier", status.getInstalledVersions()) + "] (" +
                         message("CodewindWrongVersionMsg", InstallUtil.getVersion());
             } else if (status.isError()) {
-                return text + " [" + message("CodewindErrorQualifier") + "] (" + message("CodewindErrorMsg") + ")";
+                String msg = CodewindManager.getManager().getInstallerErrorMsg();
+                if (msg == null)
+                    msg = message("CodewindErrorMsg");
+                return text + " [" + message("CodewindErrorQualifier") + "] (" +msg + ")";
             } else if (status.isUnknown()) {
                 return text + " [ " + message("RefreshingCodewindStatus") + " ]";
             } else {

@@ -26,6 +26,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
+import org.eclipse.codewind.intellij.core.CodewindManager;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.InstallStatus;
@@ -206,7 +207,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
             return;
         Object node = treePath.getLastPathComponent();
         if (node instanceof LocalConnection) {
-            InstallStatus status = ((LocalConnection) node).getInstallStatus();
+            InstallStatus status = CodewindManager.getManager().getInstallStatus();
             if (status.isInstalled() && !status.isStarted()) {
                 AnActionEvent actionEvent = AnActionEvent.createFromInputEvent(e, ActionPlaces.POPUP,
                         null, DataContext.EMPTY_CONTEXT, true, false);
@@ -245,7 +246,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private void handleLocalConnectionPopup(LocalConnection connection, Component component, int x, int y) {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindGroup", true);
 
-        InstallStatus status = connection.getInstallStatus();
+        InstallStatus status = CodewindManager.getManager().getInstallStatus();
         if (status.isInstalled()) {
             // a supported version of Codewind is installed
             actions.add(newProjectAction);
@@ -255,7 +256,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         } else if (status.hasInstalledVersions()) {
             // an older version of Codewind is installed
             actions.add(updateCodewindAction);
-        } else {
+        } else if (!status.isError()) {
             // No version of Codewind is installed
             actions.add(installCodewindAction);
         }
@@ -264,7 +265,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         } else if (status.isInstalled()) {
             actions.add(startCodewindAction);
         }
-        actions.addSeparator();
+        if (actions.getChildrenCount() > 0)
+            actions.addSeparator();
         actions.add(refreshAction);
 
         // TODO remove this

@@ -139,7 +139,7 @@ public class OpenAppOverviewTask extends Task.Backgroundable {
 
                     String connectionId = application.connection.getConid();
                     if (connectionId == null) {
-                        connectionId = LocalConnection.CONNECTION_ID;
+                        connectionId = LocalConnection.DEFAULT_ID;
                     }
                     final Content finalContent = content;
                     CodewindToolWindow.getToolWindowUpdateHandler().addAppUpdateListener(content, connectionId, application.projectID, new UpdateHandler.AppUpdateListener() {

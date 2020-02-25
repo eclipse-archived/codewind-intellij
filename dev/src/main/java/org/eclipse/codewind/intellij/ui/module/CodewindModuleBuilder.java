@@ -139,7 +139,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
         String url = template.getUrl();
         String language = template.getLanguage();
         String projectType = template.getProjectType();
-        String conid = LocalConnection.CONNECTION_ID;
+        String conid = LocalConnection.DEFAULT_ID;
         Project ideaProject = module.getProject();
 
         // The 'appsody init' command will fail to initialize the maven cache if there is no JDK on the PATH and
