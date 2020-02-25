@@ -15,13 +15,13 @@
 
     <description><![CDATA[
         Adds support for developing cloud-native, containerized web applications.
-    ]]></description>
+    ]]>    </description>
 
     <change-notes><![CDATA[
     <p><b>0.9.0</b></p>
-    <p>
+<p>
     Initial tech preview release.
-    To get started, see <a href="https://www.eclipse.org/codewind/mdt-intellij-getting-started.md.html">Getting Started</a>.
+    To get started, see <a href="https://www.eclipse.org/codewind/mdt-intellij-getting-started.html">Getting Started</a>.
     </p>
     ]]>
     </change-notes>
@@ -34,16 +34,11 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Codewind"
-                    anchor="left"
-                    secondary="true"
-                    icon="/META-INF/pluginIcon13x13.svg"
-                    factoryClass="org.eclipse.codewind.intellij.ui.WindowToolFactory"/>
+        <toolWindow id="Codewind" anchor="left" secondary="true" icon="/META-INF/pluginIcon13x13.svg" factoryClass="org.eclipse.codewind.intellij.ui.WindowToolFactory"/>
 
         <!-- <moduleType id="CODEWIND_MODULE" implementationClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleType" /> -->
         <moduleBuilder builderClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleBuilder" />
-        <fileType name="CwSettingsFileType" implementationClass="org.eclipse.codewind.intellij.core.filetypes.CwSettingsFileType" fieldName="INSTANCE"
-                  language="JSON"/>
+        <fileType name="CwSettingsFileType" implementationClass="org.eclipse.codewind.intellij.core.filetypes.CwSettingsFileType" fieldName="INSTANCE" language="JSON"/>
         <fileTypeDetector implementation="org.eclipse.codewind.intellij.core.filetypes.CwSettingsFileTypeDetector" order="first"/>
     </extensions>
 
