@@ -23,6 +23,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.tree.TreePath;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.intellij.openapi.actionSystem.PlatformDataKeys.CONTEXT_COMPONENT;
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
@@ -42,27 +45,35 @@ public class RemoveProjectAction extends AnAction {
         }
 
         Tree tree = (Tree) data;
-        TreePath treePath = tree.getSelectionPath();
-        if (treePath == null) {
+        TreePath[] treePaths = tree.getSelectionPaths();
+        List<CodewindApplication> applications = new ArrayList<>();
+        if (treePaths != null) {
+            for (TreePath treePath:  treePaths) {
+                Object node = treePath.getLastPathComponent();
+                if (node instanceof CodewindApplication) {
+                    applications.add((CodewindApplication) node);
+                } else {
+                    Logger.log("selection for RemoveProjectAction is not a project: " + data);
+                    System.out.println("*** selection for RemoveProjectAction is not a project: " + data);
+                }
+            }
+        }
+        if (applications.isEmpty()) {
             Logger.log("no selection for RemoveProjectAction: " + data);
             System.out.println("*** no selection for RemoveProjectAction: " + data);
             return;
         }
 
-        Object node = treePath.getLastPathComponent();
-        if (!(node instanceof CodewindApplication)) {
-            Logger.log("selection for RemoveProjectAction is not a project: " + data);
-            System.out.println("*** selection for RemoveProjectAction is not a project: " + data);
-            return;
-        }
-
-        CodewindApplication application = (CodewindApplication) node;
-
         String title = message("UnbindActionTitle");
-        String message = message("UnbindActionMessage", application.name);
+        String message;
+        if (applications.size() == 1) {
+            message = message("UnbindActionMessage", applications.get(0).name);
+        } else {
+            message = message("UnbindActionMultipleMessage", applications.size());
+        }
         int response = Messages.showConfirmationDialog(tree, message, title, Messages.OK_BUTTON, Messages.CANCEL_BUTTON);
         if (response == Messages.OK) {
-            ProgressManager.getInstance().run(new RemoveProjectTask(application));
+            ProgressManager.getInstance().run(new RemoveProjectTask(applications));
         }
     }
 }
