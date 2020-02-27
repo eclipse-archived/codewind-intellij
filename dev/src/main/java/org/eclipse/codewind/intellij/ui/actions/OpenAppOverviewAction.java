@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
+import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.ui.tasks.OpenAppOverviewTask;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +33,7 @@ public class OpenAppOverviewAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         CodewindApplication application = getSelection(e);
-        if (e != null) {
+        if (application != null) {
             // Pass project to task and on to overview
             OpenAppOverviewTask task = new OpenAppOverviewTask(application, e.getProject());
             ProgressManager.getInstance().run(task);
@@ -46,6 +47,10 @@ public class OpenAppOverviewAction extends AnAction {
         }
         Tree tree = (Tree) data;
         TreePath treePath = tree.getSelectionPath();
+        if (treePath == null) {
+            Logger.log("No selection path for OpenAppOverviewAction: " + tree);
+            return null;
+        }
         Object node = treePath.getLastPathComponent();
         if (!(node instanceof CodewindApplication)) {
             return null;
