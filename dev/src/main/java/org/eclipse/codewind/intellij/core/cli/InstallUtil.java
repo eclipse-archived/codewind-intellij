@@ -16,9 +16,7 @@ import org.eclipse.codewind.intellij.core.CodewindManager;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.ProcessHelper;
 import org.eclipse.codewind.intellij.core.ProcessHelper.ProcessResult;
-import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
-import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -160,7 +158,6 @@ public class InstallUtil {
         } finally {
             if (process != null && process.isAlive()) {
                 process.destroy();
-                ;
             }
             CodewindManager.getManager().refreshInstallStatus();
             CodewindManager.getManager().setInstallerStatus(null);

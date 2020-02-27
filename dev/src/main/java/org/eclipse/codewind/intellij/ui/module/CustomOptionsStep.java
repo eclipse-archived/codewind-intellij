@@ -29,7 +29,7 @@ import java.awt.event.ActionListener;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
-public class CustomOptionStep extends ModuleWizardStep {
+public class CustomOptionsStep extends ModuleWizardStep {
 
     private final JPanel panel;
     private final JLabel label;
@@ -37,7 +37,7 @@ public class CustomOptionStep extends ModuleWizardStep {
 
     private boolean isStarted;
 
-    public CustomOptionStep() {
+    public CustomOptionsStep() {
         this.panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 
@@ -67,7 +67,10 @@ public class CustomOptionStep extends ModuleWizardStep {
                 button.setVisible(false);
                 isStarted = true;
             } else if (status.isError()) {
-                String labelText = message("CodewindStatusError", CodewindManager.getManager().getInstallerErrorMsg());
+                String msg = CodewindManager.getManager().getInstallerErrorMsg();
+                if (msg == null)
+                    message("CodewindErrorMsg");
+                String labelText = message("CodewindStatusError", msg);
                 label.setText(labelText);
                 button.setText(message("RefreshCodewindStatus"));
                 removeActionListeners(button);
