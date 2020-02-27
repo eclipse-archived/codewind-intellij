@@ -67,36 +67,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
     @Nullable
     @Override
     public ModuleWizardStep getCustomOptionsStep(WizardContext context, Disposable parentDisposable) {
-        try {
-            if (!InstallUtil.getInstallStatus().isInstalled()) {
-                return new InstallCodewindStep();
-            }
-
-            if (!InstallUtil.getInstallStatus().isStarted()) {
-                return new StartCodewindStep();
-            }
-
-            // The custom options step's #onWizardFinished() method doesn't get called, so we can't use
-            // this step to do any validation when the user clicks 'finish'.  Since we only have one real
-            // step to do the validation, that step has to be created in #createWizardSteps.
-            // We still need to provide a custom option step so the user can select the JDK for the project.
-            return new ModuleWizardStep() {
-                private final JPanel panel = new JPanel();
-
-                @Override
-                public JComponent getComponent() {
-                    return panel;
-                }
-
-                @Override
-                public void updateDataModel() {
-
-                }
-            };
-        } catch (Exception e) {
-            Logger.logWarning(e);
-        }
-        return null;
+        return new CustomOptionStep();
     }
 
     @Override
