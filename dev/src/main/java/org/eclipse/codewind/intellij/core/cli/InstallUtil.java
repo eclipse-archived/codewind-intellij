@@ -46,7 +46,7 @@ public class InstallUtil {
 	private static final String[] STOP_CMD = new String[] {"stop"};
 	private static final String[] STOP_ALL_CMD = new String[] {"stop-all"};
 	private static final String[] STATUS_CMD = new String[] {"status"};
-	private static final String[] REMOVE_CMD = new String[] {"remove"};
+	private static final String[] REMOVE_CMD = new String[] {"remove", "local"};
 	private static final String[] UPGRADE_CMD = new String[] {"upgrade"};
 
     private static final String INSTALL_VERSION_PROPERTIES = "install-version.properties";

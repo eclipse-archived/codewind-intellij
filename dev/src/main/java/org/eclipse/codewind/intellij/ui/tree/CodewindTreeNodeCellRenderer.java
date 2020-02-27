@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 IBM Corporation and others.
+ * Copyright (c) 2019, 2020 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v2.0
  * which accompanies this distribution, and is available at
@@ -192,10 +192,14 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
                 // An older version is installed
                 return text + " [" + message("CodewindWrongVersionQualifier", status.getInstalledVersions()) + "] (" +
                         message("CodewindWrongVersionMsg", InstallUtil.getVersion());
+            } else if (status.isError()) {
+                return text + " [" + message("CodewindErrorQualifier") + "] (" + message("CodewindErrorMsg") + ")";
             } else if (status.isUnknown()) {
-                return text + " [" + message("CodewindErrorQualifier") + "] (" + message("CodewindErrorMsg") + ")";
+                return text + " [ " + message("RefreshingCodewindStatus") + " ]";
             } else {
-                return text + " [" + message("CodewindErrorQualifier") + "] (" + message("CodewindErrorMsg") + ")";
+                // Only remaining possibility is that codewind isn't installed.
+                return text + " [" + message("CodewindNotInstalledQualifier") + "] (" + message("CodewindNotInstalledMsg") + ")";
+
             }
         }
         return text;

@@ -19,20 +19,27 @@ import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.ProjectUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
 public class RemoveProjectTask extends Task.Backgroundable {
-    private final CodewindApplication application;
+    private final List<CodewindApplication> applications;
+    private CodewindApplication errorApp;
 
-    public RemoveProjectTask(CodewindApplication application) {
+    public RemoveProjectTask(List<CodewindApplication> applications) {
         super(null, message("UnbindActionJobTitle"));
-        this.application = application;
+        this.applications = applications;
     }
 
     @Override
     public void run(@NotNull ProgressIndicator indicator) {
         try {
-            ProjectUtil.removeProject(application.name, application.projectID, indicator);
+            for (CodewindApplication application: applications) {
+                errorApp = application;
+                ProjectUtil.removeProject(application.name, application.projectID, indicator);
+                errorApp = null;
+            }
         } catch (Exception e) {
             // Rethrown exception will be handled in #onThrowable()
             throw new RuntimeException(e);
@@ -44,7 +51,7 @@ public class RemoveProjectTask extends Task.Backgroundable {
         Throwable t = error;
         while (t.getCause() != null)
             t = t.getCause();
-        Logger.logWarning("An error occurred removing project " + application.name, t);
-        Messages.showErrorDialog(message("UnbindActionError", application.name, t.getLocalizedMessage()), message("CodewindLabel"));
+        Logger.logWarning("An error occurred removing project " + errorApp.name, t);
+        Messages.showErrorDialog(message("UnbindActionError", errorApp.name, t.getLocalizedMessage()), message("CodewindLabel"));
     }
 }
