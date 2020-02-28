@@ -59,15 +59,17 @@ public class CustomOptionsStep extends ModuleWizardStep {
 
     private void configurePage() {
         try {
-            CodewindManager.getManager().refreshInstallStatus();
-            InstallStatus status = CodewindManager.getManager().getInstallStatus();
+            CodewindManager manager = CodewindManager.getManager();
+
+            manager.refreshInstallStatus();
+            InstallStatus status = manager.getInstallStatus();
 
             if (status.isStarted()) {
                 label.setVisible(false);
                 button.setVisible(false);
                 isStarted = true;
             } else if (status.isError()) {
-                String msg = CodewindManager.getManager().getInstallerErrorMsg();
+                String msg = manager.getInstallerErrorMsg();
                 if (msg == null)
                     message("CodewindErrorMsg");
                 String labelText = message("CodewindStatusError", msg);
@@ -75,7 +77,7 @@ public class CustomOptionsStep extends ModuleWizardStep {
                 button.setText(message("RefreshCodewindStatus"));
                 removeActionListeners(button);
                 button.addActionListener(e -> {
-                    CodewindManager.getManager().refreshInstallStatus();
+                    manager.refreshInstallStatus();
                     configurePage();
                 });
             } else if (status.isInstalled()) {
@@ -83,8 +85,8 @@ public class CustomOptionsStep extends ModuleWizardStep {
                 button.setText(message("StartCodewind"));
                 removeActionListeners(button);
                 button.addActionListener(e -> {
-                    CodewindManager.getManager().refreshInstallStatus();
-                    if (CodewindManager.getManager().getInstallStatus().isStarted()) {
+                    manager.refreshInstallStatus();
+                    if (manager.getInstallStatus().isStarted()) {
                         CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindStarted"));
                     } else {
                         ProgressManager.getInstance().run(new StartCodewindTask(this::onStart));
@@ -95,8 +97,8 @@ public class CustomOptionsStep extends ModuleWizardStep {
                 button.setText(message("UpgradeCodewind"));
                 removeActionListeners(button);
                 button.addActionListener(e -> {
-                    CodewindManager.getManager().refreshInstallStatus();
-                    if (CodewindManager.getManager().getInstallStatus().isStarted()) {
+                    manager.refreshInstallStatus();
+                    if (manager.getInstallStatus().isStarted()) {
                         CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindStarted"));
                     } else {
                         ProgressManager.getInstance().run(new UpgradeCodewindTask(this::onStart));
@@ -107,8 +109,8 @@ public class CustomOptionsStep extends ModuleWizardStep {
                 button.setText(message("InstallCodewind"));
                 removeActionListeners(button);
                 button.addActionListener(e -> {
-                    CodewindManager.getManager().refreshInstallStatus();
-                    if (CodewindManager.getManager().getInstallStatus().isStarted()) {
+                    manager.refreshInstallStatus();
+                    if (manager.getInstallStatus().isStarted()) {
                         CoreUtil.openDialog(CoreUtil.DialogType.INFO, message("CodewindLabel"), message("CodewindStarted"));
                     } else {
                         ProgressManager.getInstance().run(new InstallCodewindTask(this::onStart));
@@ -128,7 +130,7 @@ public class CustomOptionsStep extends ModuleWizardStep {
 
     @Override
     public void updateDataModel() {
-        // Need to override because it's abstract in superclass
+        CodewindManager.getManager().refreshInstallStatus();
     }
 
     @Override
