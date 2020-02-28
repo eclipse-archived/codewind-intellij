@@ -25,10 +25,12 @@ import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.ProjectTypeInfo;
 import org.eclipse.codewind.intellij.core.connection.ProjectTypeInfo.ProjectSubtypeInfo;
 import org.eclipse.codewind.intellij.core.constants.ProjectInfo;
+import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
 import org.eclipse.codewind.intellij.ui.tree.CodewindToolWindowHelper;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.SystemIndependent;
 
+import javax.swing.JFrame;
 import java.util.List;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
@@ -106,39 +108,47 @@ public class AddExistingProjectWizard extends AbstractWizardEx {
             continueWithBind(name, path, projectInfo.language.getId(), typeInfo);
         } else { // If the user chooses some other type instead of the detected type
             final ProjectSubtypeInfo subtypeInfo = model.getSubtypeInfo();
-            if (subtypeInfo != null) {  // This should not be null
-                // call validate again with type and subtype hint
-                // allows it to run extension commands if defined for that type and subtype
-                validationException = null;
-                String language = subtypeInfo.id;
-                // Todo - make all of these processes in this wizard cancellable
-                ProgressManager.getInstance().runProcessWithProgressSynchronously(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
-                            ProjectUtil.validateProject(name, path, typeInfo.getId() + ":" + subtypeInfo.id, connection.getConid(), indicator);
-                        } catch (Exception e) {
-                            Logger.log(e);
-                            validationException = e;
-                        }
+            // call validate again with type and subtype hint
+            // allows it to run extension commands if defined for that type and subtype
+            validationException = null;
+            String language = null;
+            if (projectInfo != null) {
+                language = projectInfo.language.getId();  // First use detected language
+            }
+            if (subtypeInfo != null) {
+                language = subtypeInfo.id; // If user overrides it, use it instead
+            }
+            if (language == null) {
+                language = ProjectLanguage.LANGUAGE_JAVA.getId(); // if still null, use java
+            }
+            // Todo - make all of these processes in this wizard cancellable
+            final String finalLanguage = language;
+            ProgressManager.getInstance().runProcessWithProgressSynchronously(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
+                        ProjectUtil.validateProject(name, path, typeInfo.getId() + ":" + finalLanguage, connection.getConid(), indicator);
+                    } catch (Exception e) {
+                        Logger.log(e);
+                        validationException = e;
                     }
-                }, message("ProjectValidationTask", name), false, intellijProject);
-
-                if (validationException != null) {
-                    CoreUtil.invokeLater(() -> {
-                        int rc1 = CoreUtil.showYesNoDialog(message("ProjectValidationTitle"), message("ProjectValidationFailedContinueProjectBind", validationException.getMessage()));
-                        if (rc1 == Messages.YES) {
-                            continueWithBind(name, path, language, typeInfo);
-                        } else {
-                            doBind = false;
-                        }
-                    });
                 }
+            }, message("ProjectValidationTask", name), false, intellijProject);
 
-                if (doBind && validationException == null) {
-                    continueWithBind(name, path, language, typeInfo);
-                }
+            if (validationException != null) {
+                CoreUtil.invokeLater(() -> {
+                    int rc1 = CoreUtil.showYesNoDialog(message("ProjectValidationTitle"), message("ProjectValidationFailedContinueProjectBind", validationException.getMessage()));
+                    if (rc1 == Messages.YES) {
+                        continueWithBind(name, path, finalLanguage, typeInfo);
+                    } else {
+                        doBind = false;
+                    }
+                });
+            }
+
+            if (doBind && validationException == null) {
+                continueWithBind(name, path, finalLanguage, typeInfo);
             }
         }
 
@@ -182,7 +192,10 @@ public class AddExistingProjectWizard extends AbstractWizardEx {
                 @SystemIndependent String basePath = openedProject.getBasePath();
                 if (selectedProjectPath.equals(basePath)) {
                     // If the project is already opened, just set it active
-                    WindowManager.getInstance().getFrame(openedProject).setVisible(true);
+                    JFrame frame = WindowManager.getInstance().getFrame(openedProject);
+                    if (frame != null) {
+                        frame.setVisible(true);
+                    }
                     return;
                 }
             }
