@@ -62,7 +62,7 @@ public class AddExistingProjectForm {
                 FileChooserDescriptor singleFolderDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor();
                 singleFolderDescriptor.setTitle(message("SelectProjectPageFilesystemProject"));
                 singleFolderDescriptor.setHideIgnored(true);
-                singleFolderDescriptor.setShowFileSystemRoots(false);
+                singleFolderDescriptor.setShowFileSystemRoots(true);
                 @SystemIndependent String basePath = project.getBasePath();
                 VirtualFile file = null;
                 if (basePath != null) {
