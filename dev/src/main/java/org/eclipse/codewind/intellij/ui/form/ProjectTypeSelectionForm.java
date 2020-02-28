@@ -70,11 +70,16 @@ public class ProjectTypeSelectionForm {
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
                 if (!listSelectionEvent.getValueIsAdjusting()) {
                     if (projectTypeList.getSelectedIndex() >= 0) {
-                        Object selectedValue = projectTypeList.getSelectedValue();
                         int selectedIndex = projectTypeList.getSelectedIndex();
                         ProjectTypeInfo selectedType = projectTypeListModel.getElementAt(selectedIndex);
                         subtypeList.removeAll();
                         fillSubTypesList(false, selectedType);
+                        step.fireStateChanging();
+                        return;
+                    }
+                    else {
+                        // reset if deselected
+                        fillSubTypesList(false, null);
                         step.fireStateChanging();
                     }
                 }
@@ -82,6 +87,7 @@ public class ProjectTypeSelectionForm {
         });
         subtypeLabel = new JLabel(message("SelectProjectTypePageLanguageLabel"));
         subtypeList = new JBList<ProjectSubtypeInfo>(subTypeListModel);
+        subtypeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         subtypeList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
@@ -96,6 +102,7 @@ public class ProjectTypeSelectionForm {
         return this.contentPane;
     }
 
+    @Nullable
     public ProjectTypeInfo getSelectedProjectTypeInfo() {
         Object selectedValue = projectTypeList.getSelectedValue();
         return (ProjectTypeInfo) selectedValue;
@@ -126,16 +133,12 @@ public class ProjectTypeSelectionForm {
                     subTypeListModel.addElement(subtypeInfo);
                 }
             }
-            // only 1 possible choice, select it
-            if (projectSubtypes.size() == 1) {
-                subtypeList.setSelectedIndex(0);
-            }
-            // otherwise if more than 1 choice, allow subtype/language selection if:
+            // If more than 1 choice, allow subtype/language selection if:
             // 1. selected type is docker (can select language)
             // 2. selected type is different than the detected type
             //    e.g. project was detected as docker, then user switch selection to an
             //    extension project type, they should be allowed to choose the subtype
-            else if (projectSubtypes.size() > 1) {
+            if (subTypeListModel.size() >= 1) {
                 boolean isDocker = projectTypeInfo.eq(ProjectType.TYPE_DOCKER);
                 if (isDocker || initialProjectInfo == null || !projectTypeInfo.eq(initialProjectInfo.type)) {
                     // if possible, select language that was detected
