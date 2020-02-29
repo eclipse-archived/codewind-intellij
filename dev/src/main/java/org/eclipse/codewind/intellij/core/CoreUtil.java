@@ -20,9 +20,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static com.intellij.openapi.application.ModalityState.defaultModalityState;
 
@@ -118,6 +120,15 @@ public class CoreUtil {
             start = start.getParent();
         }
         return start.resolve(finishPath);
+    }
+
+    /**
+     * In: [ "Here", "Is", "Some Input" ]
+     * Separator: ", "
+     * Out: "Here, Is, Some Input"
+     */
+    public static String formatString(String[] strArray, String separator) {
+        return Arrays.stream(strArray).collect(Collectors.joining(separator));
     }
 
     public static int parsePort(String portStr) {
