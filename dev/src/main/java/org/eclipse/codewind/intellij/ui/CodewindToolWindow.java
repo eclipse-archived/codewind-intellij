@@ -35,24 +35,7 @@ import org.eclipse.codewind.intellij.core.connection.ConnectionEnv;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.RemoteConnection;
 import org.eclipse.codewind.intellij.core.console.SocketConsole;
-import org.eclipse.codewind.intellij.ui.actions.AddExistingProjectAction;
-import org.eclipse.codewind.intellij.ui.actions.CloseAllLogsAction;
-import org.eclipse.codewind.intellij.ui.actions.DisableAutoBuildAction;
-import org.eclipse.codewind.intellij.ui.actions.EnableAutoBuildAction;
-import org.eclipse.codewind.intellij.ui.actions.InstallCodewindAction;
-import org.eclipse.codewind.intellij.ui.actions.OpenAppOverviewAction;
-import org.eclipse.codewind.intellij.ui.actions.OpenApplicationAction;
-import org.eclipse.codewind.intellij.ui.actions.OpenIdeaProjectAction;
-import org.eclipse.codewind.intellij.ui.actions.OpenPerformanceDashboardAction;
-import org.eclipse.codewind.intellij.ui.actions.OpenTektonDashboardAction;
-import org.eclipse.codewind.intellij.ui.actions.RefreshAction;
-import org.eclipse.codewind.intellij.ui.actions.RemoveProjectAction;
-import org.eclipse.codewind.intellij.ui.actions.ShowAllLogsAction;
-import org.eclipse.codewind.intellij.ui.actions.StartBuildAction;
-import org.eclipse.codewind.intellij.ui.actions.StartCodewindAction;
-import org.eclipse.codewind.intellij.ui.actions.StopCodewindAction;
-import org.eclipse.codewind.intellij.ui.actions.UninstallCodewindAction;
-import org.eclipse.codewind.intellij.ui.actions.UpdateCodewindAction;
+import org.eclipse.codewind.intellij.ui.actions.*;
 import org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle;
 import org.eclipse.codewind.intellij.ui.toolwindow.UpdateHandler;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeModel;
@@ -93,6 +76,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction refreshAction;
     private final AnAction openPerformanceDashboardAction;
     private final AnAction openTektonDashboardAction;
+    private final AnAction enableProjectAction;
+    private final AnAction disableProjectAction;
     private final AnAction removeProjectAction;
     private final AnAction addExistingProjectAction;
     private final AnAction showAllLogFilesAction;
@@ -119,6 +104,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         refreshAction = new RefreshAction();
         openPerformanceDashboardAction = new OpenPerformanceDashboardAction();
         openTektonDashboardAction = new OpenTektonDashboardAction();
+        enableProjectAction = new EnableProjectAction();
+        disableProjectAction = new DisableProjectAction();
         removeProjectAction = new RemoveProjectAction();
         addExistingProjectAction = new AddExistingProjectAction();
         showAllLogFilesAction = new ShowAllLogsAction();
@@ -312,6 +299,11 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         }
 
         actions.addSeparator();
+        if (application.isAvailable()) {
+            actions.add(disableProjectAction);
+        } else {
+            actions.add(enableProjectAction);
+        }
         actions.add(removeProjectAction);
 
         actions.addSeparator();

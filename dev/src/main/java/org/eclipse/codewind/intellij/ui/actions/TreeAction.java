@@ -51,6 +51,10 @@ public abstract class TreeAction<T> extends AnAction {
         }
         Tree tree = (Tree) data;
         TreePath treePath = tree.getSelectionPath();
+        if (treePath == null) {
+            Logger.logWarning("no selection for action " + text);
+            return Optional.empty();
+        }
         Object node = treePath.getLastPathComponent();
         if (!(type.isInstance(node))) {
             Logger.logWarning("unrecognized node for action " + text + ": " + node);
