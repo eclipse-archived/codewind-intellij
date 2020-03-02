@@ -67,7 +67,7 @@ public class NewCodewindProjectStep extends ModuleWizardStep {
     public void updateStep() {
         try {
             String javaID = ProjectLanguage.LANGUAGE_JAVA.getId();
-            List<ProjectTemplateInfo> templates = TemplateUtil.listTemplates(true, LocalConnection.CONNECTION_ID, new EmptyProgressIndicator())
+            List<ProjectTemplateInfo> templates = TemplateUtil.listTemplates(true, LocalConnection.DEFAULT_ID, new EmptyProgressIndicator())
                     .stream()
                     .filter(info -> info.getLanguage().equals(javaID))
                     .collect(Collectors.toList());

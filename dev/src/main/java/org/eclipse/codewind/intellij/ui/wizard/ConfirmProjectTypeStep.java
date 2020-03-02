@@ -23,9 +23,9 @@ import org.eclipse.codewind.intellij.core.cli.ProjectUtil;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.constants.ProjectInfo;
 import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
+import org.eclipse.codewind.intellij.core.constants.ProjectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONException;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -35,8 +35,6 @@ import javax.swing.JTextField;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
@@ -82,15 +80,20 @@ public class ConfirmProjectTypeStep extends AbstractBindProjectWizardStep {
         if (typeField != null && typeField.getText().isEmpty()) {
             return false;
         }
-        // If not Java or no Unknown, then don't allow the wizard to finish
-        String languageId = initialProjectType.language.getId();
-        isAcceptableLanguage = languageId.equals(ProjectLanguage.LANGUAGE_JAVA.getId()) || languageId.equals(ProjectLanguage.LANGUAGE_UNKNOWN.getId());
-        if (!this.isAcceptableLanguage) {
-            return false;
-        }
         if (projectPath == null) {
             return false;
         }
+        if (initialProjectType != null && initialProjectType.language != null) {
+            // If not Java or not Unknown, then don't allow the wizard to finish
+            String languageId = initialProjectType.language.getId();
+            if (languageId != null) {
+                isAcceptableLanguage = languageId.equals(ProjectLanguage.LANGUAGE_JAVA.getId()) || languageId.equals(ProjectLanguage.LANGUAGE_UNKNOWN.getId());
+                if (!this.isAcceptableLanguage) {
+                    return false;
+                }
+            }
+        }
+        // All other cases, allow the user to proceed.
         return true;
     }
 
@@ -194,12 +197,11 @@ public class ConfirmProjectTypeStep extends AbstractBindProjectWizardStep {
                             typeField.setText(initialProjectType.type.getDisplayName());
                         }
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    // Fill this in and ensure user can go to the last page
                     Logger.log(e);
-                } catch (JSONException e) {
-                    Logger.log(e);
-                } catch (TimeoutException e) {
-                    Logger.log(e);
+                    typeField.setText(ProjectType.TYPE_UNKNOWN.getDisplayName());
+                    languageField.setText(ProjectLanguage.LANGUAGE_UNKNOWN.getDisplayName());
                 }
             }
         }, message("ProjectValidationAnalyzingProject"), false, this.project);
@@ -226,10 +228,14 @@ public class ConfirmProjectTypeStep extends AbstractBindProjectWizardStep {
     @Override
     protected void postDoNextStep(BindProjectModel model) {
         String name = PathUtil.getFileName(projectPath);
-        String languageId = initialProjectType.language.getId();
-        isAcceptableLanguage = languageId.equals(ProjectLanguage.LANGUAGE_JAVA.getId()) || languageId.equals(ProjectLanguage.LANGUAGE_UNKNOWN.getId());
-        if (!isAcceptableLanguage) {
-            CoreUtil.openDialog(true, message("ProjectValidationPageTitle"), message("ProjectValidationPageNotJavaMsg", name));
+        if (initialProjectType != null && initialProjectType.language != null) {
+            String languageId = initialProjectType.language.getId();
+            isAcceptableLanguage = languageId.equals(ProjectLanguage.LANGUAGE_JAVA.getId()) || languageId.equals(ProjectLanguage.LANGUAGE_UNKNOWN.getId());
+            if (!isAcceptableLanguage) {
+                CoreUtil.openDialog(true, message("ProjectValidationPageTitle"), message("ProjectValidationPageNotJavaMsg", name));
+            }
+        } else {
+            CoreUtil.openDialog(true, message("ProjectValidationPageTitle"), message("ProjectValidationPageFailMsg"));
         }
     }
 }

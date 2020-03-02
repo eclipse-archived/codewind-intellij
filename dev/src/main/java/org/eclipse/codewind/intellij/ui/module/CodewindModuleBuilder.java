@@ -31,7 +31,6 @@ import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.FileUtil;
 import org.eclipse.codewind.intellij.core.Logger;
-import org.eclipse.codewind.intellij.core.cli.InstallUtil;
 import org.eclipse.codewind.intellij.core.cli.ProjectUtil;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
@@ -40,7 +39,6 @@ import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -67,36 +65,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
     @Nullable
     @Override
     public ModuleWizardStep getCustomOptionsStep(WizardContext context, Disposable parentDisposable) {
-        try {
-            if (!InstallUtil.getInstallStatus().isInstalled()) {
-                return new InstallCodewindStep();
-            }
-
-            if (!InstallUtil.getInstallStatus().isStarted()) {
-                return new StartCodewindStep();
-            }
-
-            // The custom options step's #onWizardFinished() method doesn't get called, so we can't use
-            // this step to do any validation when the user clicks 'finish'.  Since we only have one real
-            // step to do the validation, that step has to be created in #createWizardSteps.
-            // We still need to provide a custom option step so the user can select the JDK for the project.
-            return new ModuleWizardStep() {
-                private final JPanel panel = new JPanel();
-
-                @Override
-                public JComponent getComponent() {
-                    return panel;
-                }
-
-                @Override
-                public void updateDataModel() {
-
-                }
-            };
-        } catch (Exception e) {
-            Logger.logWarning(e);
-        }
-        return null;
+        return new CustomOptionsStep();
     }
 
     @Override
@@ -139,7 +108,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
         String url = template.getUrl();
         String language = template.getLanguage();
         String projectType = template.getProjectType();
-        String conid = LocalConnection.CONNECTION_ID;
+        String conid = LocalConnection.DEFAULT_ID;
         Project ideaProject = module.getProject();
 
         // The 'appsody init' command will fail to initialize the maven cache if there is no JDK on the PATH and

@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
 
 import static org.eclipse.codewind.intellij.core.constants.IntelliJConstants.IDEA_FOLDER;
 import static org.eclipse.codewind.intellij.core.constants.IntelliJConstants.IPR_FOLDER;
@@ -57,6 +58,8 @@ public class CodewindApplication {
     private boolean hasConfirmedMetrics = false; 		// see confirmMetricsAvailable
     private boolean enabled = true;
     private String containerId;
+    private String podName;
+    private String namespace;
 	private boolean capabilitiesReady = false;
     private ProjectCapabilities projectCapabilities;
     private String action;
@@ -65,6 +68,7 @@ public class CodewindApplication {
     private long lastImageBuild = -1;
     private boolean isHttps = false;
     private boolean deleteContents = false;
+    private final Vector<String> activeNotificationIDs = new Vector<String>();
 
 
     // Must be updated whenever httpPort changes. Can be null
@@ -199,6 +203,11 @@ public class CodewindApplication {
 
     public synchronized void setContainerId(String id) {
         this.containerId = id;
+    }
+
+    public synchronized void setPodInfo(String podName, String namespace) {
+        this.podName = podName;
+        this.namespace = namespace;
     }
 
     public synchronized void setAction(String action) {
@@ -362,6 +371,14 @@ public class CodewindApplication {
 
     public synchronized String getContainerId() {
         return containerId;
+    }
+
+    public synchronized String getPodName() {
+        return podName;
+    }
+
+    public synchronized String getNamespace() {
+        return namespace;
     }
 
     public boolean isActive() {
@@ -571,6 +588,22 @@ public class CodewindApplication {
 	public boolean canInjectMetrics() {
 		return canInjectMetrics;
 	}
+
+    public boolean hasNotificationID(String id) {
+        Logger.log(String.format("The %s notification id for the %s application is contained: %b", id, name, activeNotificationIDs.contains(id))); //$NON-NLS-1$
+        return activeNotificationIDs.contains(id);
+    }
+
+    // Call hasNotificationID first before adding
+    public void addNotificationID(String id) {
+        Logger.log(String.format("Adding notification id %s to the %s application", id, name)); //$NON-NLS-1$
+        activeNotificationIDs.add(id);
+    }
+
+    public void clearNotificationIDs() {
+        Logger.log(String.format("Clearing notification ids for the %s application", name)); //$NON-NLS-1$
+        activeNotificationIDs.clear();
+    }
 
     @Override
     public String toString() {

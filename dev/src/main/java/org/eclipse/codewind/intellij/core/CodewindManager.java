@@ -82,7 +82,7 @@ public class CodewindManager {
 			System.out.println("*** An error occurred trying to get the Codewind install status. " + e.getLocalizedMessage());
 			installerErrorMsg = e.getLocalizedMessage();
 		}
-		installStatus = InstallStatus.UNKNOWN;
+		installStatus = InstallStatus.ERROR;
 	}
 	
 	public InstallerStatus getInstallerStatus() {

@@ -57,11 +57,10 @@ public abstract class CodewindConnection {
 
     private final Map<String, CodewindApplication> appMap = new LinkedHashMap<String, CodewindApplication>();
 
-    public CodewindConnection(String name, URI uri, String conid, AuthToken authToken) {
+    public CodewindConnection(String name, URI uri, String conid) {
         setName(name);
         setBaseURI(uri);
         this.conid = conid;
-        this.authToken = authToken;
     }
 
     public void connect() throws IOException, JSONException {
@@ -112,7 +111,7 @@ public abstract class CodewindConnection {
     }
 
     public static LocalConnection createLocalConnection() {
-        return new LocalConnection(message("CodewindLocalConnectionName"), null);
+        return new LocalConnection(null);
     }
 
     public String getSocketNamespace() {

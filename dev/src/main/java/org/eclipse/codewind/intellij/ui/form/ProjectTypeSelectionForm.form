@@ -60,7 +60,9 @@
         <children>
           <component id="7caeb" class="javax.swing.JList" binding="projectTypeList" custom-create="true">
             <constraints/>
-            <properties/>
+            <properties>
+              <selectionMode value="0"/>
+            </properties>
           </component>
         </children>
       </scrollpane>
@@ -74,7 +76,7 @@
           <component id="f769f" class="javax.swing.JList" binding="subtypeList" custom-create="true">
             <constraints/>
             <properties>
-              <selectionMode value="1"/>
+              <selectionMode value="0"/>
             </properties>
           </component>
         </children>
