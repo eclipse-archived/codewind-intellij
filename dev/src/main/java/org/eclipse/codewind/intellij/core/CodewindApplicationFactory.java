@@ -167,8 +167,17 @@ public class CodewindApplicationFactory {
 					JSONObject detailObj = appJso.getJSONObject(CoreConstants.KEY_DETAILED_APP_STATUS);
 					if (detailObj != null && detailObj.has(CoreConstants.KEY_MESSAGE)) {
 						detail = detailObj.getString(CoreConstants.KEY_MESSAGE);
-						if (detailObj.has(CoreConstants.KEY_NOTIFY) && detailObj.getBoolean(CoreConstants.KEY_NOTIFY)) {
-							// Need to notify the user of the problem
+						String notificationID = getStringValue(detailObj, CoreConstants.KEY_NOTIFICATION_ID);
+						if (notificationID == null) {
+							// If there is no notification id then clear the list
+							app.clearNotificationIDs();
+						} else if (!app.hasNotificationID(notificationID)) {
+							// If there is a new notifiction id then need to notify the user
+
+							// First store the notification id so the user does not get the same notification twice
+							app.addNotificationID(notificationID);
+
+							// Notify the user in a dialog with a link to more information if available
 							CoreUtil.DialogType type = CoreUtil.DialogType.ERROR;
 							if (detailObj.has(CoreConstants.KEY_SEVERITY)) {
 								String severity = detailObj.getString(CoreConstants.KEY_SEVERITY);
@@ -178,7 +187,17 @@ public class CodewindApplicationFactory {
 									type = CoreUtil.DialogType.INFO;
 								}
 							}
-							CoreUtil.openDialog(type, message("ProjectErrorTitle", app.name), detail);
+							// Get the link and link label
+							String link = null, linkLabel = null;
+							if (detailObj.has(CoreConstants.KEY_LINK) && detailObj.has(CoreConstants.KEY_LINK_LABEL)) {
+								link = detailObj.getString(CoreConstants.KEY_LINK);
+								linkLabel = detailObj.getString(CoreConstants.KEY_LINK_LABEL);
+							}
+							if (link != null && !link.isEmpty() && linkLabel != null && !linkLabel.isEmpty()) {
+								CoreUtil.openDialogWithLink(type, app.name, detail, linkLabel, link);
+							} else {
+								CoreUtil.openDialog(type, app.name, detail);
+							}
 						}
 					}
 				}
@@ -229,6 +248,9 @@ public class CodewindApplicationFactory {
 				containerId = appJso.getString(CoreConstants.KEY_CONTAINER_ID);
 			}
 			app.setContainerId(containerId);
+
+			// Get the pod information
+			app.setPodInfo(getStringValue(appJso, CoreConstants.KEY_POD_NAME), getStringValue(appJso, CoreConstants.KEY_NAMESPACE));
 
 			// Get the ports if they are available
 			try {
@@ -293,6 +315,23 @@ public class CodewindApplicationFactory {
 			if (appJso.has(CoreConstants.KEY_CAPABILITIES_READY)) {
 				app.setCapabilitiesReady(appJso.getBoolean(CoreConstants.KEY_CAPABILITIES_READY));
 			}
+
+			// Set inject metrics info
+			if (appJso.has(CoreConstants.KEY_INJECTION)) {
+				JSONObject injectObj = appJso.getJSONObject(CoreConstants.KEY_INJECTION);
+				app.setMetricsInjectionInfo(injectObj.getBoolean(CoreConstants.KEY_INJECTABLE), injectObj.getBoolean(CoreConstants.KEY_INJECTED));
+			}
+
+			// Set metrics dashboard info
+			if (appJso.has(CoreConstants.KEY_METRICS_DASHBOARD)) {
+				JSONObject metricsObj = appJso.getJSONObject(CoreConstants.KEY_METRICS_DASHBOARD);
+				app.setMetricsDashboardInfo(getStringValue(metricsObj, CoreConstants.KEY_METRICS_HOSTING), getStringValue(metricsObj, CoreConstants.KEY_METRICS_PATH));
+			}
+
+			// Set perf dashboard info
+			if (appJso.has(CoreConstants.KEY_PERF_DASHBOARD_PATH)) {
+				app.setPerfDashboardInfo(getStringValue(appJso, CoreConstants.KEY_PERF_DASHBOARD_PATH));
+			}
 		} catch (JSONException e) {
 			Logger.logWarning("Error parsing project json: " + appJso, e); //$NON-NLS-1$
 		}
@@ -306,18 +345,16 @@ public class CodewindApplicationFactory {
 		} catch (Exception e) {
 			Logger.logWarning("An error occurred while updating the log information for project: " + app.name, e);
 		}
+	}
 
-		// Check for metrics support
-		boolean metricsAvailable = true;
-		try {
-			JSONObject obj = app.connection.requestProjectMetricsStatus(app);
-			if (obj != null && obj.has(CoreConstants.KEY_METRICS_AVAILABLE)) {
-				metricsAvailable = obj.getBoolean(CoreConstants.KEY_METRICS_AVAILABLE);
-			}
-		} catch (Exception e) {
-			Logger.logWarning("An error occurred checking if metrics are available: " + app.name, e);
+	private static String getStringValue(JSONObject obj, String key) throws JSONException {
+		if (!obj.has(key) || obj.isNull(key)) {
+			return null;
 		}
-		app.setMetricsAvailable(metricsAvailable);
-
+		String value = obj.getString(key);
+		if (value == null || value.isEmpty()) {
+			return null;
+		}
+		return value;
 	}
 }

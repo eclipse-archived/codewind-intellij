@@ -221,7 +221,7 @@ public class AppOverviewFrame {
 
     public void updateProjectStatus() {
         autoBuildField.setText(this.application.isAutoBuild() ? message("AppOverviewEditorAutoBuildOn") : message("AppOverviewEditorAutoBuildOff"));
-        autoMetricsInjectionField.setText(metricsInjectionState(this.application.canInjectMetrics(), this.application.isInjectMetrics()));
+        autoMetricsInjectionField.setText(metricsInjectionState(this.application.canInjectMetrics(), this.application.isMetricsInjected()));
         long lastBuild = this.application.getLastBuild();
         String lastBuildStr = message("AppOverviewEditorProjectNeverBuilt");
         if (lastBuild > 0) {

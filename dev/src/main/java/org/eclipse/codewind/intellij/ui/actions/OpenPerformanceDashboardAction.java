@@ -32,7 +32,7 @@ import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message
 public class OpenPerformanceDashboardAction extends AnAction {
 
     public OpenPerformanceDashboardAction() {
-        super(message("ActionOpenPerformanceMonitor"));
+        super(message("ActionOpenPerfDashboard"));
     }
 
     @Override
@@ -57,7 +57,7 @@ public class OpenPerformanceDashboardAction extends AnAction {
         CodewindTreeModel model = (CodewindTreeModel) tree.getModel();
         if (node instanceof CodewindApplication) {
             CodewindApplication app = (CodewindApplication)node;
-            final URL perfURL = app.getConnection().getPerformanceMonitorURL(app);
+            final URL perfURL = app.getPerfDashboardUrl();
             if (perfURL != null) {
                 URI perfURI = null;
                 try {

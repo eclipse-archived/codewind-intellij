@@ -53,6 +53,7 @@ public class CoreConstants {
 			KEY_CONTEXTROOT = "contextroot",
 			KEY_CONTEXT_ROOT = "contextRoot",
 			KEY_CONTAINER_ID = "containerId",
+			KEY_POD_NAME = "podName",
 			KEY_IS_HTTPS = "isHttps",
 			KEY_CAPABILITIES_READY = "capabilitiesReady",
 			KEY_WORKSPACE = "workspace",
@@ -81,7 +82,9 @@ public class CoreConstants {
 			KEY_APP_STATUS = "appStatus",
 			KEY_DETAILED_APP_STATUS = "detailedAppStatus",
 			KEY_MESSAGE = "message",
-			KEY_NOTIFY = "notify",
+			KEY_NOTIFICATION_ID = "notificationID",
+			KEY_LINK = "link",
+			KEY_LINK_LABEL = "linkLabel",
 			KEY_BUILD_STATUS = "buildStatus",
 			KEY_DETAILED_BUILD_STATUS = "detailedBuildStatus",
 			KEY_LAST_BUILD = "lastbuild",
@@ -93,7 +96,17 @@ public class CoreConstants {
 			KEY_INTERNAL_DEBUG_PORT = "internalDebugPort",
 			KEY_AUTO_BUILD = "autoBuild",
 			KEY_APP_BASE_URL = "appBaseURL",
-			KEY_INJECT_METRICS = "enable",
+
+			KEY_INJECT_METRICS_ENABLE = "enable",
+			KEY_INJECTION = "injection",
+			KEY_INJECTABLE = "injectable",
+			KEY_INJECTED = "injected",
+			KEY_METRICS_DASHBOARD = "metricsDashboard",
+			KEY_METRICS_HOSTING = "hosting",
+			VALUE_METRICS_HOSTING_PROJECT = "project",
+			VALUE_METRICS_HOSTING_PERF_CONTAINER = "performanceContainer",
+			KEY_METRICS_PATH = "path",
+			KEY_PERF_DASHBOARD_PATH = "perfDashboardPath",
 			
 			VALUE_INFO = "INFO",
 			VALUE_WARN = "WARN",
@@ -138,8 +151,7 @@ public class CoreConstants {
 			KEY_CAPABILIITES = "capabilities",
 			KEY_START_MODES = "startModes",
 			KEY_CONTROL_COMMANDS = "controlCommands",
-			KEY_METRICS_AVAILABLE = "metricsAvailable",
-			
+
 			KEY_AUTO_GENERATE = "autoGenerate",
 			
 			// Registry
@@ -170,8 +182,6 @@ public class CoreConstants {
 			VIEW_MONITOR = "monitor",
 			VIEW_OVERVIEW = "overview",
 			PERF_MONITOR = "performance/charts",
-			PERF_METRICS_DASH = "performance/monitor/dashboard",
-
 
 			BIN_DIR = "bin",
 			JAVA_HOME =  "JAVA_HOME",

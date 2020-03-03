@@ -208,10 +208,24 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         Object node = treePath.getLastPathComponent();
         if (node instanceof LocalConnection) {
             InstallStatus status = CodewindManager.getManager().getInstallStatus();
-            if (status.isInstalled() && !status.isStarted()) {
+            if (status.isInstalled()) {
+                // Latest Codewind is installed
+                if (!status.isStarted()) {
+                    // need to start the latest Codewind
+                    AnActionEvent actionEvent = AnActionEvent.createFromInputEvent(e, ActionPlaces.POPUP,
+                            null, DataContext.EMPTY_CONTEXT, true, false);
+                    startCodewindAction.actionPerformed(actionEvent);
+                }
+            } else if (status.hasInstalledVersions()) {
+                // An older version of Codewind is installed
                 AnActionEvent actionEvent = AnActionEvent.createFromInputEvent(e, ActionPlaces.POPUP,
                         null, DataContext.EMPTY_CONTEXT, true, false);
-                startCodewindAction.actionPerformed(actionEvent);
+                updateCodewindAction.actionPerformed(actionEvent);
+            } else {
+                // No version of Codewind is installed
+                AnActionEvent actionEvent = AnActionEvent.createFromInputEvent(e, ActionPlaces.POPUP,
+                        null, DataContext.EMPTY_CONTEXT, true, false);
+                installCodewindAction.actionPerformed(actionEvent);
             }
         } else if (node instanceof CodewindApplication) {
             CodewindApplication app = (CodewindApplication)node;
@@ -246,12 +260,12 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private void handleLocalConnectionPopup(LocalConnection connection, Component component, int x, int y) {
         DefaultActionGroup actions = new DefaultActionGroup("CodewindGroup", true);
 
+        actions.add(newProjectAction);
+        actions.add(addExistingProjectAction);
+        actions.addSeparator();
         InstallStatus status = CodewindManager.getManager().getInstallStatus();
         if (status.isInstalled()) {
             // a supported version of Codewind is installed
-            actions.add(newProjectAction);
-            actions.add(addExistingProjectAction);
-            actions.addSeparator();
             actions.add(uninstallCodewindAction);
         } else if (status.hasInstalledVersions()) {
             // an older version of Codewind is installed
@@ -285,7 +299,9 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
         actions.add(openApplicationAction);
         actions.add(openAppOverviewAction);
-        actions.add(openPerformanceDashboardAction);
+        if (application.hasPerfDashboard()) {
+            actions.add(openPerformanceDashboardAction);
+        }
         CodewindConnection connection = application.getConnection();
         if (connection != null) {
             ConnectionEnv.TektonDashboard tekton = connection.getTektonDashboard();

@@ -16,8 +16,14 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.ui.Messages;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -75,6 +81,51 @@ public class CoreUtil {
      */
     public static int showYesNoDialog(String title, String msg) {
         return Messages.showYesNoDialog(msg, title, Messages.getQuestionIcon());
+    }
+
+    public static void openDialogWithLink(CoreUtil.DialogType type, String title, String msg, String linkLabel, String linkUrl) {
+        invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                int messageType = JOptionPane.PLAIN_MESSAGE;
+                switch (type) {
+                    case ERROR: messageType = JOptionPane.ERROR_MESSAGE;
+                        break;
+                    case WARN: messageType = JOptionPane.WARNING_MESSAGE;
+                        break;
+                    case INFO: messageType = JOptionPane.INFORMATION_MESSAGE;
+                        break;
+                    default: messageType = JOptionPane.PLAIN_MESSAGE;
+                }
+                JOptionPane dialog = new JOptionPane(title, messageType, JOptionPane.OK_OPTION) {
+                //MessageDialog dialog = new MessageDialog(Display.getDefault().getActiveShell(), title, null, msg, type.getValue(), 0, IDialogConstants.OK_LABEL) {
+                    @Override
+                    //protected Control createCustomArea(Composite parent) {
+                    public JInternalFrame createInternalFrame(Component parentComponent, String title) {
+                        JInternalFrame retVal = super.createInternalFrame(parentComponent, title);
+                        JLabel link = new JLabel("<a>" + linkLabel + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
+                        add(link);
+                        link.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                        link.addMouseListener(new MouseAdapter() {
+                            @Override
+                            public void mouseClicked(MouseEvent event) {
+                                if (linkUrl != null  && linkUrl.length() > 0) {
+                                    try {
+                                        final URI uri = new URI(linkUrl);
+                                        com.intellij.ide.browsers.BrowserLauncher.getInstance().browse(uri);
+                                    } catch (URISyntaxException use) {
+                                        Logger.log("An error occurred trying to open an external browser at: " + linkUrl);
+                                        System.out.println("*** An error occurred trying to open an external browser at: " + linkUrl);
+                                    }
+                                }
+                            }
+                        });
+                        return retVal;
+                    }
+                };
+                dialog.setVisible(true);
+            }
+        });
     }
 
     public static String readAllFromStream(InputStream stream) {
