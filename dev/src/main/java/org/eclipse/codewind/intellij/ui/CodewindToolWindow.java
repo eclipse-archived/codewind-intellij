@@ -299,7 +299,9 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
         actions.add(openApplicationAction);
         actions.add(openAppOverviewAction);
-        actions.add(openPerformanceDashboardAction);
+        if (application.hasPerfDashboard()) {
+            actions.add(openPerformanceDashboardAction);
+        }
         CodewindConnection connection = application.getConnection();
         if (connection != null) {
             ConnectionEnv.TektonDashboard tekton = connection.getTektonDashboard();
