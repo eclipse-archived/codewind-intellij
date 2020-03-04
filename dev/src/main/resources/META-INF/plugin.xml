@@ -18,10 +18,24 @@
     ]]>    </description>
 
     <change-notes><![CDATA[
+    <p><b>0.10.0</b></p>
+    <p>
+    <ul>
+    <li>Show project log files</li>
+    <li>Open performance dashboard</li>
+    <li>Support Disable/Enable project</li>
+    <li>Bug fixes</li>
+    </ul>
+    </p>
+    <br/>
     <p><b>0.9.0</b></p>
-<p>
+    <p>
+    <ul>
+    <li>
     Initial tech preview release.
     To get started, see <a href="https://www.eclipse.org/codewind/intellij-getting-started.html">Getting Started</a>.
+    </li>
+    </ul>
     </p>
     ]]>
     </change-notes>
@@ -34,12 +48,16 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Codewind" anchor="left" secondary="true" icon="/META-INF/pluginIcon13x13.svg" factoryClass="org.eclipse.codewind.intellij.ui.WindowToolFactory"/>
+        <toolWindow id="Codewind" anchor="left" secondary="true" icon="/META-INF/pluginIcon13x13.svg"
+                    factoryClass="org.eclipse.codewind.intellij.ui.WindowToolFactory"/>
 
         <!-- <moduleType id="CODEWIND_MODULE" implementationClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleType" /> -->
-        <moduleBuilder builderClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleBuilder" />
-        <fileType name="CwSettingsFileType" implementationClass="org.eclipse.codewind.intellij.core.filetypes.CwSettingsFileType" fieldName="INSTANCE" language="JSON"/>
-        <fileTypeDetector implementation="org.eclipse.codewind.intellij.core.filetypes.CwSettingsFileTypeDetector" order="first"/>
+        <moduleBuilder builderClass="org.eclipse.codewind.intellij.ui.module.CodewindModuleBuilder"/>
+        <fileType name="CwSettingsFileType"
+                  implementationClass="org.eclipse.codewind.intellij.core.filetypes.CwSettingsFileType"
+                  fieldName="INSTANCE" language="JSON"/>
+        <fileTypeDetector implementation="org.eclipse.codewind.intellij.core.filetypes.CwSettingsFileTypeDetector"
+                          order="first"/>
     </extensions>
 
     <actions>
