@@ -11,6 +11,7 @@
 
 package org.eclipse.codewind.intellij.ui.tasks;
 
+import com.intellij.openapi.progress.PerformInBackgroundOption;
 import com.intellij.openapi.progress.ProgressIndicator;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.ProcessHelper;
@@ -26,7 +27,7 @@ import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message
 public class UpgradeCodewindTask extends CodewindProcessTask {
 
     public UpgradeCodewindTask(Runnable onSuccess) {
-        super(null, message("InstallCodewindJobLabel"), onSuccess);
+        super(null, message("InstallCodewindJobLabel"), false, PerformInBackgroundOption.DEAF, onSuccess);
     }
 
     @Override

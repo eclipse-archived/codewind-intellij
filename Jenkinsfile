@@ -137,7 +137,11 @@ pipeline {
                             echo '        <idea-version since-build="193.5233.102" until-build="999.*"/>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '        <name>Codewind</name>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
                             echo '        <description>Adds support for developing cloud-native, containerized web applications.</description>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+<<<<<<< HEAD
                             echo '    </plugin>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML
+=======
+                            echo '    </plugin>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML 
+>>>>>>> 1665a3b6c2812e1f5e720aca8b613eb221b9ba1b
                             echo '</plugins>' >> $OUTPUT_DIR/$UPDATE_PLUGINS_XML    
 
                             scp $OUTPUT_DIR/$UPDATE_PLUGINS_XML $sshHost:$deployDir/$GIT_BRANCH/$LATEST_DIR/$UPDATE_PLUGINS_XML
