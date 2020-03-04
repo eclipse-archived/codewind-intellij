@@ -76,6 +76,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction refreshAction;
     private final AnAction openPerformanceDashboardAction;
     private final AnAction openTektonDashboardAction;
+    private final AnAction enableProjectAction;
+    private final AnAction disableProjectAction;
     private final AnAction removeProjectAction;
     private final AnAction addExistingProjectAction;
     private final AnAction showAllLogFilesAction;
@@ -102,6 +104,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         refreshAction = new RefreshAction();
         openPerformanceDashboardAction = new OpenPerformanceDashboardAction();
         openTektonDashboardAction = new OpenTektonDashboardAction();
+        enableProjectAction = new EnableProjectAction();
+        disableProjectAction = new DisableProjectAction();
         removeProjectAction = new RemoveProjectAction();
         addExistingProjectAction = new AddExistingProjectAction();
         showAllLogFilesAction = new ShowAllLogsAction();
@@ -311,6 +315,11 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         }
 
         actions.addSeparator();
+        if (application.isAvailable()) {
+            actions.add(disableProjectAction);
+        } else {
+            actions.add(enableProjectAction);
+        }
         actions.add(removeProjectAction);
 
         actions.addSeparator();
