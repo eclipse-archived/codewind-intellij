@@ -134,20 +134,25 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
 
         if (application.isEnabled()) {
             AppStatus appStatus = application.getAppStatus();
-            if (appStatus != AppStatus.UNKNOWN) {
+            BuildStatus buildStatus = application.getBuildStatus();
+
+            if (appStatus != AppStatus.UNKNOWN || buildStatus == BuildStatus.UNKOWN) {
+                // If both app status and build status are unknown, add the 'status unknown' message.
+                // else if app status is not unknown, add it's status message.
                 String displayString = appStatus.getDisplayString(application.getStartMode());
                 builder.append(" [").append(displayString).append("]");
             }
 
-            BuildStatus buildStatus = application.getBuildStatus();
-            String buildDetails = application.getBuildDetails();
-            if (buildDetails != null && !buildDetails.isEmpty()) {
-                builder.append(" [")
-                        .append(buildStatus.getDisplayString())
-                        .append(": ")
-                        .append(buildDetails).append("]");
-            } else {
-                builder.append(" [").append(buildStatus.getDisplayString()).append("]");
+            if (buildStatus != BuildStatus.UNKOWN) {
+                String buildDetails = application.getBuildDetails();
+                if (buildDetails != null && !buildDetails.isEmpty()) {
+                    builder.append(" [")
+                            .append(buildStatus.getDisplayString())
+                            .append(": ")
+                            .append(buildDetails).append("]");
+                } else {
+                    builder.append(" [").append(buildStatus.getDisplayString()).append("]");
+                }
             }
         } else {
             builder.append(" [").append(message("CodewindProjectDisabled")).append("]");
