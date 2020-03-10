@@ -136,9 +136,11 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
             AppStatus appStatus = application.getAppStatus();
             BuildStatus buildStatus = application.getBuildStatus();
 
-            if (appStatus != AppStatus.UNKNOWN || buildStatus == BuildStatus.UNKOWN) {
-                // If both app status and build status are unknown, add the 'status unknown' message.
-                // else if app status is not unknown, add it's status message.
+            if (appStatus == AppStatus.UNKNOWN && buildStatus == BuildStatus.UNKOWN) {
+                builder.append(" [").append(AppStatus.UNKNOWN.displayString).append("]");
+            }
+
+            if (appStatus != AppStatus.UNKNOWN) {
                 String displayString = appStatus.getDisplayString(application.getStartMode());
                 builder.append(" [").append(displayString).append("]");
             }
