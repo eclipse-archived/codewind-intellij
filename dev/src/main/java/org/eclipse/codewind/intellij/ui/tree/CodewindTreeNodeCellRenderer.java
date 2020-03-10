@@ -134,20 +134,27 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
 
         if (application.isEnabled()) {
             AppStatus appStatus = application.getAppStatus();
+            BuildStatus buildStatus = application.getBuildStatus();
+
+            if (appStatus == AppStatus.UNKNOWN && buildStatus == BuildStatus.UNKOWN) {
+                builder.append(" [").append(AppStatus.UNKNOWN.displayString).append("]");
+            }
+
             if (appStatus != AppStatus.UNKNOWN) {
                 String displayString = appStatus.getDisplayString(application.getStartMode());
                 builder.append(" [").append(displayString).append("]");
             }
 
-            BuildStatus buildStatus = application.getBuildStatus();
-            String buildDetails = application.getBuildDetails();
-            if (buildDetails != null && !buildDetails.isEmpty()) {
-                builder.append(" [")
-                        .append(buildStatus.getDisplayString())
-                        .append(": ")
-                        .append(buildDetails).append("]");
-            } else {
-                builder.append(" [").append(buildStatus.getDisplayString()).append("]");
+            if (buildStatus != BuildStatus.UNKOWN) {
+                String buildDetails = application.getBuildDetails();
+                if (buildDetails != null && !buildDetails.isEmpty()) {
+                    builder.append(" [")
+                            .append(buildStatus.getDisplayString())
+                            .append(": ")
+                            .append(buildDetails).append("]");
+                } else {
+                    builder.append(" [").append(buildStatus.getDisplayString()).append("]");
+                }
             }
         } else {
             builder.append(" [").append(message("CodewindProjectDisabled")).append("]");
