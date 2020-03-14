@@ -52,6 +52,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
@@ -71,8 +72,9 @@ public class ShowAllLogFilesTask extends Task.Backgroundable {
             @Override
             public void run() {
                 initToolWindow();
-
-                for (ProjectLogInfo logInfo : application.getLogInfos()) {
+                List<ProjectLogInfo> logInfos = application.getLogInfos();
+                ProjectLogInfo firstAppLog = logInfos.size() > 0 ? logInfos.get(0) : null;
+                for (ProjectLogInfo logInfo : logInfos) {
                     Content content = getContentForProjectLogInfo(logInfo);
                     SocketConsole socketConsole = null;
                     if (content == null) {
@@ -89,6 +91,10 @@ public class ShowAllLogFilesTask extends Task.Backgroundable {
                 if (!logFilesToolWindow.isVisible() && logFilesToolWindow.isAvailable()) {
                     logFilesToolWindow.show(null);
                     logFilesToolWindow.activate(null, true, true);
+                }
+                if (firstAppLog != null) {
+                    Content firstContent = getContentForProjectLogInfo(firstAppLog);
+                    logFilesToolWindow.getContentManager().setSelectedContent(firstContent);
                 }
             }
         });
