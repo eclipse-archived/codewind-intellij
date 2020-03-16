@@ -20,7 +20,7 @@
         applications. Create an application from a template project
         and launch, update, test, and debug in containers on the
         desktop. Supports Codewind version 0.10.0. For more
-        information, see <a href="https://www.eclipse.org/codewind/">https://www.eclipse.org/codewind/</a>
+        information, see <a href="https://www.eclipse.org/codewind/">https://www.eclipse.org/codewind/</a>.
       </p>
       <h2>Why use Codewind?</h2>
       <ul>
@@ -40,22 +40,22 @@
       <h2>Getting started with Codewind</h2>
       <p>
         For more information, see
-        <a href="https://www.eclipse.org/codewind/mdt-intellij-getting-started.html">https://www.eclipse.org/codewind/mdt-intellij-getting-started.html</a>
+        <a href="https://www.eclipse.org/codewind/intellij-getting-started.html">https://www.eclipse.org/codewind/intellij-getting-started.html</a>.
       </p>
       <h2>Contributing</h2>
       <p>Submit issues and contributions:</p>
       <ul>
         <li>
           Submitting issues:
-          <a href="https://github.com/eclipse/codewind/issues">https://github.com/eclipse/codewind/issues</a>
+          <a href="https://github.com/eclipse/codewind/issues">https://github.com/eclipse/codewind/issues</a>.
         </li>
         <li>
           Contributing:
-          <a href="https://github.com/eclipse/codewind-intellij/blob/master/CONTRIBUTING.md">https://github.com/eclipse/codewind-intellij/blob/master/CONTRIBUTING.md</a></li>
+          <a href="https://github.com/eclipse/codewind-intellij/blob/master/CONTRIBUTING.md">https://github.com/eclipse/codewind-intellij/blob/master/CONTRIBUTING.md</a>.</li>
       </ul>
       <h2>Developing</h2>
       <p>To develop and debug Codewind for IntelliJ, see
-        <a href="https://github.com/eclipse/codewind-intellij#developing">https://github.com/eclipse/codewind-intellij#developing</a>
+        <a href="https://github.com/eclipse/codewind-intellij#developing">https://github.com/eclipse/codewind-intellij#developing</a>.
       </p>
     ]]></description>
 
