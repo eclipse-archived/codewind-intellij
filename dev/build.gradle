@@ -11,7 +11,7 @@ file('src/main/resources/install-version.properties').withInputStream {
 }
 
 group 'org.eclipse.codewind.intellij'
-version versionProperties.getProperty('install-version') + '-' + BUILD_TIME
+version versionProperties.getProperty('install-version')
 
 sourceCompatibility = 1.8
 
