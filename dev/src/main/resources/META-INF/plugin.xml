@@ -1,6 +1,6 @@
 <idea-plugin>
     <!--
-    Copyright (c) 2019 IBM Corporation and others.
+    Copyright (c) 2019, 2020 IBM Corporation and others.
     All rights reserved. This program and the accompanying materials
     are made available under the terms of the Eclipse Public License v2.0
     which accompanies this distribution, and is available at
@@ -14,8 +14,50 @@
     <vendor email="codewind-dev@eclipse.org" url="https://www.eclipse.org/codewind/">Codewind</vendor>
 
     <description><![CDATA[
-        Adds support for developing cloud-native, containerized web applications.
-    ]]>    </description>
+      <h2>Codewind</h2>
+      <p>
+        Adds tools to help build cloud-native, containerized Java
+        applications. Create an application from a template project
+        and launch, update, test, and debug in containers on the
+        desktop. Supports Codewind version 0.11.0. For more
+        information, see the <a href="https://www.eclipse.org/codewind/">Codewind website</a>.
+      </p>
+      <h2>Why use Codewind?</h2>
+      <ul>
+        <li>Get started with templates or samples to create and deploy applications that run in containers.</li>
+        <li>Create containerized applications in languages and runtimes that you're already familiar with.</li>
+        <li>Pull in your existing applications and use Codewind to help get them cloud ready.</li>
+        <li>See code changes reflected in your containerized application.</li>
+      </ul>
+      <h2>Features</h2>
+      <ul>
+        <li>Create new containerized projects or add existing ones.</li>
+        <li>View your containerized projects, including the application and build status.</li>
+        <li>Access application, build, and container logs in the Output view.</li>
+        <li>Toggle the project auto build setting and manually initiate project builds.</li>
+        <li>Open your application in a browser.</li>
+      </ul>
+      <h2>Getting started with Codewind</h2>
+      <p>
+        For more information, see
+        <a href="https://www.eclipse.org/codewind/intellij-getting-started.html">Installing Codewind for IntelliJ</a>.
+      </p>
+      <h2>Contributing</h2>
+      <p>Submit issues and contributions:</p>
+      <ul>
+        <li>
+          Submitting issues:
+          <a href="https://github.com/eclipse/codewind/issues">https://github.com/eclipse/codewind/issues</a>.
+        </li>
+        <li>
+          Contributing:
+          <a href="https://github.com/eclipse/codewind-intellij/blob/master/CONTRIBUTING.md">https://github.com/eclipse/codewind-intellij/blob/master/CONTRIBUTING.md</a>.</li>
+      </ul>
+      <h2>Developing</h2>
+      <p>To develop and debug Codewind for IntelliJ, see
+        <a href="https://github.com/eclipse/codewind-intellij#developing">Developing</a>.
+      </p>
+    ]]></description>
 
     <change-notes><![CDATA[
     <p><b>0.10.0</b></p>
