@@ -1,6 +1,6 @@
 <idea-plugin>
     <!--
-    Copyright (c) 2019 IBM Corporation and others.
+    Copyright (c) 2019, 2020 IBM Corporation and others.
     All rights reserved. This program and the accompanying materials
     are made available under the terms of the Eclipse Public License v2.0
     which accompanies this distribution, and is available at
@@ -19,7 +19,7 @@
         Adds tools to help build cloud-native, containerized Java
         applications. Create an application from a template project
         and launch, update, test, and debug in containers on the
-        desktop. Supports Codewind version 0.10.0. For more
+        desktop. Supports Codewind version 0.11.0. For more
         information, see the <a href="https://www.eclipse.org/codewind/">Codewind website</a>.
       </p>
       <h2>Why use Codewind?</h2>
