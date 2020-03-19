@@ -100,6 +100,7 @@
                   fieldName="INSTANCE" language="JSON"/>
         <fileTypeDetector implementation="org.eclipse.codewind.intellij.core.filetypes.CwSettingsFileTypeDetector"
                           order="first"/>
+        <configurationType implementation="org.eclipse.codewind.intellij.ui.debug.CodewindConfigurationType"/>
     </extensions>
 
     <actions>
