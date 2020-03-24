@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.tree.TreePath;
 
 import static com.intellij.openapi.actionSystem.PlatformDataKeys.CONTEXT_COMPONENT;
+import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
 public class NewCodewindProjectAction extends NewProjectAction {
 
@@ -28,6 +29,7 @@ public class NewCodewindProjectAction extends NewProjectAction {
     public void update(@NotNull AnActionEvent e) {
         super.update(e);
         CodewindConnection connection = getSelection(e);
+        e.getPresentation().setText(message("NewProjectAction_Label"), true);
         e.getPresentation().setEnabled(connection != null && connection.isConnected());
     }
 
