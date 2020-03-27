@@ -118,6 +118,28 @@ public class FileUtil {
     }
 
     /**
+     * IntelliJ on Windows returns paths with the forward slash `/` instead of the proper backslash.  One example is,
+     * Project::getBasePath().  This method compares two paths, either arguments can have the forward or backslash.
+     *
+     * It is expected that both parameters are valid paths, aside from slash/backslash differences
+     *
+     * @param path1
+     * @param path2
+     * @return true if the paths are the same, false otherwise
+     */
+    public static boolean isSamePath(String path1, String path2) {
+        boolean isEqual = false;
+        try {
+            File filePath1 = new File(path1);
+            File filePath2 = new File(path2);
+            isEqual = filePath1.getCanonicalPath().equals(filePath2.getCanonicalPath());
+        } catch (IOException e) {
+            // ignore
+        }
+        return isEqual;
+    }
+
+    /**
      * Copy the contents of the given source directory into the given target directory
      *
      * @param source

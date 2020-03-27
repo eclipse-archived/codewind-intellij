@@ -26,6 +26,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
+import org.eclipse.codewind.intellij.core.CodewindIntellijApplication;
 import org.eclipse.codewind.intellij.core.CodewindManager;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.Logger;
@@ -82,6 +83,9 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction addExistingProjectAction;
     private final AnAction showAllLogFilesAction;
     private final AnAction closeAllLogFilesAction;
+    private final AnAction restartRunModeAction;
+    private final AnAction restartDebugModeAction;
+    private final AnAction attachDebuggerAction;
 
     private final AnAction newProjectAction;
 
@@ -110,6 +114,9 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         addExistingProjectAction = new AddExistingProjectAction();
         showAllLogFilesAction = new ShowAllLogsAction();
         closeAllLogFilesAction = new CloseAllLogsAction();
+        restartRunModeAction = new RestartRunModeAction();
+        restartDebugModeAction = new RestartDebugModeAction();
+        attachDebuggerAction = new AttachDebuggerAction();
 
         newProjectAction = new NewCodewindProjectAction();
 
@@ -306,6 +313,16 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         actions.add(logGroup);
         logGroup.add(showAllLogFilesAction);
         logGroup.add(closeAllLogFilesAction);
+        actions.addSeparator();
+        if (application != null && application.connection.isLocal() && application.isAvailable() && application.getProjectCapabilities().canRestart()) {
+            actions.add(restartRunModeAction);
+        }
+        if (application != null && application.connection.isLocal() && application.isAvailable() && application.supportsDebug()) {
+            actions.add(restartDebugModeAction);
+        }
+        if (application != null && application.connection.isLocal() && application.isAvailable() && ((CodewindIntellijApplication)application).canInitiateDebugSession()) {
+            actions.add(attachDebuggerAction);
+        }
         actions.addSeparator();
         actions.add(startBuildAction);
         if (application.isAutoBuild()) {

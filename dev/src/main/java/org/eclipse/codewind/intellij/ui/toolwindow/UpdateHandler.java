@@ -10,11 +10,16 @@
  *******************************************************************************/
 package org.eclipse.codewind.intellij.ui.toolwindow;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.ui.content.Content;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
+import org.eclipse.codewind.intellij.core.FileUtil;
 import org.eclipse.codewind.intellij.core.IUpdateHandler;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
+import org.eclipse.codewind.intellij.core.launch.CoreUiUtil;
+import org.jetbrains.annotations.SystemIndependent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,6 +109,23 @@ public class UpdateHandler implements IUpdateHandler
                     }
                 }
             }
+            // Cannot add an update handler listener to the Debug tool window since we don't control when it is created.
+            // Whenever we get notified of a project removal, we'll have to find the appropriate Debug tool window
+            // and remove it.
+            Project[] openProjects = ProjectManager.getInstance().getOpenProjects();
+            Project currentProject = null;
+            for (Project project : openProjects) {
+                @SystemIndependent String basePath = project.getBasePath();
+                if (FileUtil.isSamePath(application.fullLocalPath.toAbsolutePath().toString(), basePath)) {
+                    currentProject = project;
+                    break;
+                }
+            }
+            if (currentProject == null) {
+                return;
+            }
+
+            CoreUiUtil.clearRunConfig(currentProject, null);
         }
     }
 
@@ -121,6 +143,19 @@ public class UpdateHandler implements IUpdateHandler
             appListeners.put(new AppKey(content, connectionId, projectID), listener);
         }
     }
+
+    public AppUpdateListener getAppUpdateListener(Content content, String connectionId, String projectID) {
+        synchronized(appListeners) {
+            Set<AppKey> appKeys = appListeners.keySet();
+            for (AppKey key : appKeys) {
+                if (key.content == content && key.connectionId.equals(connectionId) && key.projectId.equals(projectID)) {
+                    return appListeners.get(key);
+                }
+            }
+            return null;
+        }
+    }
+
 
     public void removeAppUpdateListener(Content content, String connectionId, String projectID) {
         synchronized(appListeners) {

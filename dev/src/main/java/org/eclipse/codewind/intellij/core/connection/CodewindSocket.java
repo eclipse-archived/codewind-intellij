@@ -307,6 +307,8 @@ public class CodewindSocket {
 
         // Reconnect debugger if necessary
         if (StartMode.DEBUG_MODES.contains(app.getStartMode()) && app.getDebugPort() != -1) {
+            // For IntelliJ, we will not automatically connect since the project might not be opened.  The user simply has to
+            // run the Attach Debugger action
             app.reconnectDebugger();
         }
 
