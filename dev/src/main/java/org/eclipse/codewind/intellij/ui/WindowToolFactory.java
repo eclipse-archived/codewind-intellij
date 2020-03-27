@@ -22,7 +22,7 @@ public class WindowToolFactory implements ToolWindowFactory {
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         CodewindToolWindow codewindToolWindow = new CodewindToolWindow();
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-        toolWindow.getContentManager().addContent(contentFactory.createContent(codewindToolWindow, "", false));
+        toolWindow.getContentManager().addContent(contentFactory.createContent(codewindToolWindow, CodewindToolWindow.DISPLAY_NAME, false));
         codewindToolWindow.init();
     }
 }
