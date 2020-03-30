@@ -20,9 +20,11 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.remote.RemoteConfiguration;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
@@ -30,6 +32,8 @@ import org.eclipse.codewind.intellij.core.CodewindIntellijApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.ui.debug.CodewindConfigurationType;
+
+import javax.swing.JFrame;
 
 /**
  * This class contains methods that have UI elements and references but cannot be put in the UI folder because
@@ -76,6 +80,13 @@ public class CoreUiUtil {
                 } catch (Exception e){
                     Logger.log(e);
                 }
+            }
+            // https://github.com/eclipse/codewind/issues/2531 - Focus switches to previous window after canceling prompt
+            // There is no callback or return information from restartRunProfile to tell if dialogs (userApprovesStopForIncompatibleConfigurations) have been canceled.
+            // Have to request focus here:
+            JFrame frame = WindowManager.getInstance().getFrame(project);
+            if (frame != null) {
+                IdeFocusManager.getInstance(project).requestFocus(frame.getMostRecentFocusOwner(), true);
             }
         });
     }
