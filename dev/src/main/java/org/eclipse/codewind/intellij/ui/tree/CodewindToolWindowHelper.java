@@ -33,7 +33,7 @@ public class CodewindToolWindowHelper {
             public void run() {
                 ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(CodewindToolWindow.ID);
                 if (toolWindow != null && toolWindow.isAvailable()) {
-                    toolWindow.show(this);
+                    toolWindow.show(null); // Keep this null
                     ContentManager contentManager = toolWindow.getContentManager();
                     final Content content = contentManager.findContent(CodewindToolWindow.DISPLAY_NAME);
                     JComponent component = content.getComponent();
