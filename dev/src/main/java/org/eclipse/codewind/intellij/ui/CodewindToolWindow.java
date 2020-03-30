@@ -11,7 +11,6 @@
 
 package org.eclipse.codewind.intellij.ui;
 
-import com.intellij.ide.actions.NewProjectAction;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.ActionPopupMenu;
@@ -19,6 +18,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.components.JBPanel;
@@ -41,8 +41,8 @@ import org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle;
 import org.eclipse.codewind.intellij.ui.toolwindow.UpdateHandler;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeModel;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeNodeCellRenderer;
-import org.jetbrains.annotations.NotNull;
 
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -50,17 +50,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
     public static String ID = "Codewind";
+    public static String DISPLAY_NAME = "";
     private Tree tree;
-
-    // TODO remove this
-    private final AnAction debugAction;
 
     private final AnAction installCodewindAction;
     private final AnAction updateCodewindAction;
@@ -119,14 +116,6 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         attachDebuggerAction = new AttachDebuggerAction();
 
         newProjectAction = new NewCodewindProjectAction();
-
-        debugAction = new AnAction("* debug *") {
-            @Override
-            public void actionPerformed(@NotNull AnActionEvent e) {
-                String[] ids = ActionManager.getInstance().getActionIds("");
-                Arrays.stream(ids).sorted().forEach(System.out::println);
-            }
-        };
 
         tree.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -192,6 +181,27 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
             tree.expandPath(new TreePath(root));
         } else {
             tree.expandPath(new TreePath(new Object[]{root, child}));
+        }
+    }
+
+    public void expandToProject(Project project) {
+        String projectName = project.getName();
+        TreeModel model = tree.getModel();
+        Object root = model.getRoot();
+        if (model.getChildCount(root) > 0) {
+            Object connection = model.getChild(root, 0);
+            int projectCount = model.getChildCount(connection);
+            for (int i = 0; i < projectCount; i++ ) {
+                Object child = model.getChild(connection, i);
+                if (child instanceof CodewindApplication) {
+                    CodewindApplication app = (CodewindApplication)child;
+                    String name = app.getName();
+                    if (projectName.equals(name)) {
+                        tree.setSelectionPath(new TreePath(new Object[] {root, connection, app}));
+                        return;
+                    }
+                }
+            }
         }
     }
 

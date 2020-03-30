@@ -13,8 +13,12 @@ package org.eclipse.codewind.intellij.ui.tree;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.ui.CodewindToolWindow;
+
+import javax.swing.JComponent;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
@@ -29,7 +33,14 @@ public class CodewindToolWindowHelper {
             public void run() {
                 ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(CodewindToolWindow.ID);
                 if (toolWindow != null && toolWindow.isAvailable()) {
-                    toolWindow.show(null);
+                    toolWindow.show(this);
+                    ContentManager contentManager = toolWindow.getContentManager();
+                    final Content content = contentManager.findContent(CodewindToolWindow.DISPLAY_NAME);
+                    JComponent component = content.getComponent();
+                    if (content != null && component instanceof CodewindToolWindow) {
+                        CodewindToolWindow codewindToolWindow = (CodewindToolWindow)component;
+                        codewindToolWindow.expandToProject(project);
+                    }
                 }
             }
         });
