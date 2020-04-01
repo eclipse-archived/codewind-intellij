@@ -34,6 +34,7 @@ import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.ui.debug.CodewindConfigurationType;
 
 import javax.swing.JFrame;
+import java.awt.Component;
 
 /**
  * This class contains methods that have UI elements and references but cannot be put in the UI folder because
@@ -86,7 +87,10 @@ public class CoreUiUtil {
             // Have to request focus here:
             JFrame frame = WindowManager.getInstance().getFrame(project);
             if (frame != null) {
-                IdeFocusManager.getInstance(project).requestFocus(frame.getMostRecentFocusOwner(), true);
+                Component mostRecentFocusOwner = frame.getMostRecentFocusOwner();
+                if (mostRecentFocusOwner != null) {
+                    IdeFocusManager.getInstance(project).requestFocus(mostRecentFocusOwner, true);
+                }
             }
         });
     }
