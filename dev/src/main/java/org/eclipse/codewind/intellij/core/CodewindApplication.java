@@ -608,9 +608,12 @@ public class CodewindApplication {
 
     @Override
     public String toString() {
+        String urlString = rootUrl == null ? "" : rootUrl.toString();
+        String fullPathString = fullLocalPath == null ? "" : fullLocalPath.toString();
+
         return String.format("%s@%s id=%s name=%s type=%s loc=%s", //$NON-NLS-1$
-                CodewindApplication.class.getSimpleName(), rootUrl.toString(),
-                projectID, name, projectType, fullLocalPath.toString());
+                CodewindApplication.class.getSimpleName(), urlString,
+                projectID, name, projectType, fullPathString);
     }
 
 	public Path ideaProjectPath() {
