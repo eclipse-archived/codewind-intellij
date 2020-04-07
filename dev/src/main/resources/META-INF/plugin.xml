@@ -60,12 +60,13 @@
     ]]></description>
 
     <change-notes><![CDATA[
-    <p><b>0.10.0</b></p>
+    <p><b>0.11.0</b></p>
     <p>
     <ul>
     <li>Show project log files</li>
     <li>Open performance dashboard</li>
     <li>Support Disable/Enable project</li>
+    <li>Support Debugging</li>
     <li>Bug fixes</li>
     </ul>
     </p>
