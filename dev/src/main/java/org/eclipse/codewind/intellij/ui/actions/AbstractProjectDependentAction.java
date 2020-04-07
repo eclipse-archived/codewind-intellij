@@ -56,7 +56,7 @@ public abstract class AbstractProjectDependentAction extends AbstractApplication
                 @SystemIndependent String openedProjectPath = openedProject.getBasePath();
                 if (FileUtil.isSamePath(openedProjectPath, targetLocalPath)) {
                     final Project targetOpenedProject = openedProject;
-                    // If the project is already opened, just set it active and perform the restart in debug mode task
+                    // If the project is already opened, just set it active and perform the task
                     JFrame frame = WindowManager.getInstance().getFrame(targetOpenedProject);
                     if (frame != null) {
                         CoreUtil.invokeLater(() -> {
