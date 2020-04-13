@@ -73,7 +73,14 @@ public class CodewindTreeModel extends BaseTreeModel<Object> implements IUpdateH
         TreePath path = treePathFrom(getRoot(), application.getConnection());
         int index = getChildren(application.getConnection()).indexOf(application);
         if (index >= 0) {
-            this.treeNodesChanged(path, new int[]{index}, new Object[]{application});
+            try {
+                // It is possible that the number of applications in the model does not match the number of child nodes that is in the current tree node state,
+                // TreeStateNode (the connection node). When a new project is created and is added last in the tree, can get ArrayIndexOutOfBoundsException x >= x.
+                this.treeNodesChanged(path, new int[] {index}, new Object[] {application});
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // the structure should change (the order of socket events is not deterministic)
+                this.treeStructureChanged(path, new int[0], new Object[0]);
+            }
         } else {
             this.treeStructureChanged(path, new int[0], new Object[0]);
         }
