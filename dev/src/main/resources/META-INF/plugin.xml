@@ -89,6 +89,7 @@
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.java</depends>
+    <depends>org.jetbrains.idea.maven</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Codewind" anchor="left" secondary="true" icon="/META-INF/pluginIcon13x13.svg"

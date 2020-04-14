@@ -86,6 +86,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
     private final AnAction newProjectAction;
 
+    private Project initialSelectedProject;
+
     public CodewindToolWindow() {
         tree = new Tree();
         tree.setCellRenderer(new CodewindTreeNodeCellRenderer());
@@ -150,6 +152,10 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
             // Potentially, the Codewind tree model could be moved to the below handler
             CoreUtil.setToolWindowUpdateHandler(updateHandler);
             getTreeModel().updateAll();
+            if (this.initialSelectedProject != null) {
+                expandToProject(initialSelectedProject);
+                initialSelectedProject = null;
+            }
         });
     }
 
@@ -182,6 +188,10 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         } else {
             tree.expandPath(new TreePath(new Object[]{root, child}));
         }
+    }
+
+    public void setInitialSelectedProject(Project project) {
+        this.initialSelectedProject = project;
     }
 
     public void expandToProject(Project project) {
