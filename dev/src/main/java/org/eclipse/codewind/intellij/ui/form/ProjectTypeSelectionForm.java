@@ -16,6 +16,7 @@ import org.eclipse.codewind.intellij.core.connection.ProjectTypeInfo.ProjectSubt
 import org.eclipse.codewind.intellij.core.constants.ProjectInfo;
 import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
 import org.eclipse.codewind.intellij.core.constants.ProjectType;
+import org.eclipse.codewind.intellij.ui.IconCache;
 import org.eclipse.codewind.intellij.ui.wizard.AbstractBindProjectWizardStep;
 import org.jetbrains.annotations.Nullable;
 
@@ -250,7 +251,21 @@ public class ProjectTypeSelectionForm {
         public Component getListCellRendererComponent(JList<?> jList, Object o, int i, boolean b, boolean b1) {
             Component comp = super.getListCellRendererComponent(jList, o, i, b, b1);
             ProjectTypeInfo projectTypeInfo = (ProjectTypeInfo) o;
-            setText(ProjectType.getDisplayName(projectTypeInfo.getId()));
+            String id = projectTypeInfo.getId();
+            setText(ProjectType.getDisplayName(id));
+            if (id.equals(ProjectType.TYPE_LIBERTY.getId())) {
+                setIcon(IconCache.getCachedIcon(IconCache.ICONS_THEMELESS_PROJECT_TYPES_MICROPROFILE_SVG));
+            } else if (id.equals(ProjectType.TYPE_SPRING.getId())) {
+                setIcon(IconCache.getCachedIcon(IconCache.ICONS_THEMELESS_PROJECT_TYPES_SPRING_SVG));
+            } else if (id.equals(ProjectType.TYPE_NODEJS.getId())) {
+                setIcon(IconCache.getCachedIcon(IconCache.ICONS_THEMELESS_PROJECT_TYPES_NODEJS_SVG));
+            } else if (id.equals(ProjectType.TYPE_SWIFT.getId())) {
+                setIcon(IconCache.getCachedIcon(IconCache.ICONS_THEMELESS_PROJECT_TYPES_SWIFT_SVG));
+            } else if (id.equals(ProjectType.TYPE_DOCKER.getId())) {
+                setIcon(IconCache.getCachedIcon(IconCache.ICONS_THEMELESS_PROJECT_TYPES_GENERIC_SVG));
+            } else {
+                setIcon(IconCache.getCachedIcon(IconCache.ICONS_THEMELESS_PROJECT_TYPES_GENERIC_SVG));
+            }
             return comp;
         }
     }
