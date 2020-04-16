@@ -27,6 +27,10 @@ public class CodewindToolWindowHelper {
     // ID for the Log Files Tool Window
     public final static String SHOW_LOG_FILES_TOOLWINDOW_ID = message("LogFilesToolWindow");  // Note this ID is actually the UI displayed string in the ToolWindow
 
+    /**
+     * Open and expand to project
+     * @param project
+     */
     public static void openWindow(Project project) {
         CoreUtil.invokeLater(new Runnable() {
             @Override
@@ -44,5 +48,38 @@ public class CodewindToolWindowHelper {
                 }
             }
         });
+    }
+
+    /**
+     * Open Codewind window
+     * @param project
+     */
+    public static void openCodewindWindow(Project project) {
+        CoreUtil.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(CodewindToolWindow.ID);
+                if (toolWindow != null && toolWindow.isAvailable()) {
+                    toolWindow.show(null); // Keep this null
+                }
+            }
+        });
+    }
+
+    /**
+     * Set the project to be selected prior to the window being shown or opened, which can be much later
+     * @param project
+     */
+    public static void setInitialProjectToSelect(Project project) {
+        ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(CodewindToolWindow.ID);
+        if (toolWindow != null && toolWindow.isAvailable()) {
+            ContentManager contentManager = toolWindow.getContentManager();
+            final Content content = contentManager.findContent(CodewindToolWindow.DISPLAY_NAME);
+            JComponent component = content.getComponent();
+            if (content != null && component instanceof CodewindToolWindow) {
+                CodewindToolWindow codewindToolWindow = (CodewindToolWindow)component;
+                codewindToolWindow.setInitialSelectedProject(project);
+            }
+        }
     }
 }

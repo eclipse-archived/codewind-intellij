@@ -73,6 +73,10 @@ public class ShowAllLogFilesTask extends Task.Backgroundable {
             public void run() {
                 initToolWindow();
                 List<ProjectLogInfo> logInfos = application.getLogInfos();
+                if (logInfos.size() == 0) {
+                    CoreUtil.openDialog(false, message("NoLogFilesAvailableTitle"), message("NoLogFilesAvailableMessage", application.getName()));
+                    return;
+                }
                 ProjectLogInfo firstAppLog = logInfos.size() > 0 ? logInfos.get(0) : null;
                 for (ProjectLogInfo logInfo : logInfos) {
                     Content content = getContentForProjectLogInfo(logInfo);
