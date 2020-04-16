@@ -25,7 +25,7 @@ import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message
 public class CodewindToolWindowHelper {
 
     // ID for the Log Files Tool Window
-    public final static String SHOW_LOG_FILES_TOOLWINDOW_ID = message("LogFilesToolWindow");  // Note this ID is actually the UI displayed string in the ToolWindow
+    public final static String SHOW_LOG_FILES_TOOLWINDOW_ID = "org.eclipse.codewind.intellij.ui.logFilesToolWindow";
 
     /**
      * Open and expand to project

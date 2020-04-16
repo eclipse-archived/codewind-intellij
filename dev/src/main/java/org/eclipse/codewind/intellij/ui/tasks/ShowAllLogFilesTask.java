@@ -46,6 +46,7 @@ import org.eclipse.codewind.intellij.core.console.SocketConsole;
 import org.eclipse.codewind.intellij.ui.CodewindToolWindow;
 import org.eclipse.codewind.intellij.ui.IconCache;
 import org.eclipse.codewind.intellij.ui.constants.UIConstants;
+import org.eclipse.codewind.intellij.ui.toolwindow.LogsViewNotifier;
 import org.eclipse.codewind.intellij.ui.toolwindow.UpdateHandler;
 import org.eclipse.codewind.intellij.ui.tree.CodewindToolWindowHelper;
 import org.jetbrains.annotations.NotNull;
@@ -61,6 +62,7 @@ public class ShowAllLogFilesTask extends Task.Backgroundable {
     private final CodewindApplication application;
     private ToolWindow logFilesToolWindow;
     private ContentManager contentManager = null;
+    private LogsViewNotifier notifier;
 
     public ShowAllLogFilesTask(CodewindApplication application, Project project) {
         super(project, message("ShowAllLogFilesAction"));
@@ -113,6 +115,7 @@ public class ShowAllLogFilesTask extends Task.Backgroundable {
             logFilesToolWindow = toolWindowManager.registerToolWindow(CodewindToolWindowHelper.SHOW_LOG_FILES_TOOLWINDOW_ID, true, ToolWindowAnchor.BOTTOM);
             logFilesToolWindow.setContentUiType(ToolWindowContentUiType.COMBO, null);
             logFilesToolWindow.setIcon(IconCache.getCachedIcon(IconCache.ICONS_CODEWIND_13PX_SVG));
+            logFilesToolWindow.setStripeTitle(message("LogFilesToolWindow"));
         }
         contentManager = logFilesToolWindow.getContentManager();
         if (windowRequiresRegistration) {
@@ -164,8 +167,11 @@ public class ShowAllLogFilesTask extends Task.Backgroundable {
         content.setDescription(org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message("LogFileConsoleName", application.name, logInfo.logName));
         contentManager.addContent(content);
         Disposer.register(getProject(), consoleView);
-        
-        SocketConsole socketConsole = new SocketConsole(content, consoleView, content.getDisplayName(), logInfo, application);
+
+        if (notifier == null) {
+            notifier = new LogsViewNotifier(getProject());
+        }
+        SocketConsole socketConsole = new SocketConsole(content, consoleView, content.getDisplayName(), logInfo, application, notifier);
         DefaultActionGroup toolbarGroup = new DefaultActionGroup();
 
         AnAction[] consoleActions = consoleView.createConsoleActions();
