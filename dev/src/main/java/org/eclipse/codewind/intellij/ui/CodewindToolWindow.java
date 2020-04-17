@@ -146,6 +146,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
     public void init() {
         updateHandler = UpdateHandler.getInstance();
+        CoreUtil.initLogUpdatesNotificationGroup();
         CoreUtil.runAsync(() -> {
             tree.setModel(getTreeModel());
             CoreUtil.setUpdateHandler(getTreeModel());

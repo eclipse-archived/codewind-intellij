@@ -24,17 +24,21 @@ public class SocketConsole {
     public final CodewindApplication app;
     public final ProjectLogInfo logInfo;
     private final CodewindSocket socket;
+    private String consoleName;
 
     private boolean isInitialized = false;
     private Content content;
     private ConsoleView consoleView;
+    private final ILogChangeNotifier notifier;
 
-    public SocketConsole(Content content, ConsoleView consoleView, String consoleName, ProjectLogInfo logInfo, CodewindApplication app) {
+    public SocketConsole(Content content, ConsoleView consoleView, String consoleName, ProjectLogInfo logInfo, CodewindApplication app, ILogChangeNotifier iLogChangeNotifier) {
         this.logInfo = logInfo;
         this.app = app;
         this.socket = app.connection.getSocket();
         this.content = content;
         this.consoleView = consoleView;
+        this.consoleName = consoleName;
+        this.notifier = iLogChangeNotifier;
     }
 
     public void initialize() throws Exception {
@@ -58,6 +62,11 @@ public class SocketConsole {
                 consoleView.clear();
             }
             isInitialized = true;
+        }
+        if (!consoleView.getComponent().isShowing()) {
+            synchronized(notifier) {
+                notifier.notifyChange(this.consoleName);
+            }
         }
         // Todo: investigate how else we can print with different content types
         consoleView.print(contents, ConsoleViewContentType.NORMAL_OUTPUT);

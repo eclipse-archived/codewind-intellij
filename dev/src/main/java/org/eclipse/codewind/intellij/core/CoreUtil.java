@@ -11,10 +11,14 @@
 
 package org.eclipse.codewind.intellij.core;
 
+import com.intellij.notification.NotificationDisplayType;
+import com.intellij.notification.NotificationGroup;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.ui.Messages;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
+import org.eclipse.codewind.intellij.ui.IconCache;
+import org.eclipse.codewind.intellij.ui.tree.CodewindToolWindowHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,6 +37,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.intellij.openapi.application.ModalityState.defaultModalityState;
+import static org.eclipse.codewind.intellij.core.messages.CodewindCoreBundle.message;
 
 /**
  * General utils that don't belong anywhere else
@@ -44,6 +49,7 @@ public class CoreUtil {
 
     private static IUpdateHandler updateHandler;
     private static IUpdateHandler toolWindowUpdateHandler;
+    private static NotificationGroup logUpdatesNotificationGroup;
 
 	public enum DialogType {
 		ERROR,
@@ -51,6 +57,15 @@ public class CoreUtil {
 		INFO;
 	};
 
+	public static void initLogUpdatesNotificationGroup() {
+	    if (logUpdatesNotificationGroup == null) {
+            logUpdatesNotificationGroup = new NotificationGroup(message("LogUpdates"), NotificationDisplayType.TOOL_WINDOW, false, CodewindToolWindowHelper.SHOW_LOG_FILES_TOOLWINDOW_ID, IconCache.getCachedIcon(IconCache.ICONS_THEMELESS_CODEWIND_SVG));
+        }
+    }
+
+    public static NotificationGroup getLogUpdatesNotification() {
+	    return logUpdatesNotificationGroup;
+    }
 
     /**
      * Open a dialog on top of the current active window. Can be called off the UI thread.
