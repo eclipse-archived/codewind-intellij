@@ -16,6 +16,7 @@ import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.tree.TreePath;
 
@@ -26,13 +27,17 @@ import static com.intellij.openapi.actionSystem.PlatformDataKeys.CONTEXT_COMPONE
  */
 public abstract class AbstractApplicationAction extends AnAction {
 
+    // Do not use member variables in actions
+
     public AbstractApplicationAction(String text) {
         super(text);
     }
 
+    @Nullable
     protected CodewindApplication getSelection(@NotNull AnActionEvent e) {
         Object data = e.getData(CONTEXT_COMPONENT);
         if (!(data instanceof Tree)) {
+            Logger.log("Unexpected selection context for "  + this.getClass().getName() + " : " + data);
             return null;
         }
         Tree tree = (Tree) data;
@@ -46,5 +51,15 @@ public abstract class AbstractApplicationAction extends AnAction {
             return null;
         }
         return (CodewindApplication)node;
+    }
+
+    @Nullable
+    protected Tree getTree(@NotNull AnActionEvent e) {
+        Object data = e.getData(CONTEXT_COMPONENT);
+        if (!(data instanceof Tree)) {
+            Logger.log("Unexpected selection context for " + this.getClass().getName() + " : " + data);
+            return null;
+        }
+        return (Tree) data;
     }
 }

@@ -72,6 +72,9 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction enableAutoBuildAction;
     private final AnAction disableAutoBuildAction;
     private final AnAction refreshAction;
+    private final AnAction openAppMonitorAction;
+    private final AnAction enableInjectMetricsAction;
+    private final AnAction disableInjectMetricsAction;
     private final AnAction openPerformanceDashboardAction;
     private final AnAction openTektonDashboardAction;
     private final AnAction enableProjectAction;
@@ -105,6 +108,9 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         enableAutoBuildAction = new EnableAutoBuildAction();
         disableAutoBuildAction = new DisableAutoBuildAction();
         refreshAction = new RefreshAction();
+        openAppMonitorAction = new OpenAppMonitorAction();
+        enableInjectMetricsAction = new EnableDisableInjectMetricsAction(true);
+        disableInjectMetricsAction = new EnableDisableInjectMetricsAction(false);
         openPerformanceDashboardAction = new OpenPerformanceDashboardAction();
         openTektonDashboardAction = new OpenTektonDashboardAction();
         enableProjectAction = new EnableProjectAction();
@@ -314,19 +320,35 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
         actions.add(openApplicationAction);
         actions.add(openAppOverviewAction);
+        actions.addSeparator();
+        // Guaranteed separator here
+        int numItems = actions.getChildrenCount();
+        if (application.hasMetricsDashboard()) {
+            actions.add(openAppMonitorAction);
+        }
         if (application.hasPerfDashboard()) {
             actions.add(openPerformanceDashboardAction);
         }
+        if (application.canInjectMetrics()) {
+            if (!application.isMetricsInjected()) {
+                actions.add(enableInjectMetricsAction);
+            } else {
+                actions.add(disableInjectMetricsAction);
+            }
+        }
+        if (actions.getChildrenCount() > numItems) {
+            actions.addSeparator();
+        }
+        // Guaranteed separator here
         CodewindConnection connection = application.getConnection();
         if (connection != null) {
             ConnectionEnv.TektonDashboard tekton = connection.getTektonDashboard();
             if (tekton.hasTektonDashboard()) {
-                actions.addSeparator();
                 actions.add(openTektonDashboardAction);
+                actions.addSeparator();
             }
         }
 
-        actions.addSeparator();
         // Todo: Change this to Open in New Window or Current Window
         //        actions.add(openIdeaProjectAction);
         // actions.addSeparator();

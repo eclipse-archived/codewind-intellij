@@ -8,36 +8,23 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-
 package org.eclipse.codewind.intellij.ui.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
-import org.eclipse.codewind.intellij.core.Logger;
-import org.eclipse.codewind.intellij.core.constants.AppStatus;
+import org.eclipse.codewind.intellij.ui.tasks.EnableDisableInjectMetricsTask;
 import org.eclipse.codewind.intellij.ui.tasks.RefreshTask;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
-public class OpenPerformanceDashboardAction extends AbstractApplicationAction {
+public class EnableDisableInjectMetricsAction extends AbstractApplicationAction {
 
-    public OpenPerformanceDashboardAction() {
-        super(message("ActionOpenPerfDashboard"));
-    }
-
-    @Override
-    public void update(@NotNull AnActionEvent e) {
-        CodewindApplication app = getSelection(e);
-        e.getPresentation().setEnabled(
-                app.isAvailable() &&
-                        (app.getAppStatus() == AppStatus.STARTING || app.getAppStatus() == AppStatus.STARTED));
+    public EnableDisableInjectMetricsAction(boolean enable) {
+        super(enable ? message("EnableInjectMetricsLabel") : message("DisableInjectMetricsLabel"));
     }
 
     @Override
@@ -45,18 +32,10 @@ public class OpenPerformanceDashboardAction extends AbstractApplicationAction {
         CodewindApplication app = getSelection(e);
         Tree tree = getTree(e);
         if (app != null && tree != null) {
+            Presentation presentation = getTemplatePresentation();
+            String text = presentation.getText();
+            ProgressManager.getInstance().run(new EnableDisableInjectMetricsTask(app, e.getProject(), text));
             ProgressManager.getInstance().run(new RefreshTask(app, tree));
-            final URL perfURL = app.getPerfDashboardUrl();
-            if (perfURL != null) {
-                URI perfURI = null;
-                try {
-                    perfURI = perfURL.toURI();
-                    com.intellij.ide.browsers.BrowserLauncher.getInstance().browse(perfURI);
-                } catch (URISyntaxException use) {
-                    Logger.log("Bad Performance Dashboard URL: " + perfURL);
-                }
-            }
-            return;
         }
     }
 }
