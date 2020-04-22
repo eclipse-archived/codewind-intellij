@@ -181,6 +181,11 @@ public abstract class CodewindConnection {
         this.authToken = authToken;
     }
 
+    AuthToken getAuthToken(boolean update) throws IOException, JSONException {
+        // Override as needed
+        return null;
+    }
+
     private static JSONObject getEnvData(URI baseUrl, AuthToken auth) throws JSONException, IOException {
         final URI envUrl = baseUrl.resolve(CoreConstants.APIPATH_ENV);
 
@@ -632,6 +637,27 @@ public abstract class CodewindConnection {
             projectTypes.add(new ProjectTypeInfo(array.getJSONObject(i)));
         }
         return projectTypes;
+    }
+
+    public void requestInjectMetrics(String projectID, boolean enable) throws IOException, JSONException {
+        String endpoint = CoreConstants.APIPATH_PROJECT_LIST + "/"	//$NON-NLS-1$
+                + projectID + "/"	//$NON-NLS-1$
+                + CoreConstants.APIPATH_INJECT_METRICS;
+
+        URI uri = baseUri.resolve(endpoint);
+        JSONObject buildPayload = new JSONObject();
+        buildPayload.put(CoreConstants.KEY_INJECT_METRICS_ENABLE, enable);
+
+        HttpResult result = HttpUtil.post(uri, getAuthToken(false), buildPayload);
+        if (hasAuthFailure(result)) {
+            result = HttpUtil.post(uri, getAuthToken(true), buildPayload);
+        }
+        checkResult(result, uri, false);
+        CoreUtil.updateConnection(this);
+    }
+
+    private boolean hasAuthFailure(HttpResult result) {
+        return result.responseCode == 302;
     }
 
     private void checkResult(HttpResult result, URI uri, boolean checkContent) throws IOException {

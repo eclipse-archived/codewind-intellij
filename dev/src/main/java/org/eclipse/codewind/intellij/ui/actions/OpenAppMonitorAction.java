@@ -8,7 +8,6 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-
 package org.eclipse.codewind.intellij.ui.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -26,10 +25,10 @@ import java.net.URL;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
-public class OpenPerformanceDashboardAction extends AbstractApplicationAction {
+public class OpenAppMonitorAction extends AbstractApplicationAction {
 
-    public OpenPerformanceDashboardAction() {
-        super(message("ActionOpenPerfDashboard"));
+    public OpenAppMonitorAction() {
+        super(message("ActionOpenMetricsDashboard"));
     }
 
     @Override
@@ -46,14 +45,14 @@ public class OpenPerformanceDashboardAction extends AbstractApplicationAction {
         Tree tree = getTree(e);
         if (app != null && tree != null) {
             ProgressManager.getInstance().run(new RefreshTask(app, tree));
-            final URL perfURL = app.getPerfDashboardUrl();
+            final URL perfURL = app.getMetricsDashboardUrl();
             if (perfURL != null) {
                 URI perfURI = null;
                 try {
                     perfURI = perfURL.toURI();
                     com.intellij.ide.browsers.BrowserLauncher.getInstance().browse(perfURI);
                 } catch (URISyntaxException use) {
-                    Logger.log("Bad Performance Dashboard URL: " + perfURL);
+                    Logger.log("Bad Metrics Dashboard URL: " + perfURL);
                 }
             }
             return;
