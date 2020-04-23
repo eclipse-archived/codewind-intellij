@@ -101,12 +101,12 @@ pipeline {
                         export REPO_NAME="codewind-intellij"
                         export OUTPUT_NAME="codewind-intellij"
                         export OUTPUT_DIR="$WORKSPACE/dev/build/distributions"
-                        export DOWNLOAD_AREA_URL="https://download.eclipse.org/codewind/$REPO_NAME"
+                        export DOWNLOAD_AREA_URL="https://archive.eclipse.org/codewind/$REPO_NAME"
                         export LATEST_DIR="latest"
                         export BUILD_INFO="build_info.properties"
                         export UPDATE_PLUGINS_XML="updatePlugins.xml"
                         export sshHost="genie.codewind@projects-storage.eclipse.org"
-                        export deployDir="/home/data/httpd/download.eclipse.org/codewind/$REPO_NAME"
+                        export deployDir="/home/data/httpd/archive.eclipse.org/codewind/$REPO_NAME"
                         export TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
                     
                         if [ -z $CHANGE_ID ]; then
