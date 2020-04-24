@@ -17,6 +17,8 @@ public class CoreConstants {
 
 	public static final String
 
+			LOGGER_CATEGORY = "#org.eclipse.codewind",
+
 			SETTINGS_FILE = ".cw-settings",
 			BUILD_LOG_SHORTNAME = "build.log",
 
