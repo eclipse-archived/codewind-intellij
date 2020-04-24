@@ -203,9 +203,10 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
                         message("CodewindWrongVersionMsg", InstallUtil.getVersion());
             } else if (status.isError()) {
                 String msg = manager.getInstallerErrorMsg();
-                if (msg == null)
-                    msg = message("CodewindErrorMsg");
-                return text + " [" + message("CodewindErrorQualifier") + "] (" +msg + ")";
+                if (msg != null) {
+                    Logger.log(msg); // Log this as INFO so it will be in the IntelliJ log by default (trace does not have to be enabled)
+                }
+                return text + " [" + message("CodewindErrorQualifier") + "] (" + message("CodewindErrorMsg") + ")";
             } else if (status.isUnknown()) {
                 return text + " [ " + message("RefreshingCodewindStatus") + " ]";
             } else {
