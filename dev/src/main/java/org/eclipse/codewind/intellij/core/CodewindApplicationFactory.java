@@ -44,7 +44,7 @@ public class CodewindApplicationFactory {
 											   String projectsJson, String projectID) {
 
 		try {
-			Logger.log(projectsJson);
+			Logger.logDebug(projectsJson);
 			JSONArray appArray = new JSONArray(projectsJson);
 			Set<String> idSet = new HashSet<String>();
 
