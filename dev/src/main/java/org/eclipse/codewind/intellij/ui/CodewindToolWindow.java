@@ -11,13 +11,7 @@
 
 package org.eclipse.codewind.intellij.ui;
 
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionPlaces;
-import com.intellij.openapi.actionSystem.ActionPopupMenu;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.ui.PopupHandler;
@@ -25,11 +19,7 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.treeStructure.Tree;
-import org.eclipse.codewind.intellij.core.CodewindApplication;
-import org.eclipse.codewind.intellij.core.CodewindIntellijApplication;
-import org.eclipse.codewind.intellij.core.CodewindManager;
-import org.eclipse.codewind.intellij.core.CoreUtil;
-import org.eclipse.codewind.intellij.core.Logger;
+import org.eclipse.codewind.intellij.core.*;
 import org.eclipse.codewind.intellij.core.cli.InstallStatus;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.ConnectionEnv;
@@ -44,8 +34,7 @@ import org.eclipse.codewind.intellij.ui.tree.CodewindTreeNodeCellRenderer;
 
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URISyntaxException;
@@ -86,6 +75,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction restartRunModeAction;
     private final AnAction restartDebugModeAction;
     private final AnAction attachDebuggerAction;
+    private final AnAction openShellAction;
 
     private final AnAction newProjectAction;
 
@@ -122,6 +112,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         restartRunModeAction = new RestartRunModeAction();
         restartDebugModeAction = new RestartDebugModeAction();
         attachDebuggerAction = new AttachDebuggerAction();
+        openShellAction = new OpenContainerShellAction();
 
         newProjectAction = new NewCodewindProjectAction();
 
@@ -320,6 +311,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
         actions.add(openApplicationAction);
         actions.add(openAppOverviewAction);
+        actions.add(openShellAction);
         actions.addSeparator();
         // Guaranteed separator here
         int numItems = actions.getChildrenCount();
