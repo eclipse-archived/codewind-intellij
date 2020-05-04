@@ -50,7 +50,11 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
         }
 
         if (value instanceof CodewindConnection) {
-            Icon icon = getCachedIcon(ICONS_THEMED_LOCAL_PROJECTS_SVG);
+            CodewindConnection connection = (CodewindConnection)value;
+            Icon icon = getCachedIcon(ICONS_THEMED_LOCAL_DISCONNECTED_SVG);
+            if (connection.isConnected()) {
+                icon = getCachedIcon(ICONS_THEMED_LOCAL_CONNECTED_SVG);
+            }
             setIcons(icon);
             return;
         }

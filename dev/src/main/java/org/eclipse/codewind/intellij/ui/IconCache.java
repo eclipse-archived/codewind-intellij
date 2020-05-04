@@ -18,8 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class IconCache {
-
-    public static final String ICONS_THEMED_LOCAL_PROJECTS_SVG = "/icons/themed/local_projects.svg";
+    public static final String ICONS_THEMED_LOCAL_CONNECTED_SVG = "/icons/themed/local_connected.svg";
+    public static final String ICONS_THEMED_LOCAL_DISCONNECTED_SVG = "/icons/themed/local_disconnected.svg";
     public static final String ICONS_THEMELESS_CODEWIND_SVG = "/icons/themeless/codewind.svg";
     public static final String ICONS_THEMELESS_CODEWIND_GREY_SVG = "/icons/themeless/codewind-grey.svg";
     public static final String ICONS_THEMELESS_PROJECT_TYPES_GENERIC_SVG = "/icons/themeless/project-types/generic.svg";
