@@ -17,12 +17,14 @@ import com.intellij.ide.projectWizard.NewProjectWizard;
 import com.intellij.ide.projectWizard.ProjectTypeStep;
 import com.intellij.ide.util.newProjectWizard.TemplatesGroup;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
+import com.intellij.ide.util.projectWizard.ProjectBuilder;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
+import org.eclipse.codewind.intellij.ui.module.CodewindModuleBuilder;
 import org.eclipse.codewind.intellij.ui.module.CodewindModuleType;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,8 +39,14 @@ public class NewCodewindProjectAction extends NewProjectAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        CodewindConnection connection = getSelection(e);
         NewProjectWizard wizard = new NewProjectWizard(null, ModulesProvider.EMPTY_MODULES_PROVIDER, null);
         try {
+            ProjectBuilder projectBuilder = wizard.getProjectBuilder();
+            if (projectBuilder instanceof CodewindModuleBuilder) {
+                CodewindModuleBuilder moduleBuilder = (CodewindModuleBuilder)projectBuilder;
+                moduleBuilder.setConnection(connection);
+            }
             selectCodewindTemplate(wizard);
         } catch (Exception ex) {
             Logger.logWarning(ex);
