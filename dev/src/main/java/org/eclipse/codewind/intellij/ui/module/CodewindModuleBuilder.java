@@ -41,6 +41,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.FileUtil;
 import org.eclipse.codewind.intellij.core.Logger;
+import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.ProjectTemplateInfo;
@@ -63,9 +64,12 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
 
     private ProjectTemplateInfo template;
     private boolean isSuccessful;
+    private CodewindConnection connection;
+    private NewCodewindProjectStep newCodewindProjectStep;
 
     public CodewindModuleBuilder() {
         addListener(this);
+        newCodewindProjectStep = new NewCodewindProjectStep(this);
     }
 
     @Override
@@ -81,7 +85,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
 
     @Override
     public ModuleWizardStep[] createWizardSteps(@NotNull WizardContext wizardContext, @NotNull ModulesProvider modulesProvider) {
-        return new ModuleWizardStep[]{new NewCodewindProjectStep(this)};
+        return new ModuleWizardStep[]{this.newCodewindProjectStep};
     }
 
     @NotNull
@@ -165,7 +169,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
         String url = template.getUrl();
         String language = template.getLanguage();
         String projectType = template.getProjectType();
-        String conid = LocalConnection.DEFAULT_ID;
+        String conid = connection != null ? connection.getConid() : LocalConnection.DEFAULT_ID;
         Project ideaProject = module.getProject();
 
         // The 'appsody init' command will fail to initialize the maven cache if there is no JDK on the PATH and
@@ -230,5 +234,17 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
                 Logger.log(e);
             }
         }
+    }
+
+    /**
+     * This should be called before the wizard is shown if launched from the context menu (NewCodewindProjectAction)
+     * Or, if necessary, called from the connections page
+     *
+     * @param connection
+     */
+    public void setConnection(CodewindConnection connection) {
+        this.connection = connection;
+        // Update all necessary steps with this connection
+        newCodewindProjectStep.setConnection(connection);
     }
 }

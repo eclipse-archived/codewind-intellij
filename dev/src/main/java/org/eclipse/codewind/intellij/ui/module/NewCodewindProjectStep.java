@@ -19,6 +19,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.TemplateUtil;
+import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.ProjectTemplateInfo;
 import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
@@ -33,6 +34,7 @@ import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message
 public class NewCodewindProjectStep extends ModuleWizardStep {
 
     private final CodewindModuleBuilder builder;
+    private CodewindConnection connection;
 
     private final JPanel panel;
     private final JTable table;
@@ -53,6 +55,10 @@ public class NewCodewindProjectStep extends ModuleWizardStep {
         panel.add(scroll);
     }
 
+    public void setConnection(CodewindConnection connection) {
+        this.connection = connection;
+    }
+
     @Override
     public JComponent getComponent() {
         return panel;
@@ -67,7 +73,11 @@ public class NewCodewindProjectStep extends ModuleWizardStep {
     public void updateStep() {
         try {
             String javaID = ProjectLanguage.LANGUAGE_JAVA.getId();
-            List<ProjectTemplateInfo> templates = TemplateUtil.listTemplates(true, LocalConnection.DEFAULT_ID, new EmptyProgressIndicator())
+            String conId = LocalConnection.DEFAULT_ID;
+            if (this.connection != null) {
+                conId = connection.getConid();
+            }
+            List<ProjectTemplateInfo> templates = TemplateUtil.listTemplates(true, conId, new EmptyProgressIndicator())
                     .stream()
                     .filter(info -> info.getLanguage().equals(javaID))
                     .collect(Collectors.toList());
