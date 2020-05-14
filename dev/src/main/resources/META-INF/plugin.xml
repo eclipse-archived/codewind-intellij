@@ -60,6 +60,17 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <p><b>0.12.0</b></p>
+    <p>
+    <ul>
+    <li>Support for app metrics, dashboard and injection</li>
+    <li>Open shell into container</li>
+    <li>Add notifications for log changes</li>
+    <li>Open and select project after project creation</li>
+    <li>Bug fixes</li>
+    </ul>
+    </p>
+    <br/>
     <p><b>0.11.0</b></p>
     <p>
     <ul>
