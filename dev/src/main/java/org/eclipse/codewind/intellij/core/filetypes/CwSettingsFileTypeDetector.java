@@ -50,12 +50,6 @@ public class CwSettingsFileTypeDetector implements FileTypeRegistry.FileTypeDete
         return null;
     }
 
-    @Nullable
-    @Override
-    public Collection<? extends FileType> getDetectedFileTypes() {
-        return Collections.singletonList(CwSettingsFileType.INSTANCE);
-    }
-
     @Override
     /*
      * Cached - if detect method changes, update version

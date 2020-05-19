@@ -56,7 +56,8 @@ public class CoreUiUtil {
         }
         // Set the run config on the application to delete later when the project is switch to run mode (Necessary cast)
         ((CodewindIntellijApplication)application).setRunnerAndConfigurationSettings(configurationByTypeAndName);
-        runManager.addConfiguration(configurationByTypeAndName, false);
+        configurationByTypeAndName.storeInLocalWorkspace();
+        runManager.addConfiguration(configurationByTypeAndName);
         // Set the current configuration, for the toolbar
         runManager.setSelectedConfiguration(configurationByTypeAndName);
         runManager.setTemporaryConfiguration(configurationByTypeAndName);

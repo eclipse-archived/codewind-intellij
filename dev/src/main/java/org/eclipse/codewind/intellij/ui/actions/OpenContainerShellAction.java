@@ -66,7 +66,7 @@ public class OpenContainerShellAction extends AbstractProjectDependentAction {
                 String cmd = processPath + " " + processArgs;
                 TerminalView terminalView = TerminalView.getInstance(myProject);
                 try {
-                    ShellTerminalWidget w = terminalView.createLocalShellWidget(null);
+                    ShellTerminalWidget w = terminalView.createLocalShellWidget(null, app.getName());
                     w.executeCommand(cmd);
                     w.requestFocusInWindow();
                 } catch (IOException e) {

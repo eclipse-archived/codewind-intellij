@@ -16,11 +16,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.actions.NextOccurenceToolbarAction;
 import com.intellij.ide.actions.PreviousOccurenceToolbarAction;
 import com.intellij.ide.browsers.BrowserLauncher;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.ActionPlaces;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -31,11 +27,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowContentUiType;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.content.ContentManager;
-import com.intellij.ui.content.ContentManagerAdapter;
-import com.intellij.ui.content.ContentManagerEvent;
+import com.intellij.ui.content.*;
 import com.intellij.ui.content.tabs.TabbedContentAction;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
@@ -119,7 +111,7 @@ public class ShowAllLogFilesTask extends Task.Backgroundable {
         }
         contentManager = logFilesToolWindow.getContentManager();
         if (windowRequiresRegistration) {
-            contentManager.addContentManagerListener(new ContentManagerAdapter() {
+            contentManager.addContentManagerListener(new ContentManagerListener() {
                 public void contentRemoved(@NotNull ContentManagerEvent event) {
                     ContentManagerEvent.ContentOperation operation = event.getOperation();
                     if (operation.equals(ContentManagerEvent.ContentOperation.remove)) {
