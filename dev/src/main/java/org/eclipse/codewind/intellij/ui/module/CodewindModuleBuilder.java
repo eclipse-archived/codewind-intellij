@@ -198,7 +198,7 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
             MavenProjectsManager manager = MavenProjectsManager.getInstance(project);
             if (manager != null && virtualFile != null) {
                 manager.addManagedFilesOrUnignore(Collections.singletonList(virtualFile));
-                manager.scheduleImportAndResolve(false);
+                manager.scheduleImportAndResolve();
             }
         }
     }

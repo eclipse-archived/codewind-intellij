@@ -71,7 +71,7 @@ public class RemoveProjectAction extends AnAction {
         } else {
             message = message("UnbindActionMultipleMessage", applications.size());
         }
-        int response = Messages.showConfirmationDialog(tree, message, title, Messages.OK_BUTTON, Messages.CANCEL_BUTTON);
+        int response = Messages.showConfirmationDialog(tree, message, title, Messages.getOkButton(), Messages.getCancelButton());
         if (response == Messages.OK) {
             ProgressManager.getInstance().run(new RemoveProjectTask(applications));
         }
