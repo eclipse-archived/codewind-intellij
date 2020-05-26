@@ -32,7 +32,7 @@ src/main/resources/cwctl/pull.sh
 
 Use the `dev (latest) [runIde]` run configuration to run and test your changes.
 
-To build a plugin zip file which can be installed into IntelliJ:
+To build a plugin .zip file which can be installed into IntelliJ:
 ```
 git clone https://github.com/eclipse/codewind-intellij
 cd codewind-intellij/dev/
@@ -40,4 +40,4 @@ src/main/resources/cwctl/meta-pull.sh
 src/main/resources/cwctl/pull.sh
 ./gradlew copyDependencies buildPlugin
 ```
-The built plugin zip file will be found in the `codewind-intellij/dev/build/distributions/` folder.
+The built plugin .zip file will be found in the `codewind-intellij/dev/build/distributions/` folder.
