@@ -58,7 +58,7 @@ task downloadJson(type: Download) {
 }
 
 task downloadFileWatchers(type: Download) {
-    sourceUrl = 'http://archive.eclipse.org/codewind/codewind-eclipse/master/latest/codewind.zip'
+    sourceUrl = 'http://archive.eclipse.org/codewind/codewind-eclipse/0.13.0/latest/codewind.zip'
     target = file('src/main/lib/codewind.zip')
 }
 
