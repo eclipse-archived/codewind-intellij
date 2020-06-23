@@ -23,6 +23,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -153,5 +155,15 @@ public class ProjectTypeSelectionStep  extends AbstractBindProjectWizardStep {
     @Override
     protected void postDoNextStep(BindProjectModel model) {
         // empty
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent changeEvent) {
+        // ignore
+    }
+
+    @Override
+    public void addListener(ChangeListener listener) {
+        // ignore
     }
 }

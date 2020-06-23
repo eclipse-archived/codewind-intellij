@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.codewind.intellij.ui.wizard;
 
-import com.intellij.ide.wizard.AbstractWizardEx;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -26,16 +25,18 @@ import org.eclipse.codewind.intellij.core.connection.ProjectTypeInfo;
 import org.eclipse.codewind.intellij.core.connection.ProjectTypeInfo.ProjectSubtypeInfo;
 import org.eclipse.codewind.intellij.core.constants.ProjectInfo;
 import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
+import org.eclipse.codewind.intellij.ui.constants.UIConstants;
 import org.eclipse.codewind.intellij.ui.tree.CodewindToolWindowHelper;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.SystemIndependent;
 
 import javax.swing.JFrame;
+import javax.swing.event.ChangeEvent;
 import java.util.List;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
-public class AddExistingProjectWizard extends AbstractWizardEx {
+public class AddExistingProjectWizard extends AbstractCodewindWizard {
 
     private BindProjectModel model;
     private CodewindConnection connection;
@@ -44,16 +45,11 @@ public class AddExistingProjectWizard extends AbstractWizardEx {
     private Exception validationException = null;
     private Exception bindException = null;
 
-    public AddExistingProjectWizard(String title, @Nullable Project project, List<AbstractBindProjectWizardStep> steps, @Nullable CodewindConnection connection) {
-        super(title, project, steps);
+    public AddExistingProjectWizard(String title, @Nullable Project project, List<? extends AbstractBindProjectWizardStep> steps, @Nullable CodewindConnection connection) {
+        super(title, project, steps, UIConstants.GETTING_STARTED_INFO_URL);
         this.connection = connection;
         this.intellijProject = project;
         model = new BindProjectModel();
-    }
-
-    @Override
-    protected boolean canFinish() {
-        return super.canFinish();
     }
 
     @Override
@@ -154,6 +150,11 @@ public class AddExistingProjectWizard extends AbstractWizardEx {
 
     }
 
+    @Override
+    public void stateChanged(ChangeEvent changeEvent) {
+        // ignore
+    }
+
     private void continueWithBind(String name, String path, String language, ProjectTypeInfo typeInfo) {
         try {
             // Todo - make all of these processes in this wizard cancellable
@@ -208,11 +209,5 @@ public class AddExistingProjectWizard extends AbstractWizardEx {
         } catch (Exception ex) {
             Logger.log(ex);
         }
-    }
-
-    @Nullable
-    @Override
-    protected String getHelpID() {
-        return null;
     }
 }

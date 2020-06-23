@@ -27,9 +27,15 @@ public abstract class AbstractCodewindDialogWrapper extends DialogWrapper {
 
     private String helpUrl;
 
+    /**
+     * Note: init() should be called after the dialog wrapper has been instantiated
+     *
+     * @param project
+     * @param title
+     * @param helpUrl
+     */
     public AbstractCodewindDialogWrapper(Project project, String title, String helpUrl) {
         super(project,true); // Can use current dialog window as parent for other child dialogs
-        init();
         setTitle(title);
         this.helpUrl = helpUrl;
     }

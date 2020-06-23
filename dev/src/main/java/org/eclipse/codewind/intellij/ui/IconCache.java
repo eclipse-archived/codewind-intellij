@@ -32,6 +32,7 @@ public class IconCache {
     public static final String ICONS_THEMELESS_PROJECT_TYPES_SPRING_SVG = "/icons/themeless/project-types/spring.svg";
     public static final String ICONS_THEMELESS_PROJECT_TYPES_SWIFT_SVG = "/icons/themeless/project-types/swift.svg";
     public static final String ICONS_CODEWIND_13PX_SVG = "/META-INF/pluginIcon13x13.svg";
+    public static final String ICONS_CODEWIND_BANNER_PNG = "/icons/codewindBanner.png";
 
     private static final Map<String, Icon> iconCache = new HashMap<>();
 

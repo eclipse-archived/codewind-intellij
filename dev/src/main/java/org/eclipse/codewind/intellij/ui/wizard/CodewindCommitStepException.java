@@ -10,21 +10,26 @@
  *******************************************************************************/
 package org.eclipse.codewind.intellij.ui.wizard;
 
-import org.jetbrains.annotations.Nullable;
+import com.intellij.ide.wizard.CommitStepException;
 
-public abstract class AbstractBindProjectWizardStep extends AbstractCodewindWizardStep {
+import javax.swing.JComponent;
 
-    public AbstractBindProjectWizardStep(@Nullable String title) {
-        super(title);
+public class CodewindCommitStepException extends CommitStepException {
+
+    private String title;
+    private JComponent component;
+
+    public CodewindCommitStepException(final String title, final String message, final JComponent component) {
+        super(message);
+        this.title = title;
+        this.component = component;
     }
 
-    protected abstract void onStepEntering(BindProjectModel model);
+    public String getTitle() {
+        return title;
+    }
 
-    protected abstract void onStepLeaving(BindProjectModel model);
-
-    protected abstract void postDoNextStep(BindProjectModel model);
-
-    public void fireStateChanging() {
-        this.fireStateChanged();
+    public JComponent getComponent() {
+        return component;
     }
 }
