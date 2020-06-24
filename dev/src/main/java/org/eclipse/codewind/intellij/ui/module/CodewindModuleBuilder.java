@@ -191,7 +191,10 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
         // True if operation completed successfully, or false if cancelled.
         try {
             // Handle error conditions. The template source repo might not be found or available. IOException (404) possible
-            ProgressManager.getInstance().runProcessWithProgressSynchronously(setupProjectRunnable, message("NewProjectWizard_ProgressTitle"), true, ideaProject);
+            Object rc = ProgressManager.getInstance().runProcessWithProgressSynchronously(setupProjectRunnable, message("NewProjectWizard_ProgressTitle"), true, ideaProject);
+            if (rc instanceof Boolean) {
+                isSuccessful = ((Boolean) rc).booleanValue();
+            }
         } catch (Exception e) {
             if (!(e instanceof ProcessCanceledException)) { // If the user cancelled it, don't log it
                 Throwable thrown = Logger.unwrap(e);
