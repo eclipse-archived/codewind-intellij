@@ -76,8 +76,7 @@ public class SetupCodewindProjectRunnable implements ThrowableComputable {
         progressIndicator.checkCanceled();
 
         progressIndicator.stop();
-        // Since we don't have anything meaningful to return, just return true for success since no exceptions were
-        // thrown at this point
-        return true;
+        // return true for success since no exceptions were thrown at this point
+        return Boolean.TRUE;
     }
 }
