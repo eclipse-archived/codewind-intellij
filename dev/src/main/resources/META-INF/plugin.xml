@@ -60,6 +60,13 @@
     ]]></description>
 
     <change-notes><![CDATA[
+    <p><b>0.14.0</b></p>
+    <p>
+    <ul>
+    <li>Manage Secure and Non-Secure Template Sources</li>
+    </ul>
+    </p>
+    <br/>
     <p><b>0.13.0</b></p>
     <p>
     <ul>
