@@ -10,21 +10,21 @@
  *******************************************************************************/
 package org.eclipse.codewind.intellij.ui.wizard;
 
-import org.jetbrains.annotations.Nullable;
+import com.intellij.util.EventDispatcher;
 
-public abstract class AbstractBindProjectWizardStep extends AbstractCodewindWizardStep {
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-    public AbstractBindProjectWizardStep(@Nullable String title) {
-        super(title);
+public class BaseCodewindForm {
+
+    protected final EventDispatcher<ChangeListener> eventDispatcher = EventDispatcher.create(ChangeListener.class);
+
+    public void addListener(ChangeListener listener) {
+        eventDispatcher.addListener(listener);
     }
 
-    protected abstract void onStepEntering(BindProjectModel model);
-
-    protected abstract void onStepLeaving(BindProjectModel model);
-
-    protected abstract void postDoNextStep(BindProjectModel model);
-
-    public void fireStateChanging() {
-        this.fireStateChanged();
+    public void fireStateChanged(ChangeEvent event) {
+        eventDispatcher.getMulticaster().stateChanged(event);
     }
+
 }

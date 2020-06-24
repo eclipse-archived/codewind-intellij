@@ -27,6 +27,7 @@ import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
 import com.intellij.openapi.module.StdModuleTypes;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -39,8 +40,10 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
+import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.FileUtil;
 import org.eclipse.codewind.intellij.core.Logger;
+import org.eclipse.codewind.intellij.core.cli.ProjectUtil;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
@@ -54,6 +57,9 @@ import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
@@ -183,9 +189,15 @@ public class CodewindModuleBuilder extends JavaModuleBuilder implements ModuleBu
         SetupCodewindProjectRunnable setupProjectRunnable = new SetupCodewindProjectRunnable(path, name, url, language, projectType, conid, javaHome);
         // This MUST run synchronously, even if we have to wait for the image to download. If there is an issue, the user can cancel
         // True if operation completed successfully, or false if cancelled.
-        isSuccessful = ProgressManager.getInstance().runProcessWithProgressSynchronously(setupProjectRunnable, message("NewProjectWizard_ProgressTitle"), true, ideaProject);
-        if (!isSuccessful) { // Is Cancelled
-            throw new ProcessCanceledException();
+        try {
+            // Handle error conditions. The template source repo might not be found or available. IOException (404) possible
+            ProgressManager.getInstance().runProcessWithProgressSynchronously(setupProjectRunnable, message("NewProjectWizard_ProgressTitle"), true, ideaProject);
+        } catch (Exception e) {
+            if (!(e instanceof ProcessCanceledException)) { // If the user cancelled it, don't log it
+                Throwable thrown = Logger.unwrap(e);
+                Logger.logWarning("An error occurred creating project " + name, thrown);
+            }
+            throw e; // rethrow so that a message dialog will appear
         }
         return module;
     }

@@ -98,7 +98,7 @@ public class CLIUtil {
         addOptions(cmdList, cmd);
         addOptions(cmdList, options);
         addOptions(cmdList, args);
-        Logger.log(cmdList.stream().collect(Collectors.joining(" ")));
+//        Logger.log(cmdList.stream().collect(Collectors.joining(" ")));
         String[] command = cmdList.toArray(new String[cmdList.size()]);
         ProcessBuilder builder = new ProcessBuilder(command);
         if (PlatformUtil.getOS() == PlatformUtil.OperatingSystem.MAC) {
@@ -182,13 +182,13 @@ public class CLIUtil {
 		// system output.
 		// Expected format:
 		//    {"error":"con_not_found","error_description":"Connection AGALJKAFD not found"}
+        String commandName = command.length > 0 ? command[0] : ""; // cwctl with no parameter;
 		try {
 			if (result.getOutput() != null && !result.getOutput().isEmpty()) {
 				JSONObject obj = new JSONObject(result.getOutput());
 				if (obj.has(ERROR_KEY) && obj.has(ERROR_DESCRIPTION_KEY)) {
-					String msg = String.format("The cwctl '%s' command failed with error: %s", CoreUtil.formatString(command, " "), obj.getString(ERROR_DESCRIPTION_KEY)); //$NON-NLS-1$
-					Logger.logWarning(msg);
-					throw new IOException(obj.getString(ERROR_DESCRIPTION_KEY));
+					String msg = String.format("The cwctl '%s' command failed with error: %s", commandName, obj.getString(ERROR_DESCRIPTION_KEY)); //$NON-NLS-1$
+                    throw new CLIException(obj.getString(ERROR_KEY), obj.getString(ERROR_DESCRIPTION_KEY));
 				}
 			}
 		} catch (JSONException e) {
@@ -199,19 +199,27 @@ public class CLIUtil {
 			String msg;
 			String error = result.getError() != null && !result.getError().isEmpty() ? result.getError() : result.getOutput();
 			if (error == null || error.isEmpty()) {
-				msg = String.format("The cwctl '%s' command exited with return code %d", CoreUtil.formatString(command, " "), result.getExitValue()); //$NON-NLS-1$
+				msg = String.format("The cwctl '%s' command exited with return code %d", commandName, result.getExitValue());
 			} else {
-				msg = String.format("The cwctl '%s' command exited with return code %d and error: %s", CoreUtil.formatString(command, " "), result.getExitValue(), error); //$NON-NLS-1$
+				msg = String.format("The cwctl '%s' command exited with return code %d and error: %s", commandName, result.getExitValue(), error);
 			}
-			Logger.logWarning(msg);
 			throw new IOException(msg);
 		} else if (checkOutput && (result.getOutput() == null || result.getOutput().isEmpty())) {
-			String msg = String.format("The cwctl '%s' command exited with return code 0 but the output was empty", CoreUtil.formatString(command, " "));  //$NON-NLS-1$
-			Logger.logWarning(msg);
+			String msg = String.format("The cwctl '%s' command exited with return code 0 but the output was empty", commandName);  //$NON-NLS-1$
 			throw new IOException(msg);
 		}
-
-		Logger.log(String.format("Result of the cwctl '%s' command: \n%s", CoreUtil.formatString(command, " "), Optional.ofNullable(result.getOutput()).orElse("<empty>")));
 	}
 
+    @SuppressWarnings("serial")
+    public static class CLIException extends IOException {
+
+        public final String errorId;
+        public final String errorMsg;
+
+        public CLIException(String errorId, String errorMsg) {
+            super(errorMsg);
+            this.errorId = errorId;
+            this.errorMsg = errorMsg;
+        }
+    }
 }

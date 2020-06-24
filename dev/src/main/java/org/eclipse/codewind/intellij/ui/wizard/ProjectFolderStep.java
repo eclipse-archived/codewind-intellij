@@ -18,6 +18,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class ProjectFolderStep extends AbstractBindProjectWizardStep {
     public static String STEP_ID = "ProjectFolderStep";
@@ -67,7 +69,7 @@ public class ProjectFolderStep extends AbstractBindProjectWizardStep {
         }
         form = new AddExistingProjectForm(this, this.project, connection);
         // Attempt to initialize the path with the currently opened project's path
-        String basePath = project.getBasePath().toString();
+        String basePath = project.getBasePath();
         boolean isCodewindProject = form.isCodewindProject(basePath);
         if (!isCodewindProject) {
             form.setProjectPath(basePath);
@@ -102,5 +104,15 @@ public class ProjectFolderStep extends AbstractBindProjectWizardStep {
     @Override
     protected void postDoNextStep(BindProjectModel model) {
         // empty
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent changeEvent) {
+        // ignore
+    }
+
+    @Override
+    public void addListener(ChangeListener listener) {
+        // ignore
     }
 }

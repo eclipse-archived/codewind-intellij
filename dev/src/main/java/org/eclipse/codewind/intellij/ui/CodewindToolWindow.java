@@ -76,6 +76,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction restartDebugModeAction;
     private final AnAction attachDebuggerAction;
     private final AnAction openShellAction;
+    private final AnAction manageReposAction;
 
     private final AnAction newProjectAction;
 
@@ -113,6 +114,7 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         restartDebugModeAction = new RestartDebugModeAction();
         attachDebuggerAction = new AttachDebuggerAction();
         openShellAction = new OpenContainerShellAction();
+        manageReposAction = new ManageReposAction();
 
         newProjectAction = new NewCodewindProjectAction();
 
@@ -274,6 +276,8 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
 
         actions.add(newProjectAction);
         actions.add(addExistingProjectAction);
+        actions.addSeparator();
+        actions.add(manageReposAction);
         actions.addSeparator();
         InstallStatus status = CodewindManager.getManager().getInstallStatus();
         if (status.isInstalled()) {

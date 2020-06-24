@@ -8,23 +8,19 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-package org.eclipse.codewind.intellij.ui.wizard;
+package org.eclipse.codewind.intellij.ui.templates;
 
+import com.intellij.openapi.project.Project;
+import org.eclipse.codewind.intellij.ui.wizard.AbstractCodewindWizardStep;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AbstractBindProjectWizardStep extends AbstractCodewindWizardStep {
+import java.util.List;
 
-    public AbstractBindProjectWizardStep(@Nullable String title) {
-        super(title);
-    }
+import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
 
-    protected abstract void onStepEntering(BindProjectModel model);
+public class EditTemplateSourceWizard extends AddTemplateSourceWizard {
 
-    protected abstract void onStepLeaving(BindProjectModel model);
-
-    protected abstract void postDoNextStep(BindProjectModel model);
-
-    public void fireStateChanging() {
-        this.fireStateChanged();
+    public EditTemplateSourceWizard(@Nullable Project project, List<? extends AbstractCodewindWizardStep> steps) {
+        super(message("EditRepoDialogTitle"), project, steps);
     }
 }
