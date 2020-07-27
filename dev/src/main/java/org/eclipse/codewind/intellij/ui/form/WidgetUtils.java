@@ -12,12 +12,14 @@ package org.eclipse.codewind.intellij.ui.form;
 
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ui.HyperlinkAdapter;
+import com.intellij.ui.components.JBPasswordField;
 
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -107,5 +109,15 @@ public class WidgetUtils {
             }
         });
         return editorPane;
+    }
+
+
+    public static String getPassword(JPasswordField passwordField) {
+        char[] password = passwordField.getPassword();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < password.length; i++) {
+            sb.append(password[i]);
+        }
+        return sb.toString();
     }
 }

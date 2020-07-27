@@ -50,6 +50,14 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
         }
 
         if (value instanceof CodewindConnection) {
+            if (value instanceof RemoteConnection) {
+                Icon icon = getCachedIcon(ICONS_THEMED_CONNECTION_DISCONNECTED_SVG);
+                if (((RemoteConnection) value).isConnected()) {
+                    icon = getCachedIcon(ICONS_THEMED_CONNECTION_CONNECTED_SVG);
+                }
+                setIcons(icon);
+                return;
+            }
             CodewindConnection connection = (CodewindConnection)value;
             Icon icon = getCachedIcon(ICONS_THEMED_LOCAL_DISCONNECTED_SVG);
             if (connection.isConnected()) {
@@ -224,8 +232,34 @@ public class CodewindTreeNodeCellRenderer extends DefaultTreeCellRenderer {
 
     @NotNull
     private String getText(RemoteConnection connection) {
-        // TODO implement this
-        return "";
+        StringBuffer styledString = new StringBuffer(connection.getName());
+        if (connection.isConnected()) {
+            styledString.append(" [" + message("CodewindConnected") + "]");
+            if (connection.getApps().size() == 0) {
+                styledString.append(" (" + message("CodewindConnectionNoProjects") + ")");
+            }
+        } else {
+            styledString.append(" [" + message("CodewindConnectionDisconnected") + "]");
+            String errorMsg = connection.getConnectionErrorMsg();
+            if (errorMsg == null) {
+                styledString.append(" (" + message("CodewindDisconnectedDetails") + ")");
+            } else {
+                styledString.append(" (" + errorMsg + ")");
+            }
+        }
+        return styledString.toString();
+
+//        String text = connection.getName();
+//        if (!connection.isConnected()) {
+//            String errorMsg = connection.getConnectionErrorMsg();
+//            if (errorMsg == null) {
+//                errorMsg = message("CodewindDisconnected");
+//            }
+//            text = text + " (" + errorMsg + ")";
+//        } else if (connection.getApps().size() == 0) {
+//            text = text + " (" + message("CodewindConnectionNoProjects") + ")";
+//        }
+//        return text;
     }
 
     @NotNull

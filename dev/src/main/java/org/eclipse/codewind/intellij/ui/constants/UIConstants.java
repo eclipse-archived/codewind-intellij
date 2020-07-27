@@ -15,6 +15,7 @@ public class UIConstants {
     public static final String
             DOC_BASE_URL = "https://www.eclipse.org/codewind",
             GETTING_STARTED_INFO_URL = DOC_BASE_URL + "/intellij-getting-started.html",
+            REMOTE_DEPLOY_URL = DOC_BASE_URL + "/remotedeploy-eclipse.html",
             CWSETTINGS_INFO_URL = DOC_BASE_URL + "/project-actions.html",
             TEMPLATES_INFO_URL = DOC_BASE_URL + "/workingwithtemplates.html",
             REGISTRY_INFO_URL = DOC_BASE_URL + "/remote-setupregistries.html",

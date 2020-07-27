@@ -18,10 +18,12 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.PathUtil;
+import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.ProjectUtil;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
+import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.ProjectTypeInfo;
 import org.eclipse.codewind.intellij.core.connection.ProjectTypeInfo.ProjectSubtypeInfo;
 import org.eclipse.codewind.intellij.core.constants.ProjectInfo;
@@ -31,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.SystemIndependent;
 
 import javax.swing.JFrame;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle.message;
@@ -86,15 +89,21 @@ public class AddExistingProjectWizard extends AbstractWizardEx {
 
 //  Todo: Perform selected action if project already bound to another connection. For local, ignore
 
-//        final List<CodewindApplication> existingDeployments = new ArrayList<>();
-//        for (CodewindConnection conn : ConnectionManager.getManager().activeConnections()) {
-//            if (conn.isConnected()) {
-//                CodewindApplication app = conn.getAppByLocation((model.getProjectPath()));
-//                if (app != null && app.isEnabled()) {
-//                    existingDeployments.add(app);
-//                }
-//            }
-//        }
+        final List<CodewindApplication> existingDeployments = new ArrayList<>();
+        for (CodewindConnection conn : ConnectionManager.getManager().activeConnections()) {
+            if (conn.isConnected()) {
+                CodewindApplication app = conn.getAppByLocation((model.getProjectPath()));
+                if (app != null && app.isEnabled()) {
+                    existingDeployments.add(app);
+                }
+            }
+        }
+
+        // If the application is deployed on another connection, ask the user what they want to do
+        if (!existingDeployments.isEmpty()) {
+            CoreUtil.openDialog(true, message("ProjectDeployedDialogTitle"), message("ProjectDeployedDialogMessage", model.getProjectPath()));
+            return;
+        }
 
         // Use the detected type if the validation page is active otherwise use the type from the project type page
         final ProjectInfo projectInfo = model.getProjectInfo();

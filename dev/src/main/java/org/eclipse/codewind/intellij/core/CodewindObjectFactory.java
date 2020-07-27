@@ -14,7 +14,9 @@ package org.eclipse.codewind.intellij.core;
 import java.net.URI;
 import java.nio.file.Path;
 
+import org.eclipse.codewind.intellij.core.cli.AuthToken;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
+import org.eclipse.codewind.intellij.core.connection.RemoteConnection;
 import org.eclipse.codewind.intellij.core.constants.ProjectLanguage;
 import org.eclipse.codewind.intellij.core.constants.ProjectType;
 
@@ -26,6 +28,11 @@ import org.eclipse.codewind.intellij.core.constants.ProjectType;
  * code leak into CodewindConnection an Eclipse version of it should be created if necessary.
  */
 public class CodewindObjectFactory  {
+
+
+	public static CodewindConnection createRemoteConnection(String name, URI uri, String conid, String username, AuthToken authToken) {
+		return new RemoteConnection(name, uri, conid, username, authToken);
+	}
 
 	public static CodewindApplication createCodewindApplication(CodewindConnection connection,
 			String id, String name, ProjectType projectType, ProjectLanguage language, Path localPath) throws Exception {

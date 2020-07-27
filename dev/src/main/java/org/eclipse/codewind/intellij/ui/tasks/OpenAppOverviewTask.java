@@ -25,6 +25,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowContentUiType;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ex.ToolWindowManagerListener;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -33,6 +34,7 @@ import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.content.tabs.TabbedContentAction;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
+import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.ui.CodewindToolWindow;
 import org.eclipse.codewind.intellij.ui.IconCache;
@@ -42,6 +44,7 @@ import org.eclipse.codewind.intellij.ui.form.AppOverviewFrame;
 import org.eclipse.codewind.intellij.ui.toolwindow.UpdateHandler;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.JComponent;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -181,6 +184,53 @@ public class OpenAppOverviewTask extends Task.Backgroundable {
                             }
                         }
                     });
+
+                    final ToolWindow tw = overviewToolWindow;
+                    ToolWindowManagerListener twl = new ToolWindowManagerListener() {
+                        @Override
+                        public void toolWindowRegistered(@NotNull String id) {
+                                    System.out.println("*** TW registered " + id);
+                                    if (PROJECT_OVERVIEW_TOOLWINDOW_ID.equals(id)) {
+
+                                                }
+                                }
+
+                        @Override
+                        public void toolWindowUnregistered(@NotNull String id, @NotNull ToolWindow toolWindow) {
+                                    System.out.println("*** TW Unregistered " + id);
+                                    if (PROJECT_OVERVIEW_TOOLWINDOW_ID.equals(id)) {
+                                        }
+                                }
+
+                        @Override
+                        public void stateChanged() {
+                                    ToolWindowAnchor anchor = tw.getAnchor();
+                                    System.out.println(anchor.isHorizontal());
+                                    boolean isHorizontal = anchor.isHorizontal();
+                                    JComponent component = tw.getContentManager().getComponent();
+                                    System.out.println(component);
+                                    Content content = tw.getContentManager().findContent(application.name);
+                                    if (content != null) {
+                                            CoreUtil.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                                            simplePanel.setToolbar(null);
+                                                            simplePanel.setToolbar(ActionManager.getInstance().createActionToolbar(ActionPlaces.TODO_VIEW_TOOLBAR, toolbarGroup, !isHorizontal).getComponent());
+                                                            form.relayout(isHorizontal);
+                                                        }
+                                });
+                                        }
+                                }
+                    };
+//                    twl.toolWindowRegistered(PROJECT_OVERVIEW_TOOLWINDOW_ID);
+                            getProject().getMessageBus().connect().subscribe(ToolWindowManagerListener.TOPIC, twl);
+//                    ToolWindowManagerEx.getInstanceEx(getProject()).addToolWindowManagerListener(twl);
+
+
+
+
+
+
                 }
                 overviewToolWindow.show(null);
                 overviewToolWindow.activate(null, true, true);

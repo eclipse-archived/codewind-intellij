@@ -29,6 +29,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,11 +72,12 @@ public class CodewindSocket {
             EVENT_PROJECT_VALIDATED = "projectValidated",
             EVENT_LOG_UPDATE = "log-update",
             EVENT_PROJECT_LOGS_LIST_CHANGED = "projectLogsListChanged",
-            EVENT_PROJECT_SETTINGS_CHANGED = "projectSettingsChanged";
+            EVENT_PROJECT_SETTINGS_CHANGED = "projectSettingsChanged",
+            EVENT_AUTHENTICATED = "authenticated",
+            EVENT_UNAUTHORIZED = "unauthorized";
 
-	public CodewindSocket(CodewindConnection connection, AuthToken authToken) {
+    public CodewindSocket(CodewindConnection connection) throws URISyntaxException, IOException, JSONException {
         this.connection = connection;
-
         URI uri = connection.getBaseURI();
         if (connection.getSocketNamespace() != null) {
             uri = uri.resolve(connection.getSocketNamespace());
@@ -83,12 +85,12 @@ public class CodewindSocket {
         socketUri = uri;
 
 		OkHttpClient.Builder builder = new OkHttpClient.Builder();
-		if (authToken != null) {
-			builder
-				.hostnameVerifier(HttpUtil.hostnameVerifier)
-				.sslSocketFactory(HttpUtil.sslContext.getSocketFactory(), HttpUtil.trustManager);
-		}
-		OkHttpClient okHttpClient = builder
+        if (connection.getAuthToken(false) != null) {
+            builder
+                    .hostnameVerifier(HttpUtil.hostnameVerifier)
+                    .sslSocketFactory(HttpUtil.sslContext.getSocketFactory(), HttpUtil.trustManager);
+        }
+        OkHttpClient okHttpClient = builder
 				.readTimeout(0L, TimeUnit.MILLISECONDS)
 				.build();
 			IO.setDefaultOkHttpCallFactory(okHttpClient);
@@ -98,19 +100,20 @@ public class CodewindSocket {
 			opts.webSocketFactory = okHttpClient;
 			socket = IO.socket(socketUri, opts);
 
-        socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+		socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
             @Override
             public void call(Object... arg0) {
-				if (authToken != null) {
-					try {
-						JSONObject obj = new JSONObject();
-						obj.put("token", authToken.getToken());
-						socket.emit("authentication", obj.toString());
-					} catch (Exception e) {
-						Logger.logWarning("An error occurred trying to pass the authentication token to the socket", e);
-						return;
-					}
-				}
+                try {
+                    AuthToken authToken = connection.getAuthToken(false);
+                    if (authToken != null && authToken.getToken() != null) {
+                        JSONObject obj = new JSONObject();
+                        obj.put("token", authToken.getToken());
+                        socket.emit("authentication", obj);
+                    }
+                } catch (Exception e) {
+                    Logger.logWarning("An error occurred trying to pass the authentication token to the socket", e);
+                    return;
+                }
                 if (!hasConnected) {
                     hasConnected = true;
                     Logger.log("SocketIO connect success @ " + socketUri); //$NON-NLS-1$
@@ -119,6 +122,21 @@ public class CodewindSocket {
                     connection.clearConnectionError();
                     previousException = null;
                 }
+            }
+        }).on(EVENT_AUTHENTICATED, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                Logger.log("SocketIO authentication successful");
+            }
+        }).on(EVENT_UNAUTHORIZED, new Emitter.Listener() {
+            @Override
+            public void call(Object... arg0) {
+                System.out.println("************** SocketIO authentication failed: "  + arg0[0]);
+                Logger.logWarning("SocketIO authentication failed: " + arg0[0]);
+                // Completely disconnect in this case
+                connection.disconnect();
+                CoreUtil.updateConnection(connection);
+//                CoreUtil.openDialog(true, message("Connection_ErrConnection_AuthFailedTitle"), message("Connection_ErrConnection_AuthFailed", connection.getName()));
             }
         }).on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
             @Override

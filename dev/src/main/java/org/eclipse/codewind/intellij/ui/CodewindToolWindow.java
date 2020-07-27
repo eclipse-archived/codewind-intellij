@@ -12,7 +12,10 @@
 package org.eclipse.codewind.intellij.ui;
 
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectCoreUtil;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Key;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.components.JBPanel;
@@ -21,13 +24,16 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.treeStructure.Tree;
 import org.eclipse.codewind.intellij.core.*;
 import org.eclipse.codewind.intellij.core.cli.InstallStatus;
+import org.eclipse.codewind.intellij.core.cli.ProjectUtil;
 import org.eclipse.codewind.intellij.core.connection.CodewindConnection;
 import org.eclipse.codewind.intellij.core.connection.ConnectionEnv;
+import org.eclipse.codewind.intellij.core.connection.ConnectionManager;
 import org.eclipse.codewind.intellij.core.connection.LocalConnection;
 import org.eclipse.codewind.intellij.core.connection.RemoteConnection;
 import org.eclipse.codewind.intellij.core.console.SocketConsole;
 import org.eclipse.codewind.intellij.ui.actions.*;
 import org.eclipse.codewind.intellij.ui.messages.CodewindUIBundle;
+import org.eclipse.codewind.intellij.ui.tasks.ConnectDisconnectTask;
 import org.eclipse.codewind.intellij.ui.toolwindow.UpdateHandler;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeModel;
 import org.eclipse.codewind.intellij.ui.tree.CodewindTreeNodeCellRenderer;
@@ -54,6 +60,12 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     private final AnAction startCodewindAction;
     private final AnAction stopCodewindAction;
 
+    private final AnAction addConnectionAction;
+    private final AnAction editConnectionAction;
+    private final AnAction removeConnectionAction;
+    private final AnAction connectConnectionAction;
+    private final AnAction disconnectConnectionAction;
+    private final AnAction manageRegistriesAction;
     private final AnAction openApplicationAction;
     private final AnAction openAppOverviewAction;
     private final AnAction openIdeaProjectAction;
@@ -91,6 +103,12 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         startCodewindAction = new StartCodewindAction(this::expandLocalTree);
         stopCodewindAction = new StopCodewindAction(this::expandLocalTree);
 
+        addConnectionAction = new AddConnectionAction();
+        editConnectionAction = new EditConnectionAction();
+        removeConnectionAction = new RemoveConnectionAction();
+        connectConnectionAction = new ConnectDisconnectAction(true);
+        disconnectConnectionAction = new ConnectDisconnectAction(false);
+        manageRegistriesAction = new ManageRegistriesAction();
         openApplicationAction = new OpenApplicationAction();
         openAppOverviewAction = new OpenAppOverviewAction();
         openIdeaProjectAction = new OpenIdeaProjectAction();
@@ -218,7 +236,12 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         if (treePath == null)
             return;
         Object node = treePath.getLastPathComponent();
-        if (node instanceof LocalConnection) {
+        if (node instanceof RemoteConnection) {
+            RemoteConnection connection = (RemoteConnection)node;
+            if (!connection.isConnected()) {
+                ProgressManager.getInstance().run(new ConnectDisconnectTask(connection, ProjectManager.getInstance().getDefaultProject(), ""));
+            }
+        } else if (node instanceof LocalConnection) {
             InstallStatus status = CodewindManager.getManager().getInstallStatus();
             if (status.isInstalled()) {
                 // Latest Codewind is installed
@@ -259,6 +282,10 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
             return;
         }
         Object node = treePath.getLastPathComponent();
+        if (node instanceof ConnectionManager) {
+            ConnectionManager connectionManager = (ConnectionManager)node;
+            handleCodewindManagerPopup(connectionManager, component, x, y);
+        }
         if (node instanceof LocalConnection) {
             LocalConnection connection = (LocalConnection) node;
             handleLocalConnectionPopup((LocalConnection) node, component, x, y);
@@ -267,6 +294,16 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
         } else if (node instanceof CodewindApplication) {
             handleApplicationPopup((CodewindApplication) node, component, x, y);
         }
+    }
+
+    private void handleCodewindManagerPopup(ConnectionManager codeconnectionManagerwindManager, Component component, int x, int y) {
+        DefaultActionGroup actions = new DefaultActionGroup("ConnectionManagerGroup", true);
+        actions.add(addConnectionAction);
+        actions.addSeparator();
+        actions.add(refreshAction);
+        ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("CodewindTree", actions);
+        popupMenu.getComponent().show(component, x, y);
+
     }
 
     private void handleLocalConnectionPopup(LocalConnection connection, Component component, int x, int y) {
@@ -303,7 +340,23 @@ public class CodewindToolWindow extends JBPanel<CodewindToolWindow> {
     }
 
     private void handleRemoteConnectionPopup(RemoteConnection connection, Component component, int x, int y) {
-        // TODO implement this
+        DefaultActionGroup actions = new DefaultActionGroup("RemoteConnectionGroup", true);
+        actions.add(newProjectAction);
+        actions.add(addExistingProjectAction);
+        actions.addSeparator();
+        actions.add(manageRegistriesAction);
+        actions.addSeparator();
+        if (connection.isConnected()) {
+            actions.add(disconnectConnectionAction);
+        } else {
+            actions.add(connectConnectionAction);
+        }
+        actions.add(editConnectionAction);
+        actions.add(removeConnectionAction);
+        actions.addSeparator();
+        actions.add(refreshAction);
+        ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu("CodewindTree", actions);
+        popupMenu.getComponent().show(component, x, y);
     }
 
     private void handleApplicationPopup(CodewindApplication application, Component component, int x, int y) {

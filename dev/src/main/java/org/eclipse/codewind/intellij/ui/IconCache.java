@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class IconCache {
+    public static final String ICONS_THEMED_CONNECTION_CONNECTED_SVG = "/icons/themed/connection_connected.svg";
+    public static final String ICONS_THEMED_CONNECTION_DISCONNECTED_SVG = "/icons/themed/connection_disconnected.svg";
     public static final String ICONS_THEMED_LOCAL_CONNECTED_SVG = "/icons/themed/local_connected.svg";
     public static final String ICONS_THEMED_LOCAL_DISCONNECTED_SVG = "/icons/themed/local_disconnected.svg";
     public static final String ICONS_THEMELESS_CODEWIND_SVG = "/icons/themeless/codewind.svg";
@@ -32,6 +34,8 @@ public class IconCache {
     public static final String ICONS_THEMELESS_PROJECT_TYPES_SPRING_SVG = "/icons/themeless/project-types/spring.svg";
     public static final String ICONS_THEMELESS_PROJECT_TYPES_SWIFT_SVG = "/icons/themeless/project-types/swift.svg";
     public static final String ICONS_CODEWIND_13PX_SVG = "/META-INF/pluginIcon13x13.svg";
+
+    public static final String ICONS_ELCL16_NEW_REMOTE = "/icons/elcl16/new_remote.png";
 
     private static final Map<String, Icon> iconCache = new HashMap<>();
 

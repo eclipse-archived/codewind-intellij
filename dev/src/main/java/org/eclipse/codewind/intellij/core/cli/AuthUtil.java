@@ -35,7 +35,37 @@ public class AuthUtil {
 	private static final String STATUS_MSG_KEY = "status_message";
 	
 	private static final String STATUS_OK_VALUE = "OK";
-	
+
+	public static AuthToken genAuthToken(String username, String password, String conid, ProgressIndicator monitor) throws IOException, JSONException, TimeoutException {
+		monitor.setIndeterminate(true);
+		Process process = null;
+		try {
+			process = CLIUtil.runCWCTL(null, SECKEYRING_UPDATE_CMD, new String[] {USERNAME_OPTION, username, PASSWORD_OPTION, password, CLIUtil.CON_ID_OPTION, conid});
+			ProcessResult result = ProcessHelper.waitForProcess(process, 500, 60);
+			if (result.getExitValue() != 0) {
+				Logger.logWarning("Seckeyring update failed with rc: " + result.getExitValue() + " and error: " + result.getErrorMsg()); //$NON-NLS-1$ //$NON-NLS-2$
+				throw new IOException(result.getErrorMsg());
+			}
+			if (result.getOutput() == null || result.getOutput().trim().isEmpty()) {
+				// This should not happen
+				Logger.logWarning("Seckeyring update had 0 return code but the output is empty"); //$NON-NLS-1$
+				throw new IOException("The output from seckeyring update is empty."); //$NON-NLS-1$
+			}
+			JSONObject resultJson = new JSONObject(result.getOutput());
+			if (!STATUS_OK_VALUE.equals(resultJson.getString(STATUS_KEY))) {
+				String msg = "Seckeyring update failed for: " + conid + " with output: " + resultJson.getString(STATUS_MSG_KEY); //$NON-NLS-1$ //$NON-NLS-2$
+				Logger.logWarning(msg);
+				throw new IOException(msg);
+			}
+
+			return getAuthToken(username, conid, monitor);
+		} finally {
+			if (process != null && process.isAlive()) {
+				process.destroy();
+			}
+		}
+	}
+
 	public static AuthToken getAuthToken(String username, String password, String conid, ProgressIndicator monitor) throws IOException, JSONException, TimeoutException {
 		monitor.setIndeterminate(true);
 		Process process = null;

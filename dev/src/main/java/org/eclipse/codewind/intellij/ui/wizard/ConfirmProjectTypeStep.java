@@ -183,6 +183,7 @@ public class ConfirmProjectTypeStep extends AbstractBindProjectWizardStep {
     public void validateProject() {
         String name = PathUtil.getFileName(projectPath);
         // Todo: This should be cancellable (ProjectUtil.projectValidate's Process)
+        System.out.println("**** The Connection is " + connection);
         ProgressManager.getInstance().runProcessWithProgressSynchronously(new Runnable() {
             @Override
             public void run() {

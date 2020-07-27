@@ -16,6 +16,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import org.eclipse.codewind.intellij.core.CodewindApplication;
 import org.eclipse.codewind.intellij.core.CoreUtil;
 import org.eclipse.codewind.intellij.core.constants.CoreConstants;
@@ -98,6 +100,7 @@ public class AppOverviewFrame {
 
     private CodewindApplication application;
     private final Project project;
+    private boolean isHorizontal = true;
 
     public AppOverviewFrame(CodewindApplication application, Project project) {
         this.application = application;
@@ -112,7 +115,11 @@ public class AppOverviewFrame {
         // Top section showing app name
         appLabel = new JLabel(this.application.name);
         appLabel.setIcon(IconCache.getCachedIcon(IconCache.ICONS_THEMELESS_CODEWIND_SVG));
+
+        columnPanel = new JPanel();
+        splitPanel = new JSplitPane();
         // General Pane
+        generalPanel = new JPanel();
         typeField = new JTextField(); // Type
         languageField = new JTextField(); // Language
         locationOnDiskTextArea = WidgetUtils.createJTextArea(""); // Location on Disk
@@ -124,6 +131,7 @@ public class AppOverviewFrame {
         statusField = new JTextField(); // Status
 
         // Project Settings Pane
+        rightPanel = new JPanel();
         applicationContextRootField = new JTextField(); // Application Context Root
         internalApplicationPortField = new JTextField(); // Internal Application Port
         internalDebugPortField = new JTextField(); // Internal Debug Port
@@ -197,6 +205,7 @@ public class AppOverviewFrame {
             }
         });
 
+        columnPanel.setLayout(new GridLayoutManager(2, 2));
         // Initialize with values
         updateProjectInfo();
         updateProjectStatus();
@@ -318,5 +327,41 @@ public class AppOverviewFrame {
             return virtualFile.exists();
         }
         return false;
+    }
+
+    public void relayout(boolean isHorizontal) {
+        if (isHorizontal == this.isHorizontal) {
+            return;
+        }
+        this.isHorizontal = isHorizontal;
+        if (!isHorizontal) {
+            //            columnPanel.remove(splitPanel);
+            splitPanel.remove(generalPanel);
+            splitPanel.remove(rightPanel);
+            columnPanel.removeAll();
+            columnPanel.setLayout(new GridLayoutManager(2, 2));
+
+            columnPanel.add(generalPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK, GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK, null, null, null));
+            columnPanel.add(rightPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK, GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK, null, null, null));
+
+            splitPanel.setVisible(false);
+            overviewScrollPanel.doLayout();
+            overviewPanel.doLayout();
+            columnPanel.doLayout();
+        } else {
+            splitPanel.setVisible(true);
+            columnPanel.removeAll();
+            columnPanel.setLayout(new GridLayoutManager(1, 2));
+            columnPanel.add(splitPanel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK, GridConstraints.SIZEPOLICY_CAN_GROW | GridConstraints.SIZEPOLICY_CAN_SHRINK, null, null, null));
+            splitPanel.setLeftComponent(generalPanel);
+            splitPanel.setRightComponent(rightPanel);
+            //            splitPanel.add(generalPanel, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null));
+            //            splitPanel.add(rightPanel, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null));
+            //            columnPanel.doLayout();
+        }
+        columnPanel.invalidate();
+        overviewPanel.invalidate();
+//        overviewPanel.doLayout();
+//        overviewPanel.updateUI();
     }
 }

@@ -109,6 +109,7 @@ public class HttpUtil {
             }
 
             if (!isGoodResponse) {
+                httpResponse.close();
                 Logger.logWarning("Received bad response code " + responseCode + " from "
                         + uri + " - Error:\n" + content);
             }

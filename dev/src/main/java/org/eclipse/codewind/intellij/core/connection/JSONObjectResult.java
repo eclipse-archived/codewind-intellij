@@ -61,6 +61,20 @@ public abstract class JSONObjectResult {
 		return value;
 	}
 
+	protected Integer getInt(String key) {
+		Integer value = null;
+		if (result.has(key)) {
+			try {
+				value = result.getInt(key);
+			} catch (JSONException e) {
+				Logger.logWarning("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
+			}
+		} else {
+			Logger.logWarning("The " + type + " object did not have the expected key: " + key);
+		}
+		return value;
+	}
+
 	protected List<String> getStringArray(String key) {
 		List<String> list = new ArrayList<String>();
 		if (result.has(key)) {
@@ -91,6 +105,21 @@ public abstract class JSONObjectResult {
 		}
 		return value;
 	}
+
+	protected JSONArray getArray(String key) {
+		JSONArray value = null;
+		if (result.has(key)) {
+			try {
+				value = result.getJSONArray(key);
+			} catch (JSONException e) {
+				Logger.logWarning("An error occurred retrieving the value from the " + type + " object for key: " + key, e);
+			}
+		} else {
+			Logger.logWarning("The " + type + " object did not have the expected key: " + key);
+		}
+		return value;
+	}
+
 
 	@Override
 	public String toString() {

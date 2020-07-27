@@ -20,6 +20,7 @@ import org.eclipse.codewind.intellij.core.FileUtil;
 import org.eclipse.codewind.intellij.core.Logger;
 import org.eclipse.codewind.intellij.core.cli.ProjectUtil;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,7 +66,7 @@ public class SetupCodewindProjectRunnable implements Runnable {
 
             Path tmpProjectPath = Files.createTempDirectory("codewind").resolve(projectPath.getFileName());
             progressIndicator.checkCanceled();
-
+            Logger.log("Temp project path is " + tmpProjectPath.toAbsolutePath());
             progressIndicator.setText(message("SettingUpProject"));
             ProjectUtil.createProject(name, tmpProjectPath.toString(), url, conId, javaHome, progressIndicator);
             progressIndicator.checkCanceled();
@@ -80,6 +81,10 @@ public class SetupCodewindProjectRunnable implements Runnable {
             progressIndicator.checkCanceled();
 
             progressIndicator.stop();
+        } catch (IOException ioe) {
+            if (ioe.getMessage().contains("Directory cannot be removed")) {
+                Logger.logWarning("The temporary directory cannot be removed. Clean up the folder manually.", ioe);
+            }
         } catch (Exception error) {
             if (!(error instanceof ProcessCanceledException)) {
                 Throwable thrown = Logger.unwrap(error);
